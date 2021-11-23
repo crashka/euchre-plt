@@ -4,8 +4,8 @@
 import sys
 from typing import Optional
 
-from .card import Card, Hand, Deck, get_deck
-from .euchre import Bid, PASS_BID, NULL_BID
+from .card import SUITS, Card, Hand, Deck, get_deck
+from .euchre import Bid, NULL_BID, defend_suit
 from .player import Player
 
 ########
@@ -110,7 +110,7 @@ class Deal(object):
                 if bid.is_pass():
                     continue
                 # TODO: convert assert into proper exception logic!!!
-                assert bid.suit in SUITS and bid.suit != turn_card.suit
+                assert bid.suit in SUITS and bid.suit != self.turn_card.suit
                 self.contract   = bid
                 self.caller_pos = pos
                 self.go_alone   = bid.alone

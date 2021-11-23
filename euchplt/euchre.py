@@ -14,6 +14,9 @@ from .card import SUITS, Suit, Card, jack, right, left
 class GameCtxMixin(object):
     """
     """
+    _trump_suit: Suit
+    _lead_card:  Card
+
     def set_context(self, trump_suit: Suit, lead_card: Card) -> None:
         """
         param trump_suit: Suit
@@ -40,7 +43,7 @@ class GameCtxMixin(object):
 # augment Suit #
 ################
 
-def opp_suit(self, ctx: GameCtxMixin) -> Suit:
+def opp_suit(self) -> Suit:
     """
     """
     opp_idx = self.idx ^ 0x3
@@ -57,7 +60,7 @@ def efflevel(self, ctx: GameCtxMixin) -> int:
     """
     is_jack  = self.rank == jack
     is_trump = self.suit == ctx.trump_suit
-    is_opp   = self.suit == ctx.trump_suit.opp_suit(ctx)
+    is_opp   = self.suit == ctx.trump_suit.opp_suit()
     if is_jack:
         if is_trump:
             return right.level
@@ -69,7 +72,7 @@ def effsuit(self, ctx: GameCtxMixin) -> Suit:
     """
     """
     is_jack = self.rank == jack
-    is_opp  = self.suit == ctx.trump_suit.opp_suit(ctx)
+    is_opp  = self.suit == ctx.trump_suit.opp_suit()
     if is_jack and is_opp:
         return ctx.trump_suit
     return self.suit
@@ -111,6 +114,9 @@ class Bid(NamedTuple):
         if include_null and self.suit == null_suit:
             return True
         return self.suit == pass_suit
+
+    def is_defend(self) -> bool:
+        return self.suit == defend_suit
 
 # convenience singletons
 PASS_BID     = Bid(pass_suit)
