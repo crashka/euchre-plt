@@ -11,5 +11,10 @@ setup(
     author='crash',
     author_email='',
     description='',
-    install_requires=['pyyaml']
+    install_requires=['pyyaml'],
+    entry_points={
+        'console_scripts': [
+            'deal = euchplt.deal:main',
+        ],
+    }
 )

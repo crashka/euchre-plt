@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+"""This module contains game-/domain-specific stuff on top of the (more) generic building
+blocks (e.g. cards)
+"""
+
+from typing import NamedTuple
 
 from .card import SUITS, Suit, Card, jack, right, left
 
@@ -9,7 +14,7 @@ from .card import SUITS, Suit, Card, jack, right, left
 class GameCtxMixin(object):
     """
     """
-    def set_context(self, trump_suit: Suit, lead_card: Card):
+    def set_context(self, trump_suit: Suit, lead_card: Card) -> None:
         """
         param trump_suit: Suit
         param lead_card:  Card
@@ -88,3 +93,26 @@ def beats(self, other: Card, ctx: GameCtxMixin) -> bool:
 setattr(Card, 'efflevel', efflevel)
 setattr(Card, 'effsuit', effsuit)
 setattr(Card, 'beats', beats)
+
+#######
+# Bid #
+#######
+
+# NOT PRETTY: is there a nicer way to do this???
+pass_suit   = Suit(-1, 'pass', 'p')
+null_suit   = Suit(-2, 'null', 'n')
+defend_suit = Suit(-3, 'defend', 'd')
+
+class Bid(NamedTuple):
+    suit:  Suit          # either real suit or dummy suit
+    alone: bool = False  # used for either bidding or defending
+
+    def is_pass(self, include_null: bool = False) -> bool:
+        if include_null and self.suit == null_suit:
+            return True
+        return self.suit == pass_suit
+
+# convenience singletons
+PASS_BID     = Bid(pass_suit)
+NULL_BID     = Bid(null_suit)
+DEFEND_ALONE = Bid(defend_suit, True)

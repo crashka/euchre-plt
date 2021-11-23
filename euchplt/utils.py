@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from typing import Optional
 import logging
 import json
 import re
@@ -18,7 +19,7 @@ class Config(object):
     """
     cfg_profiles = dict()  # {config_file: {profile_name: {section_name: ...}}}
 
-    def __init__(self, path):
+    def __init__(self, path: str):
         """
         :param path: path to YAML config file
         """
@@ -26,7 +27,7 @@ class Config(object):
         if Config.cfg_profiles.get(self.path) is None:
             Config.cfg_profiles[self.path] = {}
 
-    def config(self, section, profile = None):
+    def config(self, section: str, profile: Optional[str] = None) -> dict:
         """Get config section for specified profile
 
         :param section: section within profile (or 'default')
@@ -82,7 +83,7 @@ logging.setLoggerClass(MyLogger)
 # Misc #
 ########
 
-def prettyprint(data, indent = 4, sort_keys = True, noprint = False):
+def prettyprint(data, indent: str = 4, sort_keys: bool = True, noprint: bool = False) -> None:
     """Nicer version of pprint (which is actually kind of ugly)
 
     Note: assumes that input data can be dumped to json (typically a list or dict)
