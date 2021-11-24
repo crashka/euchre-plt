@@ -115,25 +115,16 @@ def find_card(rank: Rank, suit: Suit) -> Card:
     return CARDS[rank.idx * len(SUITS) + suit.idx]
 
 ########
-# Hand #
-########
-
-# TEMP: for now we just use the simplest representation of a hand; LATER, we will want to
-# encapsulate it into a class (and move to its own module?) so that it can be extended by
-# bid/play strategies
-Hand = list[Card]
-
-########
 # Deck #
 ########
 
 Deck = list[Card]
 
 def get_deck() -> Deck:
-    """Get a "shuffled" deck of cards.  This function uses the `random` module; it is up to the
-    caller as to whether `seed()` is called beforehand.  Later on, we can support various suffling
-    techniques that mimic physical suffling of cards based on the collection of a previous set of
-    tricks and buries.
+    """Get a shuffled deck of cards.  This function uses the `random` module, but it is up to
+    the caller as to whether `seed()` is called beforehand.  Later on, we can support various
+    suffling techniques that mimic physical suffling of cards based on the collection of a
+    previous set of tricks and buries.
     """
     deck = [c for c in random.sample(CARDS, k=len(CARDS))]
     return deck

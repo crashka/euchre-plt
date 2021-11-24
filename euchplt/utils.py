@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from typing import Optional
 import logging
 import json
 import re
@@ -27,7 +26,7 @@ class Config(object):
         if Config.cfg_profiles.get(self.path) is None:
             Config.cfg_profiles[self.path] = {}
 
-    def config(self, section: str, profile: Optional[str] = None) -> dict:
+    def config(self, section: str, profile: str = None) -> dict:
         """Get config section for specified profile
 
         :param section: section within profile (or 'default')

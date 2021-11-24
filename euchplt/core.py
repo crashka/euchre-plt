@@ -52,7 +52,10 @@ log.addHandler(dflt_hand)
 # Exceptions #
 ##############
 
-class LogicError(Exception):
+class LogicError(RuntimeError):
+    pass
+
+class ImplementationError(RuntimeError):
     pass
 
 ##################

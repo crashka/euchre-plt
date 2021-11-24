@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 """This module contains game-/domain-specific stuff on top of the (more) generic building
-blocks (e.g. cards)
+blocks (e.g. cards), and can be imported by either the player or game-playing modules
 """
 
-from typing import NamedTuple
+from typing import Optional, NamedTuple
 
+from .core import LogicError
 from .card import SUITS, Suit, Card, jack, right, left
 
 ################
@@ -14,15 +15,19 @@ from .card import SUITS, Suit, Card, jack, right, left
 class GameCtxMixin(object):
     """
     """
-    _trump_suit: Suit
-    _lead_card:  Card
+    _trump_suit: Optional[Suit] = None
+    _lead_card:  Optional[Card] = None
 
-    def set_context(self, trump_suit: Suit, lead_card: Card) -> None:
+    def set_trump_suit(self, trump_suit: Suit) -> None:
         """
         param trump_suit: Suit
-        param lead_card:  Card
         """
         self._trump_suit = trump_suit
+
+    def set_lead_card(self, lead_card: Optional[Card]) -> None:
+        """
+        param lead_card:  Card
+        """
         self._lead_card  = lead_card
 
     @property
@@ -30,14 +35,14 @@ class GameCtxMixin(object):
         try:
             return self._trump_suit
         except AttributeError:
-            raise RuntimeError("'set_context' never called")
+            raise LogicError("'set_context' never called")
 
     @property
     def lead_card(self) -> Card:
         try:
             return self._lead_card
         except AttributeError:
-            raise RuntimeError("'set_context' never called")
+            raise LogicError("'set_context' never called")
 
 ################
 # augment Suit #
@@ -58,6 +63,8 @@ setattr(Suit, 'opp_suit', opp_suit)
 def efflevel(self, ctx: GameCtxMixin) -> int:
     """
     """
+    if ctx.trump_suit is None:
+        raise LogicError("Trump suit not set")
     is_jack  = self.rank == jack
     is_trump = self.suit == ctx.trump_suit
     is_opp   = self.suit == ctx.trump_suit.opp_suit()
@@ -71,6 +78,8 @@ def efflevel(self, ctx: GameCtxMixin) -> int:
 def effsuit(self, ctx: GameCtxMixin) -> Suit:
     """
     """
+    if ctx.trump_suit is None:
+        raise LogicError("Trump suit not set")
     is_jack = self.rank == jack
     is_opp  = self.suit == ctx.trump_suit.opp_suit()
     if is_jack and is_opp:
@@ -97,6 +106,77 @@ setattr(Card, 'efflevel', efflevel)
 setattr(Card, 'effsuit', effsuit)
 setattr(Card, 'beats', beats)
 
+########
+# Hand #
+########
+
+class Hand(object):
+    """Behaves the same as list[Card]
+    """
+    cards:   list[Card]
+
+    def __init__(self, cards: list[Card]):
+        self.cards = cards
+
+    def __getattr__(self, key):
+        """Delegate to `self.cards`, primarily for the collection/iterator behavior
+        """
+        try:
+            return self.cards[key]
+        except KeyError:
+            raise AttributeError()
+
+    def cards_by_suit(self, ctx: GameCtxMixin) -> dict[Suit, list[Card]]:
+        """
+        """
+        by_suit = {suit: [] for suit in SUITS}
+        for card in self.cards:
+            by_suit[card.effsuit(ctx)].append(card)
+        return by_suit
+
+    def can_play(self, card: Card, ctx: GameCtxMixin) -> bool:
+        """
+        """
+        if ctx.trump_suit is None:
+            raise LogicError("Trump suit not set")
+        if ctx.lead_card is None:
+            raise LogicError("Lead card not set")
+        by_suit = self.cards_by_suit(ctx)
+        lead_suit = ctx.lead_card.suit
+        can_follow = bool(by_suit[lead_suit])
+        if can_follow and card.suit != lead_suit:
+            return False
+        return True
+
+    def playable_cards(self, ctx: GameCtxMixin) -> list[Card]:
+        """
+        """
+        playables = []
+        for card in self.cards:
+            if self.can_play(card, ctx):
+                playables.append(card)
+        return playables
+
+#########
+# Trick #
+#########
+
+class Trick(object):
+    """Behaves the same as list[Card] (similar to `Hand`)
+    """
+    cards: list[Optional[Card]]
+
+    def __init__(self, cards: list[Optional[Card]]):
+        self.cards = cards
+
+    def __getattr__(self, key):
+        """Delegate to `self.cards`, primarily for the collection/iterator behavior
+        """
+        try:
+            return self.cards[key]
+        except KeyError:
+            raise AttributeError()
+
 #######
 # Bid #
 #######
@@ -122,3 +202,19 @@ class Bid(NamedTuple):
 PASS_BID     = Bid(pass_suit)
 NULL_BID     = Bid(null_suit)
 DEFEND_ALONE = Bid(defend_suit, True)
+
+#############
+# DealState #
+#############
+
+class DealState(NamedTuple):
+    pos:        int
+    hand:       Hand
+    turn_card:  Optional[Card]
+    bids:       list[Bid]
+    tricks:     list[Trick]
+    contract:   Optional[Bid]
+    caller_pos: Optional[int]
+    go_alone:   Optional[bool]
+    def_alone:  Optional[bool]
+    def_pos:    Optional[int]

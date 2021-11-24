@@ -4,7 +4,7 @@
 from typing import Optional
 
 from .card import Card
-from .euchre import Bid, PASS_BID
+from .euchre import Bid, PASS_BID, DealState
 
 ##########
 # Player #
@@ -20,10 +20,40 @@ class Player(object):
         self.play_class  = None
         self.play_params = {}
 
-    def bid(self, deal_state: dict) -> Bid:
+    def bid(self, deal_state: DealState) -> Bid:
+        """
+        """
+        raise NotImplementedError("Can't call abstract method")
+
+    def discard(self, deal_state: DealState) -> Card:
+        """Note that the turn card is already in the player's hand (six cards now) when
+        this is called
+        """
+        raise NotImplementedError("Can't call abstract method")
+
+    def play_card(self, deal_state: DealState, valid_plays: list[Card]) -> Card:
+        """
+        """
+        raise NotImplementedError("Can't call abstract method")
+
+################
+# PlayerRandom #
+################
+
+class PlayerRandom(Player):
+    """
+    """
+    def bid(self, deal_state: DealState) -> Bid:
+        """See base class
+        """
         return PASS_BID
 
-    def pick_up(self, deal_state: dict) -> Optional[Card]:
-        """Return the discard
+    def discard(self, deal_state: DealState) -> Card:
+        """See base class
         """
-        return None
+        return deal_state.hand[0]
+
+    def play_card(self, deal_state: DealState, valid_plays: list[Card]) -> Card:
+        """See base class
+        """
+        return deal_state.hand[0]
