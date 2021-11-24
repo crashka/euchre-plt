@@ -2,6 +2,7 @@
 
 import pytest
 
+from euchplt.core import LogicError
 from euchplt.card import SUITS, CARDS, ace, king, queen, jack, ten
 from euchplt.card import diamonds, hearts, spades, find_card
 from euchplt.euchre import GameCtxMixin
@@ -14,15 +15,16 @@ def test_game_context():
     mycard = CARDS[0]
 
     ctx = DummyContext()
-    ctx.set_context(mysuit, mycard)
+    ctx.set_trump_suit(mysuit)
+    ctx.set_lead_card(mycard)
     assert ctx.trump_suit == mysuit
     assert ctx.lead_card == mycard
 
 def test_game_context_unset():
     ctx = DummyContext()
-    with pytest.raises(RuntimeError):
+    with pytest.raises(LogicError):
         _ = ctx.trump_suit
-    with pytest.raises(RuntimeError):
+    with pytest.raises(LogicError):
         _ = ctx.lead_card
 
 def test_card_beats():
@@ -32,7 +34,7 @@ def test_card_beats():
     refsuit = refcard.suit
 
     ctx = DummyContext()
-    ctx.set_context(refsuit, refcard)
+    ctx.set_trump_suit(refsuit)
 
     # test within trump suit
     bigger_trump = find_card(ace, diamonds)
@@ -49,7 +51,7 @@ def test_card_beats():
     # test non-trump against trump (change `refcard`)
     refcard = find_card(king, hearts)
     assert refcard.suit != refsuit
-    ctx.set_context(refsuit, refcard)
+    ctx.set_trump_suit(refsuit)
     assert bigger_trump.beats(refcard, ctx)
     assert smaller_trump.beats(refcard, ctx)
 
@@ -60,7 +62,7 @@ def test_card_beats_bowers():
     refsuit = refcard.suit
 
     ctx = DummyContext()
-    ctx.set_context(refsuit, refcard)
+    ctx.set_trump_suit(refsuit)
 
     testcard1 = find_card(ten, diamonds)
     testcard2 = find_card(queen, diamonds)

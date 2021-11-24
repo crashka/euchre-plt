@@ -274,10 +274,12 @@ class Deal(GameCtxMixin):
 # main #
 ########
 
+from .player import PlayerRandom
+
 def main() -> int:
     """Built-in driver to run through a simple/sample deal
     """
-    players    = [Player() for _ in range(4)]
+    players    = [PlayerRandom() for _ in range(4)]
     deck       = get_deck()
     deal       = Deal(players, deck)
 

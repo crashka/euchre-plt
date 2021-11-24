@@ -15,18 +15,18 @@ from .card import SUITS, Suit, Card, jack, right, left
 class GameCtxMixin(object):
     """
     """
-    _trump_suit: Optional[Suit] = None
-    _lead_card:  Optional[Card] = None
+    _trump_suit: Suit
+    _lead_card:  Optional[Card]
 
     def set_trump_suit(self, trump_suit: Suit) -> None:
         """
-        param trump_suit: Suit
         """
         self._trump_suit = trump_suit
 
     def set_lead_card(self, lead_card: Optional[Card]) -> None:
-        """
-        param lead_card:  Card
+        """Note that `lead_card` can be (re)set to `None`, since the context may be used
+        for multiple tricks, and we want to maintain integrity between them (not inherit
+        any stale state)
         """
         self._lead_card  = lead_card
 
@@ -117,6 +117,11 @@ class Hand(object):
 
     def __init__(self, cards: list[Card]):
         self.cards = cards
+
+    def __getitem__(self, index):
+        """
+        """
+        return self.cards[index]
 
     def __getattr__(self, key):
         """Delegate to `self.cards`, primarily for the collection/iterator behavior
