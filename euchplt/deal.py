@@ -20,6 +20,8 @@ DealPhase = Enum('DealPhase', 'NEW BIDDING PASSED CONTRACT PLAYING COMPLETE SCOR
 # Deal #
 ########
 
+HAND_CARDS  = 5
+
 class Deal(GameCtxMixin):
     """Represents the lifecycle of a deal, from the dealing of hands to bidding to
     playing tricks.  Note that `deck` is not shuffled in this class, it is up to the
@@ -114,7 +116,7 @@ class Deal(GameCtxMixin):
             # make a copy here just in case `self.hands` is modified before the return
             # list is fully utilized (note that the other case returns a standalone list
             # as well)
-            return self.hands[pos].cards.copy()
+            return self.hands[pos].copy_cards()
         return self.hands[pos].playable_cards(trick)
 
     def set_score(self, pos: int, points: int) -> list[int]:
@@ -151,13 +153,12 @@ class Deal(GameCtxMixin):
         handling".
         """
         num_players = len(self.players)
-        hand_cards  = 5
-        deal_cards  = num_players * hand_cards
+        deal_cards  = num_players * HAND_CARDS
 
         for i in range(num_players):
             hand = Hand(self.deck[i:deal_cards:num_players])
             self.cards_dealt.append(hand)
-            self.hands.append(Hand(hand.cards.copy()))
+            self.hands.append(hand.copy())
         self.turn_card = self.deck[deal_cards]
         self.buries = self.deck[deal_cards+1:]
         assert set([c for h in self.hands for c in h] + [self.turn_card] + self.buries) == \
@@ -182,11 +183,11 @@ class Deal(GameCtxMixin):
             self.caller_pos = pos
             self.go_alone   = bid.alone
 
-            self.hands[dealer_pos].cards.append(self.turn_card)
+            self.hands[dealer_pos].append_card(self.turn_card)
             discard = self.players[dealer_pos].discard(self.deal_state(dealer_pos))
             if discard not in self.hands[dealer_pos]:
                 raise ImplementationError("Player: bad discard")
-            self.hands[dealer_pos].cards.remove(discard)
+            self.hands[dealer_pos].remove_card(discard)
             assert not self.discard
             self.discard = discard
             # note that we don't erase `self.turn_card` even though it is actually now in the
@@ -264,8 +265,8 @@ class Deal(GameCtxMixin):
                 if card not in valid_cards:
                     raise ImplementationError("Player: bad card played")
                 trick.play_card(pos, card)
-                self.hands[pos].cards.remove(card)
-                self.cards_played[pos].cards.append(card)
+                self.hands[pos].remove_card(card)
+                self.cards_played[pos].append_card(card)
             self.tricks_won[trick.winning_pos] += 1
             self.tricks_won[trick.winning_pos ^ 0x02] += 1  # TODO: fix magic!!!
             lead_pos = trick.winning_pos
@@ -291,7 +292,7 @@ class Deal(GameCtxMixin):
 
         print("Hands:", file=file)
         for pos in range(num_players):
-            cards = self.cards_dealt[pos].cards.copy()
+            cards = self.cards_dealt[pos].copy_cards()
             cards.sort(key=lambda c: c.sortkey)
             print(f"  {names[pos]}: {Hand(cards)}")
 
@@ -308,7 +309,7 @@ class Deal(GameCtxMixin):
             print(f"Dealer Pickup:\n  {self.turn_card}", file=file)
             print(f"Dealer Discard:\n  {self.discard}", file=file)
 
-            cards = self.cards_played[dealer_pos].cards.copy()
+            cards = self.cards_played[dealer_pos].copy_cards()
             cards.sort(key=lambda c: c.sortkey)
             print(f"Dealer Hand (updated):\n  {Hand(cards)}", file=file)
 

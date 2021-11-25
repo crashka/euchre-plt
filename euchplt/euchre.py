@@ -125,18 +125,23 @@ class Hand:
     def __len__(self):
         return len(self.cards)
 
-    def __getattr__(self, key):
-        # Delegate to `self.cards`, primarily for the collection/iterator behavior
-        try:
-            return self.cards[key]
-        except KeyError:
-            raise AttributeError()
-
     def __repr__(self):
         return repr(self.cards)
 
     def __str__(self):
         return '  '.join(str(c) for c in self.cards)
+
+    def copy(self) -> 'Hand':
+        return Hand(self.cards.copy())
+
+    def copy_cards(self) -> list[Card]:
+        return self.cards.copy()
+
+    def append_card(self, card: Card) -> None:
+        return self.cards.append(card)
+
+    def remove_card(self, card: Card) -> None:
+        return self.cards.remove(card)
 
     def cards_by_suit(self, ctx: GameCtxMixin) -> dict[Suit, list[Card]]:
         """
