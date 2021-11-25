@@ -21,7 +21,7 @@ class Player:
         self.play_class  = None
         self.play_params = {}
 
-    def bid(self, deal: DealState) -> Bid:
+    def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """
         """
         raise NotImplementedError("Can't call abstract method")

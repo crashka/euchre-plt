@@ -25,38 +25,40 @@ class Deal(GameCtxMixin):
     playing tricks.  Note that `deck` is not shuffled in this class, it is up to the
     instantiator as to what it looks like; see `deal_cards()` for the implications.
     """
-    players:    list[Player]   # ordered by position (0 = first bid, 3 = dealer)
-    deck:       Deck
-    hands:      list[Hand]     # same order as players, above
-    turn_card:  Optional[Card]
-    buries:     list[Card]
-    bids:       list[Bid]
-    tricks:     list[Trick]
-    contract:   Optional[Bid]
-    caller_pos: Optional[int]
-    go_alone:   Optional[bool]
-    def_alone:  Optional[bool]
-    def_pos:    Optional[int]  # only used if `def_alone` is True
-    tricks_won: list[int]      # by position, same for both partners
-    points:     list[int]      # same as for `tricks_won`
+    players:      list[Player]    # by position (0 = first bid, 3 = dealer)
+    deck:         Deck
+    hands:        list[Hand]      # by position
+    turn_card:    Optional[Card]
+    buries:       list[Card]
+    bids:         list[Bid]
+    tricks:       list[Trick]
+    contract:     Optional[Bid]
+    caller_pos:   Optional[int]
+    go_alone:     Optional[bool]
+    def_alone:    Optional[bool]
+    def_pos:      Optional[int]   # only used if `def_alone` is True
+    cards_played: list[Hand]      # by position
+    tricks_won:   list[int]       # by position, same for both partners
+    points:       list[int]       # same as for `tricks_won`
 
     def __init__(self, players: list[Player], deck: Deck):
         """
         """
-        self.players    = players
-        self.deck       = deck
-        self.hands      = []
-        self.turn_card  = None
-        self.buries     = []
-        self.bids       = []
-        self.tricks     = []
-        self.contract   = None
-        self.caller_pos = None
-        self.go_alone   = None
-        self.def_alone  = None
-        self.def_pos    = None
-        self.tricks_won = []
-        self.points     = []
+        self.players      = players
+        self.deck         = deck
+        self.hands        = []
+        self.turn_card    = None
+        self.buries       = []
+        self.bids         = []
+        self.tricks       = []
+        self.contract     = None
+        self.caller_pos   = None
+        self.go_alone     = None
+        self.def_alone    = None
+        self.def_pos      = None
+        self.cards_played = [Hand([]) for _ in range(len(players))]
+        self.tricks_won   = []
+        self.points       = []
 
     def deal_state(self, pos: int) -> DealState:
         """
@@ -217,7 +219,7 @@ class Deal(GameCtxMixin):
                     # REVISIT: we are currently being nice and allowing the opponent `Player` to
                     # return either "pass", "null", or "defend" bids, with or without the `alone`
                     # flag set, but LATER we may make the protocol more rigid!!!
-                    bid = self.players[pos].bid(self.deal_state(pos))
+                    bid = self.players[pos].bid(self.deal_state(pos), def_bid=True)
                 else:
                     bid = NULL_BID
                 # we record this for traceability, even if not technically a real bid
@@ -257,6 +259,8 @@ class Deal(GameCtxMixin):
                 if card not in valid_cards:
                     raise ImplementationError("Player: bad card played")
                 trick.play_card(pos, card)
+                self.hands[pos].cards.remove(card)
+                self.cards_played[pos].cards.append(card)
             self.tricks_won[trick.winning_pos] += 1
             self.tricks_won[trick.winning_pos ^ 0x02] += 1  # TODO: fix magic!!!
             lead_pos = trick.winning_pos

@@ -48,6 +48,12 @@ class Rank(NamedTuple):
     level: int
     tag:   str
 
+    def __repr__(self):
+        return str(self._asdict())
+
+    def __str__(self):
+        return self.tag
+
 class Bower(Rank):
     pass
 
@@ -73,6 +79,12 @@ class Suit(NamedTuple):
     idx:  int
     name: str
     tag:  str
+
+    def __repr__(self):
+        return str(self._asdict())
+
+    def __str__(self):
+        return self.tag
 
 clubs    = Suit(0, 'clubs',    '\u2663')
 diamonds = Suit(1, 'diamonds', '\u2666')
