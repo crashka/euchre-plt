@@ -301,11 +301,12 @@ class Deal(GameCtxMixin):
 
         print("Bids:", file=file)
         for pos, bid in enumerate(self.bids):
-            alone_str = " alone" if bid.alone else ""
-            print(f"  {names[pos % num_players]}: {bid.suit}{alone_str}")
+            alone = " alone" if bid.alone else ""
+            print(f"  {names[pos % num_players]}: {bid.suit}{alone}")
 
         if self.discard:
-            print(f"Discard:\n  {self.discard}", file=file)
+            print(f"Dealer Pickup:\n  {self.turn_card}", file=file)
+            print(f"Dealer Discard:\n  {self.discard}", file=file)
 
             cards = self.cards_played[dealer_pos].cards.copy()
             cards.sort(key=lambda c: c.sortkey)
@@ -315,17 +316,17 @@ class Deal(GameCtxMixin):
         for trick_num, trick in enumerate(self.tricks):
             print(f"  Trick #{trick_num + 1}:")
             for play in trick.plays:
-                win = " *" if trick.winning_pos == play[0] else ""
+                win = " (win)" if trick.winning_pos == play[0] else ""
                 print(f"    {names[play[0]]}: {play[1]}{win}")
 
         print("Tricks Won:", file=file)
         for i in range(2):
-            caller = " *" if self.caller_pos % 2 == i else ""
+            caller = " (caller)" if self.caller_pos % 2 == i else ""
             print(f"  {names[i]}/{names[i+2]}: {self.tricks_won[i]}{caller}")
 
         print("Points:", file=file)
         for i in range(2):
-            caller = " *" if self.caller_pos % 2 == i else ""
+            caller = " (caller)" if self.caller_pos % 2 == i else ""
             print(f"  {names[i]}/{names[i+2]}: {self.points[i]}{caller}")
 
 ########
