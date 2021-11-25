@@ -136,7 +136,7 @@ class Hand:
         return repr(self.cards)
 
     def __str__(self):
-        return ' '.join(str(c) for c in self.cards)
+        return '  '.join(str(c) for c in self.cards)
 
     def cards_by_suit(self, ctx: GameCtxMixin) -> dict[Suit, list[Card]]:
         """
@@ -219,9 +219,9 @@ class Trick(GameCtxMixin):
 #######
 
 # NOT PRETTY: is there a nicer way to do this???
-pass_suit   = Suit(-1, 'pass', 'p')
-null_suit   = Suit(-2, 'null', 'n')
-defend_suit = Suit(-3, 'defend', 'd')
+pass_suit   = Suit(-1, 'pass', 'pass')
+null_suit   = Suit(-2, 'null', 'null')
+defend_suit = Suit(-3, 'defend', 'defend')
 
 class Bid(NamedTuple):
     suit:  Suit          # either real suit or dummy suit

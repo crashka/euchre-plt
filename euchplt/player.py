@@ -58,15 +58,17 @@ class PlayerRandom(Player):
             return Bid(defend_suit, alone)
         
         bid_no = len(deal.bids)
-        if self.randgen.random() < 1 / (9 - bid_no):
-            return PASS_BID
-
-        if deal.bid_round == 1:
-            alone = self.randgen.random() < 0.10
-            return Bid(deal.turn_card.suit, alone)
+        do_bid = self.randgen.random() < 1 / (9 - bid_no)
+        if do_bid:
+            if deal.bid_round == 1:
+                alone = self.randgen.random() < 0.10
+                return Bid(deal.turn_card.suit, alone)
+            else:
+                alone = self.randgen.random() < 0.20
+                biddable_suits = [s for s in SUITS if s != deal.turn_card.suit]
+                return Bid(self.randgen.choice(biddable_suits), alone)
         else:
-            alone = self.randgen.random() < 0.20
-            return Bid(self.randgen.choice(SUITS), alone)
+            return PASS_BID
 
     def discard(self, deal: DealState) -> Card:
         """See base class

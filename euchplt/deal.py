@@ -3,7 +3,7 @@
 
 import sys
 from enum import Enum
-from typing import Optional
+from typing import Optional, TextIO
 
 from .core import ImplementationError
 from .card import SUITS, Card, Deck, get_deck
@@ -31,12 +31,14 @@ class Deal(GameCtxMixin):
     turn_card:    Optional[Card]
     buries:       list[Card]
     bids:         list[Bid]
+    discard:      Optional[Card]
     tricks:       list[Trick]
     contract:     Optional[Bid]
     caller_pos:   Optional[int]
     go_alone:     Optional[bool]
     def_alone:    Optional[bool]
     def_pos:      Optional[int]   # only used if `def_alone` is True
+    cards_dealt:  list[Hand]      # by position
     cards_played: list[Hand]      # by position
     tricks_won:   list[int]       # by position, same for both partners
     points:       list[int]       # same as for `tricks_won`
@@ -50,12 +52,14 @@ class Deal(GameCtxMixin):
         self.turn_card    = None
         self.buries       = []
         self.bids         = []
+        self.discard      = None
         self.tricks       = []
         self.contract     = None
         self.caller_pos   = None
         self.go_alone     = None
         self.def_alone    = None
         self.def_pos      = None
+        self.cards_dealt  = []
         self.cards_played = [Hand([]) for _ in range(len(players))]
         self.tricks_won   = []
         self.points       = []
@@ -99,7 +103,7 @@ class Deal(GameCtxMixin):
         return DealPhase.SCORED
 
     def is_passed(self) -> bool:
-        """Typically called after `play_bids()` (not much sense in calling otherwise)
+        """Typically called after `do_bidding()` (not much sense in calling otherwise)
         """
         return self.contract and self.contract == PASS_BID
 
@@ -151,13 +155,15 @@ class Deal(GameCtxMixin):
         deal_cards  = num_players * hand_cards
 
         for i in range(num_players):
-            self.hands.append(Hand(self.deck[i:deal_cards:num_players]))
+            hand = Hand(self.deck[i:deal_cards:num_players])
+            self.cards_dealt.append(hand)
+            self.hands.append(Hand(hand.cards.copy()))
         self.turn_card = self.deck[deal_cards]
         self.buries = self.deck[deal_cards+1:]
         assert set([c for h in self.hands for c in h] + [self.turn_card] + self.buries) == \
             set(self.deck)
 
-    def play_bids(self) -> Bid:
+    def do_bidding(self) -> Bid:
         """Returns contract bid, or PASS_BID if the deal is passed
         """
         assert self.deal_phase == DealPhase.NEW
@@ -181,14 +187,13 @@ class Deal(GameCtxMixin):
             if discard not in self.hands[dealer_pos]:
                 raise ImplementationError("Player: bad discard")
             self.hands[dealer_pos].cards.remove(discard)
-            self.buries.append(discard)
+            assert not self.discard
+            self.discard = discard
             # note that we don't erase `self.turn_card` even though it is actually now in the
             # bidder's hand--we keep it for posterity (kind of like `self.deck`)
             break
 
         if not self.contract:
-            self.buries.append(self.turn_card)  # proverbial "turning it over"
-
             # second round of bidding
             for pos in range(num_players):
                 bid = self.players[pos].bid(self.deal_state(pos))
@@ -267,6 +272,62 @@ class Deal(GameCtxMixin):
 
         return self.compute_score()
 
+    def print(self, file: TextIO = sys.stdout):
+        """Elements:
+        Hands
+        Turn card
+        Buries
+        Bids
+        Dealer hand, if picked up
+        Discard, if picked up
+        Tricks
+        Tricks won, by team
+        Points, by team
+        """
+        num_players = len(self.players)
+        dealer_pos  = 3
+        # TEMP: for now, hardwire player names; LATER can be passed in as an argument
+        names = [f"pos {pos}" for pos in range(num_players)]
+
+        print("Hands:", file=file)
+        for pos in range(num_players):
+            cards = self.cards_dealt[pos].cards.copy()
+            cards.sort(key=lambda c: c.sortkey)
+            print(f"  {names[pos]}: {Hand(cards)}")
+
+        print(f"Turn card:\n  {self.turn_card}")
+
+        print(f"Buries:\n  {Hand(self.buries)}")
+
+        print("Bids:", file=file)
+        for pos, bid in enumerate(self.bids):
+            alone_str = " alone" if bid.alone else ""
+            print(f"  {names[pos % num_players]}: {bid.suit}{alone_str}")
+
+        if self.discard:
+            print(f"Discard:\n  {self.discard}", file=file)
+
+            cards = self.cards_played[dealer_pos].cards.copy()
+            cards.sort(key=lambda c: c.sortkey)
+            print(f"Dealer Hand (updated):\n  {Hand(cards)}", file=file)
+
+        print("Tricks:", file=file)
+        for trick_num, trick in enumerate(self.tricks):
+            print(f"  Trick #{trick_num + 1}:")
+            for play in trick.plays:
+                win = " *" if trick.winning_pos == play[0] else ""
+                print(f"    {names[play[0]]}: {play[1]}{win}")
+
+        print("Tricks Won:", file=file)
+        for i in range(2):
+            caller = " *" if self.caller_pos % 2 == i else ""
+            print(f"  {names[i]}/{names[i+2]}: {self.tricks_won[i]}{caller}")
+
+        print("Points:", file=file)
+        for i in range(2):
+            caller = " *" if self.caller_pos % 2 == i else ""
+            print(f"  {names[i]}/{names[i+2]}: {self.points[i]}{caller}")
+
 ########
 # main #
 ########
@@ -281,11 +342,12 @@ def main() -> int:
     deal       = Deal(players, deck)
 
     deal.deal_cards()
-    deal.play_bids()
+    deal.do_bidding()
     if deal.is_passed():
         print("Deal was passed")
         return 0
     deal.play_cards()
+    deal.print()
 
     return 0
 
