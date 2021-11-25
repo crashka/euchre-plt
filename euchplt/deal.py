@@ -255,9 +255,9 @@ class Deal(GameCtxMixin):
             self.tricks.append(trick)
             for i in range(num_players):
                 pos = (lead_pos + i) % num_players
-                if self.go_alone and pos + self.caller_pos == num_players:
+                if self.go_alone and pos == self.caller_pos ^ 0x02:  # TODO: fix magic!!!
                     continue
-                if self.def_alone and pos + self.def_pos == num_players:
+                if self.def_alone and pos == self.def_pos ^ 0x02:  # TODO: fix magic!!!
                     continue
                 valid_cards = self.valid_plays(pos, trick)
                 card = self.players[pos].play_card(self.deal_state(pos), valid_cards)

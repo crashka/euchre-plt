@@ -44,41 +44,41 @@ class Player:
 class PlayerRandom(Player):
     """
     """
-    randgen: Random
+    random: Random
 
     def __init__(self, seed: int = None):
         super().__init__()
-        self.randgen = Random(seed)
+        self.random = Random(seed)
         
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """See base class
         """
         if def_bid:
-            alone = self.randgen.random() < 0.10
+            alone = self.random.random() < 0.10
             return Bid(defend_suit, alone)
         
         bid_no = len(deal.bids)
-        do_bid = self.randgen.random() < 1 / (9 - bid_no)
+        do_bid = self.random.random() < 1 / (9 - bid_no)
         if do_bid:
             if deal.bid_round == 1:
-                alone = self.randgen.random() < 0.10
+                alone = self.random.random() < 0.10
                 return Bid(deal.turn_card.suit, alone)
             else:
-                alone = self.randgen.random() < 0.20
+                alone = self.random.random() < 0.20
                 biddable_suits = [s for s in SUITS if s != deal.turn_card.suit]
-                return Bid(self.randgen.choice(biddable_suits), alone)
+                return Bid(self.random.choice(biddable_suits), alone)
         else:
             return PASS_BID
 
     def discard(self, deal: DealState) -> Card:
         """See base class
         """
-        return self.randgen.choice(deal.hand.cards)
+        return self.random.choice(deal.hand.cards)
 
     def play_card(self, deal: DealState, valid_plays: list[Card]) -> Card:
         """See base class
         """
-        return self.randgen.choice(valid_plays)
+        return self.random.choice(valid_plays)
 
 #############
 # PlayerMin #
