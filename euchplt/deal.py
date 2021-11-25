@@ -39,7 +39,7 @@ class Deal(GameCtxMixin):
     def_pos:    Optional[int]  # only used if `def_alone` is True
     tricks_won: list[int]      # by position, same for both partners
     points:     list[int]      # same as for `tricks_won`
-    
+
     def __init__(self, players: list[Player], deck: Deck):
         """
         """
@@ -75,38 +75,41 @@ class Deal(GameCtxMixin):
             assert not self.contract
             assert self.caller_pos is None
             return DealPhase.NEW
-        elif not self.contract:
+
+        if not self.contract:
             assert self.caller_pos is None
             return DealPhase.BIDDING
 
-        total_tricks = (len(self.deck) - len(self.buries)) // len(self.players)
         if not self.tricks:
             assert isinstance(self.caller_pos, int)
-            return DealPhase.PASSED if self.is_passed() else DealPhase.CONTRACT
-        elif len(self.tricks) < total_tricks:
+            if self.is_passed():
+                return DealPhase.PASSED
+            return DealPhase.CONTRACT
+
+        total_tricks = (len(self.deck) - len(self.buries)) // len(self.players)
+        if len(self.tricks) < total_tricks:
             assert not self.points
             return DealPhase.PLAYING
-        elif not self.points:
-            assert len(self.tricks) == total_tricks
+
+        assert len(self.tricks) == total_tricks
+        if not self.points:
             return DealPhase.COMPLETE
-        else:
-            assert len(self.tricks) == total_tricks
-            return DealPhase.SCORED
+        return DealPhase.SCORED
 
     def is_passed(self) -> bool:
         """Typically called after `play_bids()` (not much sense in calling otherwise)
         """
         return self.contract and self.contract == PASS_BID
 
-    def valid_plays(self, pos: int) -> list[Card]:
+    def valid_plays(self, pos: int, trick: Trick) -> list[Card]:
         """
         """
-        if not self.lead_card:
+        if not trick.plays:
             # make a copy here just in case `self.hands` is modified before the return
             # list is fully utilized (note that the other case returns a standalone list
             # as well)
-            return self.hands[pos].copy()
-        return self.hands[pos].playable_cards(self)
+            return self.hands[pos].cards.copy()
+        return self.hands[pos].playable_cards(trick)
 
     def set_score(self, pos: int, points: int) -> list[int]:
         """Set score for the specified position and its partner (0 for the opponents)
@@ -125,12 +128,14 @@ class Deal(GameCtxMixin):
         if win:
             if self.go_alone and all_5:
                 return self.set_score(self.caller_pos, 4)
-            else:
+            elif all_5:
                 return self.set_score(self.caller_pos, 2)
+            else:
+                return self.set_score(self.caller_pos, 1)
         elif self.def_alone:
             return self.set_score(self.def_pos, 4)
         else:
-            return self.set_score(self.def_pos, 2)
+            return self.set_score(self.caller_pos ^ 0x01, 2)  # TODO: fix magic!!!
 
     def deal_cards(self) -> None:
         """Note that the hands, turn card, and buries derived from the deck depend on the
@@ -142,7 +147,7 @@ class Deal(GameCtxMixin):
         num_players = len(self.players)
         hand_cards  = 5
         deal_cards  = num_players * hand_cards
-        
+
         for i in range(num_players):
             self.hands.append(Hand(self.deck[i:deal_cards:num_players]))
         self.turn_card = self.deck[deal_cards]
@@ -169,11 +174,11 @@ class Deal(GameCtxMixin):
             self.caller_pos = pos
             self.go_alone   = bid.alone
 
-            self.hands[dealer_pos].append(self.turn_card)
-            discard = self.players[dealer_pos].discard(self.deal_state(pos))
+            self.hands[dealer_pos].cards.append(self.turn_card)
+            discard = self.players[dealer_pos].discard(self.deal_state(dealer_pos))
             if discard not in self.hands[dealer_pos]:
                 raise ImplementationError("Player: bad discard")
-            self.hands[dealer_pos].remove(discard)
+            self.hands[dealer_pos].cards.remove(discard)
             self.buries.append(discard)
             # note that we don't erase `self.turn_card` even though it is actually now in the
             # bidder's hand--we keep it for posterity (kind of like `self.deck`)
@@ -199,9 +204,8 @@ class Deal(GameCtxMixin):
         if not self.contract:
             self.contract = PASS_BID
             return self.contract
-        else:
-            self.set_trump_suit(self.contract.suit)
-            assert isinstance(self.caller_pos, int)
+        self.set_trump_suit(self.contract.suit)
+        assert isinstance(self.caller_pos, int)
 
         if self.go_alone:
             # see if any opponents want to defend alone
@@ -222,14 +226,14 @@ class Deal(GameCtxMixin):
                     continue
                 if not bid.is_defend():
                     raise ImplementationError("Player: bad defender bid")
-                self.def_alone = bid.alone
-                self.def_pos   = pos
                 if bid.alone:
+                    self.def_alone = bid.alone
+                    self.def_pos   = pos
                     break
                 # otherwise keep looping...
 
         return self.contract
-        
+
     def play_cards(self) -> list[int]:
         """Return points resulting from this deal (list indexed by position)
         """
@@ -239,34 +243,23 @@ class Deal(GameCtxMixin):
         lead_pos     = 0
 
         self.tricks_won = [0] * num_players
-        for trick_no in range(total_tricks):
-            cur_trick    = Trick([None] * num_players)  # index by pos, so preallocate
-            winning_card = None
-            winning_pos  = None
+        for _ in range(total_tricks):
+            trick = Trick(self)
+            self.tricks.append(trick)
             for i in range(num_players):
                 pos = (lead_pos + i) % num_players
                 if self.go_alone and pos + self.caller_pos == num_players:
                     continue
                 if self.def_alone and pos + self.def_pos == num_players:
                     continue
-                valid_cards = self.valid_plays(pos)
+                valid_cards = self.valid_plays(pos, trick)
                 card = self.players[pos].play_card(self.deal_state(pos), valid_cards)
                 if card not in valid_cards:
                     raise ImplementationError("Player: bad card played")
-                assert cur_trick[pos] is None
-                cur_trick[pos] = card
-                if winning_card is None:
-                    self.set_lead_card(card)
-                    winning_card = card
-                    winning_pos  = pos
-                elif card.beats(winning_card, self):
-                    winning_card = card
-                    winning_pos  = pos
-            self.tricks.append(cur_trick)
-            self.tricks_won[winning_pos] += 1
-            self.tricks_won[winning_pos ^ 0x02] += 1  # TODO: encapsulate this magic!!!
-            self.set_lead_card(None)
-            lead_pos = winning_pos
+                trick.play_card(pos, card)
+            self.tricks_won[trick.winning_pos] += 1
+            self.tricks_won[trick.winning_pos ^ 0x02] += 1  # TODO: fix magic!!!
+            lead_pos = trick.winning_pos
 
         return self.compute_score()
 

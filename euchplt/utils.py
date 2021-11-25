@@ -10,7 +10,7 @@ import yaml
 # Config Management #
 #####################
 
-class Config(object):
+class Config:
     """Manages YAML config information, features include:
       - Caching by config file
       - Fetching by section

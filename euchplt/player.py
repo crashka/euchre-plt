@@ -2,15 +2,16 @@
 # -*- coding: utf-8 -*-
 
 from typing import Optional
+from random import Random
 
-from .card import Card
-from .euchre import Bid, PASS_BID, DealState
+from .card import SUITS, Card
+from .euchre import Bid, PASS_BID, defend_suit, DealState
 
 ##########
 # Player #
 ##########
 
-class Player(object):
+class Player:
     """
     """
     def __init__(self):
@@ -20,18 +21,18 @@ class Player(object):
         self.play_class  = None
         self.play_params = {}
 
-    def bid(self, deal_state: DealState) -> Bid:
+    def bid(self, deal: DealState) -> Bid:
         """
         """
         raise NotImplementedError("Can't call abstract method")
 
-    def discard(self, deal_state: DealState) -> Card:
+    def discard(self, deal: DealState) -> Card:
         """Note that the turn card is already in the player's hand (six cards now) when
         this is called
         """
         raise NotImplementedError("Can't call abstract method")
 
-    def play_card(self, deal_state: DealState, valid_plays: list[Card]) -> Card:
+    def play_card(self, deal: DealState, valid_plays: list[Card]) -> Card:
         """
         """
         raise NotImplementedError("Can't call abstract method")
@@ -43,17 +44,81 @@ class Player(object):
 class PlayerRandom(Player):
     """
     """
-    def bid(self, deal_state: DealState) -> Bid:
-        """See base class
-        """
-        return PASS_BID
+    randgen: Random
 
-    def discard(self, deal_state: DealState) -> Card:
+    def __init__(self, seed: int = None):
+        super().__init__()
+        self.randgen = Random(seed)
+        
+    def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """See base class
         """
-        return deal_state.hand[0]
+        if def_bid:
+            alone = self.randgen.random() < 0.10
+            return Bid(defend_suit, alone)
+        
+        bid_no = len(deal.bids)
+        if self.randgen.random() < 1 / (9 - bid_no):
+            return PASS_BID
 
-    def play_card(self, deal_state: DealState, valid_plays: list[Card]) -> Card:
+        if deal.bid_round == 1:
+            alone = self.randgen.random() < 0.10
+            return Bid(deal.turn_card.suit, alone)
+        else:
+            alone = self.randgen.random() < 0.20
+            return Bid(self.randgen.choice(SUITS), alone)
+
+    def discard(self, deal: DealState) -> Card:
         """See base class
         """
-        return deal_state.hand[0]
+        return self.randgen.choice(deal.hand.cards)
+
+    def play_card(self, deal: DealState, valid_plays: list[Card]) -> Card:
+        """See base class
+        """
+        return self.randgen.choice(valid_plays)
+
+#############
+# PlayerMin #
+#############
+
+class PlayerMin(Player):
+    """
+    """
+    pass
+
+#############
+# PlayerStd #
+#############
+
+class PlayerStd(Player):
+    """
+    """
+    pass
+
+############
+# PlayerML #
+############
+
+class PlayerML(Player):
+    """
+    """
+    pass
+
+###############
+# PlayerHuman #
+###############
+
+class PlayerHuman(Player):
+    """
+    """
+    pass
+
+#################
+# PlayerNetwork #
+#################
+
+class PlayerNetwork(Player):
+    """
+    """
+    pass

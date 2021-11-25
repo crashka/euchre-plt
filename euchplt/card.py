@@ -96,6 +96,12 @@ class Card(NamedTuple):
     level:   int
     sortkey: int
 
+    def __repr__(self):
+        return str(self._asdict())
+
+    def __str__(self):
+        return self.tag
+
 card_list = []
 for idx in range(0, len(SUITS) * len(RANKS)):
     rank    = RANKS[idx // len(SUITS)]

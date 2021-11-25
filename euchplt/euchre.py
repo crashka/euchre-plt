@@ -12,21 +12,19 @@ from .card import SUITS, Suit, Card, jack, right, left
 # GameCtxMixin #
 ################
 
-class GameCtxMixin(object):
+class GameCtxMixin:
     """
     """
     _trump_suit: Suit
-    _lead_card:  Optional[Card]
+    _lead_card:  Card
 
     def set_trump_suit(self, trump_suit: Suit) -> None:
         """
         """
         self._trump_suit = trump_suit
 
-    def set_lead_card(self, lead_card: Optional[Card]) -> None:
-        """Note that `lead_card` can be (re)set to `None`, since the context may be used
-        for multiple tricks, and we want to maintain integrity between them (not inherit
-        any stale state)
+    def set_lead_card(self, lead_card: Card) -> None:
+        """
         """
         self._lead_card  = lead_card
 
@@ -35,14 +33,14 @@ class GameCtxMixin(object):
         try:
             return self._trump_suit
         except AttributeError:
-            raise LogicError("'set_context' never called")
+            raise LogicError("`trump_suit` never set")
 
     @property
     def lead_card(self) -> Card:
         try:
             return self._lead_card
         except AttributeError:
-            raise LogicError("'set_context' never called")
+            raise LogicError("`lead_card` never set")
 
 ################
 # augment Suit #
@@ -73,6 +71,8 @@ def efflevel(self, ctx: GameCtxMixin) -> int:
             return right.level
         elif is_opp:
             return left.level
+        else:
+            pass  # off-jack, fallthrough...
     return self.level
 
 def effsuit(self, ctx: GameCtxMixin) -> Suit:
@@ -87,8 +87,9 @@ def effsuit(self, ctx: GameCtxMixin) -> Suit:
     return self.suit
 
 def beats(self, other: Card, ctx: GameCtxMixin) -> bool:
-    """Added to `Card` from euchre.py due to circular dependency
     """
+    """
+    ret = None
     # REVISIT: this is not very efficient or pretty, can probably do better by handling bower
     # suit and rank externally (e.g. replacing `Card`s in `Hand`s, once trump is declared)!!!
     self_trump  = self.effsuit(ctx) == ctx.trump_suit
@@ -110,26 +111,32 @@ setattr(Card, 'beats', beats)
 # Hand #
 ########
 
-class Hand(object):
-    """Behaves the same as list[Card]
+class Hand:
+    """Behaves as list[Card] in iterable contexts
     """
-    cards:   list[Card]
+    cards: list[Card]
 
     def __init__(self, cards: list[Card]):
         self.cards = cards
 
     def __getitem__(self, index):
-        """
-        """
         return self.cards[index]
 
+    def __len__(self):
+        return len(self.cards)
+
     def __getattr__(self, key):
-        """Delegate to `self.cards`, primarily for the collection/iterator behavior
-        """
+        # Delegate to `self.cards`, primarily for the collection/iterator behavior
         try:
             return self.cards[key]
         except KeyError:
             raise AttributeError()
+
+    def __repr__(self):
+        return repr(self.cards)
+
+    def __str__(self):
+        return ' '.join(str(c) for c in self.cards)
 
     def cards_by_suit(self, ctx: GameCtxMixin) -> dict[Suit, list[Card]]:
         """
@@ -147,9 +154,9 @@ class Hand(object):
         if ctx.lead_card is None:
             raise LogicError("Lead card not set")
         by_suit = self.cards_by_suit(ctx)
-        lead_suit = ctx.lead_card.suit
+        lead_suit = ctx.lead_card.effsuit(ctx)
         can_follow = bool(by_suit[lead_suit])
-        if can_follow and card.suit != lead_suit:
+        if can_follow and card.effsuit(ctx) != lead_suit:
             return False
         return True
 
@@ -162,25 +169,50 @@ class Hand(object):
                 playables.append(card)
         return playables
 
-#########
-# Trick #
-#########
+##############
+# Play/Trick #
+##############
 
-class Trick(object):
-    """Behaves the same as list[Card] (similar to `Hand`)
+Play = tuple[int, Card]  # [pos, card]
+
+class Trick(GameCtxMixin):
     """
-    cards: list[Optional[Card]]
+    """
+    plays:        list[Play]            # sequential
+    cards:        list[Optional[Card]]  # indexed by position
+    winning_card: Optional[Card]
+    winning_pos:  Optional[int]
 
-    def __init__(self, cards: list[Optional[Card]]):
-        self.cards = cards
+    def __init__(self, parent_ctx: GameCtxMixin):
+        self.plays        = []
+        self.cards        = [None] * 4
+        self.winning_card = None
+        self.winning_pos  = None
+        self.set_trump_suit(parent_ctx.trump_suit)
 
-    def __getattr__(self, key):
-        """Delegate to `self.cards`, primarily for the collection/iterator behavior
+    def __repr__(self):
+        return repr(self.plays)
+
+    def __str__(self):
+        return ' '.join(str(p[1]) for p in self.plays)
+
+    def play_card(self, pos: int, card: Card) -> bool:
+        """Returns `True` if new winning card
         """
-        try:
-            return self.cards[key]
-        except KeyError:
-            raise AttributeError()
+        if self.cards[pos]:
+            raise LogicError(f"Position {pos} played twice")
+        self.cards[pos] = card
+        self.plays.append((pos, card))
+        if self.winning_card is None:
+            self.set_lead_card(card)
+            self.winning_card = card
+            self.winning_pos  = pos
+            return True
+        if card.beats(self.winning_card, self):
+            self.winning_card = card
+            self.winning_pos  = pos
+            return True
+        return False
 
 #######
 # Bid #
@@ -223,3 +255,11 @@ class DealState(NamedTuple):
     go_alone:   Optional[bool]
     def_alone:  Optional[bool]
     def_pos:    Optional[int]
+
+    @property
+    def cur_trick(self) -> Trick:
+        return self.tricks[-1]
+
+    @property
+    def bid_round(self) -> int:
+        return 1 if len(self.bids) < 4 else 2
