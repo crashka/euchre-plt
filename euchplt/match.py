@@ -2,31 +2,41 @@
 # -*- coding: utf-8 -*-
 
 import sys
+from enum import Enum
 from typing import Optional, Iterable, TextIO
-import random
 
 from .core import LogicError
-from .card import get_deck
-from .deal import Deal, NUM_PLAYERS, BIDDER_POS, DEALER_POS
 from .player import Player
 from .team import Team
+from .game import Game, NUM_TEAMS, GAME_POINTS
 
 VERBOSE = False  # TEMP!!!
 
-########
-# Game #
-########
+#############
+# MatchStat #
+#############
 
-NUM_TEAMS    = 2
-TEAM_PLAYERS = 2
-GAME_POINTS  = 10
+class MatchStat(Enum):
+    GAMES   = "Games"
+    TRICKS  = "Tricks"
+    POINTS  = "Points"
+    MAKES   = "Makes"
+    LONERS  = "Loners"
+    EUCHRES = "Euchres"
 
-class Game(object):
+#########
+# Match #
+#########
+
+MATCH_GAMES = 2
+
+class Match(object):
     """
     """
     teams:  list[Team]
-    deals:  list[Deal]  # sequential
-    score:  list[int]   # (points) indexed as `teams`
+    games:  list[Game]                  # sequential
+    score:  list[int]                   # (games) indexed as `teams`
+    stats:  dict[MatchStat, list[int]]  # each stat indexed as `teams`
     winner: Optional[Team]
 
     def __init__(self, teams: Iterable[Team]):
@@ -35,32 +45,23 @@ class Game(object):
         self.teams = list(teams)
         if len(self.teams) != NUM_TEAMS:
             raise LogicError(f"Expected {NUM_TEAMS} teams, got {len(self.teams)}")
-        self.deals  = []
+        self.games  = []
         self.score  = [0] * NUM_TEAMS
+        self.stats  = {stat: [0] * NUM_TEAMS for stat in MatchStat}
         self.winner = None
 
-    def player_team(self, player: Player) -> tuple[int, Team]:
+    def tabulate(self, game: Game) -> None:
         """
         """
         for i, team in enumerate(self.teams):
-            if player in team.players:
-                return i, team
-        raise LogicError(f"Team not found for player '{player}'")
-
-    def tabulate(self, players: list[Player], deal: Deal) -> None:
-        """
-        """
-        bidder_team = self.player_team(players[BIDDER_POS])
-        dealer_team = self.player_team(players[DEALER_POS])
-        self.score[bidder_team[0]] += deal.points[BIDDER_POS]
-        self.score[dealer_team[0]] += deal.points[DEALER_POS]
+            self.score[i] += int(game.score[i] >= GAME_POINTS)
 
     def set_winner(self) -> None:
         """
         """
         winner = None
         for i, team_score in enumerate(self.score):
-            if team_score >= GAME_POINTS:
+            if team_score >= MATCH_GAMES:
                 winner = self.teams[i]
                 break
         if not winner:
@@ -70,26 +71,11 @@ class Game(object):
     def play(self) -> None:
         """
         """
-        # TODO: randomize seating within teams!!!
-        seats = [t.players[n] for n in range(TEAM_PLAYERS) for t in self.teams]
-        assert len(seats) == NUM_PLAYERS
-        dealer_idx = random.randrange(NUM_PLAYERS)  # relative to `seats`
-
-        while max(self.score) < GAME_POINTS:
-            bidder_idx = (dealer_idx + 1) % NUM_PLAYERS
-            players = seats[bidder_idx:] + seats[:bidder_idx]
-            deck = get_deck()
-            deal = Deal(players, deck)
-            self.deals.append(deal)
-
-            deal.deal_cards()
-            deal.do_bidding()
-            if deal.is_passed():
-                dealer_idx = (dealer_idx + 1) % NUM_PLAYERS
-                continue
-            deal.play_cards()
-            self.tabulate(players, deal)
-            dealer_idx = (dealer_idx + 1) % NUM_PLAYERS
+        while max(self.score) < MATCH_GAMES:
+            game = Game(self.teams)
+            self.games.append(game)
+            game.play()
+            self.tabulate(game)
 
         self.set_winner()
 
@@ -102,24 +88,24 @@ class Game(object):
             for j, player in enumerate(team.players):
                 print(f"    {player}", file=file)
 
-        for i, deal in enumerate(self.deals):
-            print(f"Deal #{i + 1}:", file=file)
+        for i, game in enumerate(self.games):
+            print(f"Game #{i + 1}:", file=file)
             if VERBOSE:
-                deal.print(file=file)
+                game.print(file=file)
             else:
-                deal.print_score(file=file)
+                game.print_score(file=file)
 
         self.print_score(file=file)
 
     def print_score(self, file: TextIO = sys.stdout) -> None:
-        print("Game Score:", file=file)
+        print("Match Score:", file=file)
         for j, team in enumerate(self.teams):
             print(f"  {team.name}: {self.score[j]}", file=file)
 
         if not self.winner:
             return
 
-        print(f"Game Winner:\n  {self.winner}")
+        print(f"Match Winner:\n  {self.winner}")
 
 ########
 # main #
@@ -128,7 +114,7 @@ class Game(object):
 from .strategy import StrategySimple
 
 def main() -> int:
-    """Built-in driver to run through a simple/sample game
+    """Built-in driver to run through a simple/sample match
     """
     plyr_params = [{},
                    {'take_high': True},
@@ -141,9 +127,9 @@ def main() -> int:
     teams       = [Team([players[0], players[2]]),
                    Team([players[1], players[3]])]
 
-    game = Game(teams)
-    game.play()
-    game.print()
+    match = Match(teams)
+    match.play()
+    match.print()
 
     return 0
 

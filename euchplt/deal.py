@@ -340,6 +340,16 @@ class Deal(GameCtxMixin):
                 win = " (win)" if trick.winning_pos == play[0] else ""
                 print(f"    {names[play[0]]}: {play[1]}{win}", file=file)
 
+        self.print_score(file=file)
+
+    def print_score(self, file: TextIO = sys.stdout) -> None:
+        """
+        """
+        names = [self.players[pos].name for pos in range(NUM_PLAYERS)]
+
+        if self.deal_phase.value < DealPhase.PLAYING.value:
+            return
+
         print("Tricks Won:", file=file)
         for i in range(2):
             caller = " (caller)" if self.caller_pos % 2 == i else ""
@@ -348,8 +358,8 @@ class Deal(GameCtxMixin):
         if self.deal_phase.value < DealPhase.SCORED.value:
             return
 
-        print(f"Result:  \n  {self.result.value}", file=file)
-        print("Points:", file=file)
+        print(f"Deal Result:  \n  {self.result.value}", file=file)
+        print("Deal Points:", file=file)
         for i in range(2):
             caller = " (caller)" if self.caller_pos % 2 == i else ""
             print(f"  {names[i]} / {names[i+2]}: {self.points[i]}{caller}", file=file)
