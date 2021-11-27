@@ -85,6 +85,12 @@ class StrategySimple(Strategy):
     """Represents minimum logic for passable play, very basic strategy, fairly
     conservative
     """
+    take_high: bool
+
+    def __init__(self, take_high: bool = False):
+        super().__init__()
+        self.take_high = take_high
+
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """See base class
         """
@@ -175,7 +181,9 @@ class StrategySimple(Strategy):
 
         # opponents winning, take trick if possible
         cards = follow_cards if follow_cards else by_level
-        for card in cards[::-1]:
+        # second/third hand low unless `take_high` is specified
+        take_order = 1 if (self.take_high and len(trick.plays) < 3) else -1
+        for card in cards[::take_order]:
             if card in valid_plays and card.beats(trick.winning_card, trick):
                 return card
         # can't take, so just duck or slough off

@@ -3,7 +3,7 @@
 
 from .card import Card
 from .euchre import Bid, Trick, DealState
-from .strategy import Strategy, StrategyRandom
+from .strategy import Strategy
 
 ##########
 # Player #
@@ -13,7 +13,7 @@ class Player:
     name:     str
     strategy: Strategy
 
-    def __init__(self, name: str, strategy_cls: type = StrategyRandom, **kwargs):
+    def __init__(self, name: str, strategy_cls: type, **kwargs):
         self.name     = name
         self.strategy = strategy_cls(**kwargs)
 
