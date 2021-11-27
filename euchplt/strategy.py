@@ -5,7 +5,7 @@ from random import Random
 
 from .core import LogicError
 from .card import SUITS, Card, jack
-from .euchre import Bid, PASS_BID, defend_suit, Hand, Trick, DealState
+from .euchre import Bid, PASS_BID, defend_suit, Trick, DealState
 from .analysis import HandAnalysis, PlayAnalysis
 
 ############

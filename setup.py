@@ -15,6 +15,7 @@ setup(
     entry_points={
         'console_scripts': [
             'deal = euchplt.deal:main',
+            'game = euchplt.game:main'
         ],
     }
 )

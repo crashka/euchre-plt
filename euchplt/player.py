@@ -17,6 +17,9 @@ class Player:
         self.name     = name
         self.strategy = strategy_cls(**kwargs)
 
+    def __str__(self):
+        return self.name
+
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """
         """

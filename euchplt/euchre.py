@@ -61,7 +61,7 @@ setattr(Suit, 'opp_suit', opp_suit)
 def efflevel(self, ctx: GameCtxMixin, offset_trump: bool = False) -> int:
     """
     """
-    level = -1
+    level = None
     if ctx.trump_suit is None:
         raise LogicError("Trump suit not set")
     is_jack  = self.rank == jack
@@ -77,6 +77,7 @@ def efflevel(self, ctx: GameCtxMixin, offset_trump: bool = False) -> int:
             level = self.level
     else:
         level = self.level
+    assert isinstance(level, int)
     if is_trump and offset_trump:
         return level + len(ALLRANKS)
     return level
