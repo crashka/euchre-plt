@@ -74,7 +74,7 @@ class Deal(GameCtxMixin):
         """REVISIT: this is a clunky way of narrowing the full state of the deal for the
         specified position, but we can optimize LATER!!!
         """
-        # do fixup on `pos`, to account for -1 (dealer) and possibly bidding rounds
+        # do fixup on `pos`, to account for DEALER_POS and possibly bidding rounds
         pos %= NUM_PLAYERS
         return DealState(pos, self.hands[pos], self.turn_card, self.bids, self.tricks,
                          self.contract, self.caller_pos, self.go_alone, self.def_alone,
@@ -278,11 +278,10 @@ class Deal(GameCtxMixin):
 
         return self.compute_score()
 
-    def print(self, names: list[str] = [], file: TextIO = sys.stdout) -> None:
+    def print(self, file: TextIO = sys.stdout) -> None:
         """
         """
-        if not names:
-            names = [f"pos {pos}" for pos in range(NUM_PLAYERS)]
+        names = [self.players[pos].name for pos in range(NUM_PLAYERS)]
 
         if self.deal_phase.value < DealPhase.DEALT.value:
             return
@@ -342,14 +341,18 @@ class Deal(GameCtxMixin):
 # main #
 ########
 
-from .player import PlayerRandom, PlayerSimple
+from .strategy import StrategyRandom, StrategySimple
 
 def main() -> int:
     """Built-in driver to run through a simple/sample deal
     """
-    players    = [PlayerRandom(), PlayerSimple()] * 2
-    deck       = get_deck()
-    deal       = Deal(players, deck)
+    players = [Player("Player 0", StrategyRandom),
+               Player("Player 1", StrategySimple),
+               Player("Player 2", StrategyRandom),
+               Player("Player 3", StrategySimple)]
+
+    deck = get_deck()
+    deal = Deal(players, deck)
 
     deal.deal_cards()
     deal.do_bidding()
