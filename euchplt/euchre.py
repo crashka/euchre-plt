@@ -6,7 +6,7 @@ blocks (e.g. cards), and can be imported by either the player or game-playing mo
 from typing import Optional, NamedTuple
 
 from .core import LogicError
-from .card import SUITS, Suit, Card, jack, right, left
+from .card import ALLRANKS, SUITS, Suit, Card, jack, right, left
 
 ################
 # GameCtxMixin #
@@ -15,8 +15,8 @@ from .card import SUITS, Suit, Card, jack, right, left
 class GameCtxMixin:
     """
     """
-    _trump_suit: Suit
-    _lead_card:  Card
+    _trump_suit: Suit = None
+    _lead_card:  Card = None
 
     def set_trump_suit(self, trump_suit: Suit) -> None:
         """
@@ -58,9 +58,10 @@ setattr(Suit, 'opp_suit', opp_suit)
 # augment Card #
 ################
 
-def efflevel(self, ctx: GameCtxMixin) -> int:
+def efflevel(self, ctx: GameCtxMixin, offset_trump: bool = False) -> int:
     """
     """
+    level = -1
     if ctx.trump_suit is None:
         raise LogicError("Trump suit not set")
     is_jack  = self.rank == jack
@@ -68,12 +69,17 @@ def efflevel(self, ctx: GameCtxMixin) -> int:
     is_opp   = self.suit == ctx.trump_suit.opp_suit()
     if is_jack:
         if is_trump:
-            return right.level
+            level = right.level
         elif is_opp:
-            return left.level
+            level = left.level
+            is_trump = True
         else:
-            pass  # off-jack, fallthrough...
-    return self.level
+            level = self.level
+    else:
+        level = self.level
+    if is_trump and offset_trump:
+        return level + len(ALLRANKS)
+    return level
 
 def effsuit(self, ctx: GameCtxMixin) -> Suit:
     """
@@ -89,15 +95,26 @@ def effsuit(self, ctx: GameCtxMixin) -> Suit:
 def beats(self, other: Card, ctx: GameCtxMixin) -> bool:
     """
     """
+    if ctx.lead_card is None:
+        raise LogicError("Lead card not set")
+    lead_suit = ctx.lead_card.effsuit(ctx)
+
     ret = None
     # REVISIT: this is not very efficient or pretty, can probably do better by handling bower
     # suit and rank externally (e.g. replacing `Card`s in `Hand`s, once trump is declared)!!!
-    self_trump  = self.effsuit(ctx) == ctx.trump_suit
-    other_trump = other.effsuit(ctx) == ctx.trump_suit
-    same_suit   = self.effsuit(ctx) == other.effsuit(ctx)
+    self_follow  = self.effsuit(ctx) == lead_suit
+    other_follow = other.effsuit(ctx) == lead_suit
+    self_trump   = self.effsuit(ctx) == ctx.trump_suit
+    other_trump  = other.effsuit(ctx) == ctx.trump_suit
+    same_suit    = other.effsuit(ctx) == self.effsuit(ctx)
+
     if self_trump:
         ret = self.efflevel(ctx) > other.efflevel(ctx) if other_trump else True
     elif other_trump:
+        ret = False
+    elif not self_follow:
+        if not other_follow:
+            raise LogicError("Cannot evaluate if neither card follows lead or is trump")
         ret = False
     else:
         ret = self.efflevel(ctx) > other.efflevel(ctx) if same_suit else True
@@ -268,3 +285,7 @@ class DealState(NamedTuple):
     @property
     def bid_round(self) -> int:
         return 1 if len(self.bids) < 4 else 2
+
+    @property
+    def is_dealer(self) -> bool:
+        return self.pos == 3
