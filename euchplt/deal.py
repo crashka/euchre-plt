@@ -14,7 +14,7 @@ from .player import Player
 # DealPhase #
 #############
 
-DealPhase = Enum('DealPhase', 'NEW BIDDING PASSED CONTRACT PLAYING COMPLETE SCORED')
+DealPhase = Enum('DealPhase', 'NEW DEALT BIDDING PASSED CONTRACT PLAYING COMPLETE SCORED')
 
 ########
 # Deal #
@@ -82,19 +82,23 @@ class Deal(GameCtxMixin):
     def deal_phase(self) -> DealPhase:
         """
         """
+        if not self.cards_dealt:
+            assert not self.bids
+            return DealPhase.NEW
+
         if not self.bids:
             assert not self.contract
             assert self.caller_pos is None
-            return DealPhase.NEW
+            return DealPhase.DEALT
 
         if not self.contract:
             assert self.caller_pos is None
             return DealPhase.BIDDING
 
         if not self.tricks:
-            assert isinstance(self.caller_pos, int)
             if self.is_passed():
                 return DealPhase.PASSED
+            assert isinstance(self.caller_pos, int)
             return DealPhase.CONTRACT
 
         total_tricks = (len(self.deck) - len(self.buries)) // NUM_PLAYERS
@@ -155,7 +159,7 @@ class Deal(GameCtxMixin):
         various gathering/shuffling schemes, to see the implications of real-world "card
         handling".
         """
-        deal_cards  = NUM_PLAYERS * HAND_CARDS
+        deal_cards = NUM_PLAYERS * HAND_CARDS
 
         for i in range(NUM_PLAYERS):
             hand = Hand(self.deck[i:deal_cards:NUM_PLAYERS])
@@ -169,7 +173,7 @@ class Deal(GameCtxMixin):
     def do_bidding(self) -> Bid:
         """Returns contract bid, or PASS_BID if the deal is passed
         """
-        assert self.deal_phase == DealPhase.NEW
+        assert self.deal_phase == DealPhase.DEALT
         dealer_pos  = NUM_PLAYERS - 1
 
         # first round of bidding
@@ -276,10 +280,12 @@ class Deal(GameCtxMixin):
     def print(self, names: list[str] = [], file: TextIO = sys.stdout) -> None:
         """
         """
-        assert self.deal_phase == DealPhase.SCORED
         dealer_pos  = 3
         if not names:
             names = [f"pos {pos}" for pos in range(NUM_PLAYERS)]
+
+        if self.deal_phase.value < DealPhase.DEALT.value:
+            return
 
         print("Hands:", file=file)
         for pos in range(NUM_PLAYERS):
@@ -288,21 +294,29 @@ class Deal(GameCtxMixin):
             print(f"  {names[pos]}: {Hand(cards)}", file=file)
 
         print(f"Turn card:\n  {self.turn_card}", file=file)
-
         print(f"Buries:\n  {Hand(self.buries)}", file=file)
+
+        if self.deal_phase.value < DealPhase.BIDDING.value:
+            return
 
         print("Bids:", file=file)
         for pos, bid in enumerate(self.bids):
             alone = " alone" if bid.alone else ""
             print(f"  {names[pos % NUM_PLAYERS]}: {bid.suit}{alone}", file=file)
 
+        if self.deal_phase == DealPhase.PASSED:
+            print("No bids, deal is passed", file=file)
+            return
+
         if self.discard:
             print(f"Dealer Pickup:\n  {self.turn_card}", file=file)
             print(f"Dealer Discard:\n  {self.discard}", file=file)
-
             cards = self.cards_played[dealer_pos].copy_cards()
             cards.sort(key=lambda c: c.sortkey)
             print(f"Dealer Hand (updated):\n  {names[-1]}: {Hand(cards)}", file=file)
+
+        if self.deal_phase.value < DealPhase.PLAYING.value:
+            return
 
         print("Tricks:", file=file)
         for trick_num, trick in enumerate(self.tricks):
@@ -316,6 +330,9 @@ class Deal(GameCtxMixin):
             caller = " (caller)" if self.caller_pos % 2 == i else ""
             print(f"  {names[i]}/{names[i+2]}: {self.tricks_won[i]}{caller}", file=file)
 
+        if self.deal_phase.value < DealPhase.SCORED.value:
+            return
+
         print("Points:", file=file)
         for i in range(2):
             caller = " (caller)" if self.caller_pos % 2 == i else ""
@@ -325,19 +342,19 @@ class Deal(GameCtxMixin):
 # main #
 ########
 
-from .player import PlayerRandom, PlayerMin
+from .player import PlayerRandom, PlayerSimple
 
 def main() -> int:
     """Built-in driver to run through a simple/sample deal
     """
-    players    = [PlayerMin() for _ in range(4)]
+    players    = [PlayerRandom(), PlayerSimple()] * 2
     deck       = get_deck()
     deal       = Deal(players, deck)
 
     deal.deal_cards()
     deal.do_bidding()
     if deal.is_passed():
-        print("Deal was passed")
+        deal.print()
         return 0
     deal.play_cards()
     deal.print()

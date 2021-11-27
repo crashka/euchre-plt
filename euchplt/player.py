@@ -84,11 +84,11 @@ class PlayerRandom(Player):
         """
         return self.random.choice(valid_plays)
 
-#############
-# PlayerMin #
-#############
+################
+# PlayerSimple #
+################
 
-class PlayerMin(Player):
+class PlayerSimple(Player):
     """Represents minimum logic for passable play, very basic strategy, fairly
     conservative
     """
@@ -182,7 +182,7 @@ class PlayerMin(Player):
 
         # opponents winning, take trick if possible
         cards = follow_cards if follow_cards else by_level
-        for card in cards:
+        for card in cards[::-1]:
             if card in valid_plays and card.beats(trick.winning_card, trick):
                 return card
         # can't take, so just duck or slough off
@@ -191,11 +191,11 @@ class PlayerMin(Player):
                 return card
         raise LogicError("No valid card to play")
 
-###############
-# PlayerBasic #
-###############
+##################
+# PlayerStandard #
+##################
 
-class PlayerBasic(Player):
+class PlayerStandard(Player):
     """
     """
     pass
