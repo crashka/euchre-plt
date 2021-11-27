@@ -22,6 +22,7 @@ DealPhase = Enum('DealPhase', 'NEW DEALT BIDDING PASSED CONTRACT PLAYING COMPLET
 
 HAND_CARDS  = 5
 NUM_PLAYERS = 4
+DEALER_POS  = -1
 
 class Deal(GameCtxMixin):
     """Represents the lifecycle of a deal, from the dealing of hands to bidding to
@@ -70,10 +71,11 @@ class Deal(GameCtxMixin):
         self.points       = []
 
     def deal_state(self, pos: int) -> DealState:
+        """REVISIT: this is a clunky way of narrowing the full state of the deal for the
+        specified position, but we can optimize LATER!!!
         """
-        """
-        # REVISIT: this is a clunky way of narrowing the full state of the deal for the
-        # specified position, but we can optimize LATER!!!
+        # do fixup on `pos`, to account for -1 (dealer) and possibly bidding rounds
+        pos %= NUM_PLAYERS
         return DealState(pos, self.hands[pos], self.turn_card, self.bids, self.tricks,
                          self.contract, self.caller_pos, self.go_alone, self.def_alone,
                          self.def_pos)
@@ -174,7 +176,6 @@ class Deal(GameCtxMixin):
         """Returns contract bid, or PASS_BID if the deal is passed
         """
         assert self.deal_phase == DealPhase.DEALT
-        dealer_pos  = NUM_PLAYERS - 1
 
         # first round of bidding
         for pos in range(NUM_PLAYERS):
@@ -188,11 +189,11 @@ class Deal(GameCtxMixin):
             self.caller_pos = pos
             self.go_alone   = bid.alone
 
-            self.hands[dealer_pos].append_card(self.turn_card)
-            discard = self.players[dealer_pos].discard(self.deal_state(dealer_pos))
-            if discard not in self.hands[dealer_pos]:
+            self.hands[DEALER_POS].append_card(self.turn_card)
+            discard = self.players[DEALER_POS].discard(self.deal_state(DEALER_POS))
+            if discard not in self.hands[DEALER_POS]:
                 raise ImplementationError(f"Bad discard from {self.players[pos]}")
-            self.hands[dealer_pos].remove_card(discard)
+            self.hands[DEALER_POS].remove_card(discard)
             assert not self.discard
             self.discard = discard
             # note that we don't erase `self.turn_card` even though it is actually now in the
@@ -280,7 +281,6 @@ class Deal(GameCtxMixin):
     def print(self, names: list[str] = [], file: TextIO = sys.stdout) -> None:
         """
         """
-        dealer_pos  = 3
         if not names:
             names = [f"pos {pos}" for pos in range(NUM_PLAYERS)]
 
@@ -311,9 +311,9 @@ class Deal(GameCtxMixin):
         if self.discard:
             print(f"Dealer Pickup:\n  {self.turn_card}", file=file)
             print(f"Dealer Discard:\n  {self.discard}", file=file)
-            cards = self.cards_played[dealer_pos].copy_cards()
+            cards = self.cards_played[DEALER_POS].copy_cards()
             cards.sort(key=lambda c: c.sortkey)
-            print(f"Dealer Hand (updated):\n  {names[-1]}: {Hand(cards)}", file=file)
+            print(f"Dealer Hand (updated):\n  {names[DEALER_POS]}: {Hand(cards)}", file=file)
 
         if self.deal_phase.value < DealPhase.PLAYING.value:
             return
