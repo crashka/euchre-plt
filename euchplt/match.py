@@ -3,12 +3,13 @@
 
 import sys
 from enum import Enum
-from typing import Optional, Iterable, TextIO
+from itertools import chain
+from typing import Optional, Union, Iterable, TextIO
 
 from .core import LogicError
 from .player import Player
 from .team import Team
-from .game import Game, NUM_TEAMS, GAME_POINTS
+from .game import GameStat, Game, NUM_TEAMS
 
 VERBOSE = False  # TEMP!!!
 
@@ -16,13 +17,15 @@ VERBOSE = False  # TEMP!!!
 # MatchStat #
 #############
 
-class MatchStat(Enum):
-    GAMES   = "Games"
-    TRICKS  = "Tricks"
-    POINTS  = "Points"
-    MAKES   = "Makes"
-    LONERS  = "Loners"
-    EUCHRES = "Euchres"
+# this is a workaround for the fact that Enums are not extendable; note that we create
+# our own iterable, since `for stat in MatchStat` will not work
+
+class MatchStatXtra(Enum):
+    GAMES_PLAYED = "Games Played"
+    GAMES_WON    = "Games Won"
+
+MatchStat = Union[MatchStatXtra, GameStat]
+def MatchStatIter(): return chain(MatchStatXtra, GameStat)
 
 #########
 # Match #
@@ -36,7 +39,7 @@ class Match(object):
     teams:  list[Team]
     games:  list[Game]                  # sequential
     score:  list[int]                   # (games) indexed as `teams`
-    stats:  dict[MatchStat, list[int]]  # each stat indexed as `teams`
+    stats:  list[dict[MatchStat, int]]  # each stat indexed as `teams`
     winner: Optional[Team]
 
     def __init__(self, teams: Iterable[Team]):
@@ -47,14 +50,21 @@ class Match(object):
             raise LogicError(f"Expected {NUM_TEAMS} teams, got {len(self.teams)}")
         self.games  = []
         self.score  = [0] * NUM_TEAMS
-        self.stats  = {stat: [0] * NUM_TEAMS for stat in MatchStat}
+        self.stats  = [{stat: 0 for stat in MatchStatIter()}
+                       for _ in range(NUM_TEAMS)]
         self.winner = None
 
     def tabulate(self, game: Game) -> None:
         """
         """
         for i, team in enumerate(self.teams):
-            self.score[i] += int(game.score[i] >= GAME_POINTS)
+            self.stats[i][MatchStatXtra.GAMES_PLAYED] += 1
+            if i == game.winner[0]:
+                self.score[i] += 1
+                self.stats[i][MatchStatXtra.GAMES_WON] += 1
+
+            for stat in GameStat:
+                self.stats[i][stat] += game.stats[i][stat]
 
     def set_winner(self) -> None:
         """
@@ -96,6 +106,7 @@ class Match(object):
                 game.print_score(file=file)
 
         self.print_score(file=file)
+        self.print_stats(file=file)
 
     def print_score(self, file: TextIO = sys.stdout) -> None:
         print("Match Score:", file=file)
@@ -106,6 +117,13 @@ class Match(object):
             return
 
         print(f"Match Winner:\n  {self.winner}")
+
+    def print_stats(self, file: TextIO = sys.stdout) -> None:
+        print("Match Stats:", file=file)
+        for j, team in enumerate(self.teams):
+            print(f"  {team.name}:", file=file)
+            for stat in MatchStatIter():
+                print(f"    {stat.value + ':':13} {self.stats[j][stat]}", file=file)
 
 ########
 # main #

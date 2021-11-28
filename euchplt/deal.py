@@ -10,6 +10,8 @@ from .card import SUITS, Card, Deck, get_deck
 from .euchre import GameCtxMixin, Hand, Trick, Bid, PASS_BID, NULL_BID, DealState
 from .player import Player
 
+VERBOSE = True  # TEMP!!!
+
 ########################
 # DealPhase/DealResult #
 ########################
@@ -269,7 +271,7 @@ class Deal(GameCtxMixin):
         """
         assert self.deal_phase == DealPhase.CONTRACT
         total_tricks = (len(self.deck) - len(self.buries)) // NUM_PLAYERS
-        lead_pos     = 0
+        lead_pos = 0
 
         self.tricks_won = [0] * NUM_PLAYERS
         for _ in range(total_tricks):
@@ -297,8 +299,6 @@ class Deal(GameCtxMixin):
     def print(self, file: TextIO = sys.stdout) -> None:
         """
         """
-        names = [self.players[pos].name for pos in range(NUM_PLAYERS)]
-
         if self.deal_phase.value < DealPhase.DEALT.value:
             return
 
@@ -306,7 +306,7 @@ class Deal(GameCtxMixin):
         for pos in range(NUM_PLAYERS):
             cards = self.cards_dealt[pos].copy_cards()
             cards.sort(key=lambda c: c.sortkey)
-            print(f"  {names[pos]}: {Hand(cards)}", file=file)
+            print(f"  {self.players[pos].name}: {Hand(cards)}", file=file)
 
         print(f"Turn card:\n  {self.turn_card}", file=file)
         print(f"Buries:\n  {Hand(self.buries)}", file=file)
@@ -317,7 +317,7 @@ class Deal(GameCtxMixin):
         print("Bids:", file=file)
         for pos, bid in enumerate(self.bids):
             alone = " alone" if bid.alone else ""
-            print(f"  {names[pos % NUM_PLAYERS]}: {bid.suit}{alone}", file=file)
+            print(f"  {self.players[pos % NUM_PLAYERS].name}: {bid.suit}{alone}", file=file)
 
         if self.deal_phase == DealPhase.PASSED:
             print("No bids, deal is passed", file=file)
@@ -328,32 +328,30 @@ class Deal(GameCtxMixin):
             print(f"Dealer Discard:\n  {self.discard}", file=file)
             cards = self.cards_played[DEALER_POS].copy_cards()
             cards.sort(key=lambda c: c.sortkey)
-            print(f"Dealer Hand (updated):\n  {names[DEALER_POS]}: {Hand(cards)}", file=file)
+            print(f"Dealer Hand (updated):\n  {self.players[DEALER_POS].name}: {Hand(cards)}",
+                  file=file)
 
-        if self.deal_phase.value < DealPhase.PLAYING.value:
-            return
-
-        print("Tricks:", file=file)
-        for trick_num, trick in enumerate(self.tricks):
-            print(f"  Trick #{trick_num + 1}:", file=file)
-            for play in trick.plays:
-                win = " (win)" if trick.winning_pos == play[0] else ""
-                print(f"    {names[play[0]]}: {play[1]}{win}", file=file)
+        if VERBOSE:
+            print("Tricks:", file=file)
+            for trick_num, trick in enumerate(self.tricks):
+                print(f"  Trick #{trick_num + 1}:", file=file)
+                for play in trick.plays:
+                    win = " (win)" if trick.winning_pos == play[0] else ""
+                    print(f"    {self.players[play[0]].name}: {play[1]}{win}", file=file)
 
         self.print_score(file=file)
 
     def print_score(self, file: TextIO = sys.stdout) -> None:
         """
         """
-        names = [self.players[pos].name for pos in range(NUM_PLAYERS)]
-
         if self.deal_phase.value < DealPhase.PLAYING.value:
             return
 
         print("Tricks Won:", file=file)
         for i in range(2):
             caller = " (caller)" if self.caller_pos % 2 == i else ""
-            print(f"  {names[i]} / {names[i+2]}: {self.tricks_won[i]}{caller}", file=file)
+            print(f"  {self.players[i].name} / {self.players[i+2].name}: "
+                  f"{self.tricks_won[i]}{caller}", file=file)
 
         if self.deal_phase.value < DealPhase.SCORED.value:
             return
@@ -362,7 +360,8 @@ class Deal(GameCtxMixin):
         print("Deal Points:", file=file)
         for i in range(2):
             caller = " (caller)" if self.caller_pos % 2 == i else ""
-            print(f"  {names[i]} / {names[i+2]}: {self.points[i]}{caller}", file=file)
+            print(f"  {self.players[i].name} / {self.players[i+2].name}: "
+                  f"{self.points[i]}{caller}", file=file)
 
 ########
 # main #
