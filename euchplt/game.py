@@ -25,7 +25,7 @@ class GameStat(Enum):
     POINTS         = "Points"
     MAKES          = "Makes"
     ALL_FIVES      = "All 5's"
-    LONERS         = "Loners"
+    LONERS_MADE    = "Loners Made"
     EUCHRED        = "Euchred"
     LONERS_EUCHRED = "Loners Euchred"
     EUCHRES        = "Euchres"
@@ -100,7 +100,7 @@ class Game(object):
             if DealAttr.ALL_5 in deal.result:
                 call_stat[GameStat.ALL_FIVES] += 1
                 if DealAttr.GO_ALONE in deal.result:
-                    call_stat[GameStat.LONERS] += 1
+                    call_stat[GameStat.LONERS_MADE] += 1
         else:
             assert DealAttr.EUCHRE in deal.result
             call_stat[GameStat.EUCHRED] += 1

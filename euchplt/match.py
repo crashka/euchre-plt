@@ -4,7 +4,7 @@
 import sys
 from enum import Enum
 from itertools import chain
-from typing import Optional, Union, Iterable, TextIO
+from typing import Optional, Union, Iterable, Iterator, TextIO
 
 from .core import LogicError
 from .player import Player
@@ -18,14 +18,14 @@ VERBOSE = False  # TEMP!!!
 #############
 
 # this is a workaround for the fact that Enums are not extendable; note that we create
-# our own iterable, since `for stat in MatchStat` will not work
+# our own iterator, since `for stat in MatchStat` will not work
 
 class MatchStatXtra(Enum):
     GAMES_PLAYED = "Games Played"
     GAMES_WON    = "Games Won"
 
 MatchStat = Union[MatchStatXtra, GameStat]
-def MatchStatIter(): return chain(MatchStatXtra, GameStat)
+def MatchStatIter() -> Iterator: return chain(MatchStatXtra, GameStat)
 
 #########
 # Match #
