@@ -123,7 +123,7 @@ class Match(object):
         for j, team in enumerate(self.teams):
             print(f"  {team.name}:", file=file)
             for stat in MatchStatIter():
-                print(f"    {stat.value + ':':13} {self.stats[j][stat]}", file=file)
+                print(f"    {stat.value + ':':15} {self.stats[j][stat]:4}", file=file)
 
 ########
 # main #

@@ -12,19 +12,18 @@ from .player import Player
 
 VERBOSE = True  # TEMP!!!
 
-########################
-# DealPhase/DealResult #
-########################
+###########
+# `Enum`s #
+###########
 
 DealPhase = Enum('DealPhase', 'NEW DEALT BIDDING PASSED CONTRACT PLAYING COMPLETE SCORED')
 
-class DealResult(Enum):
-    MAKE         = "Make"
-    MAKE_ALONE   = "Make alone"
-    ALL_5        = "Make all 5"
-    ALL_5_ALONE  = "Make all 5 alone"
-    EUCHRE       = "Euchre"
-    EUCHRE_ALONE = "Euchre alone"
+class DealAttr(Enum):
+    MAKE      = "Make"
+    ALL_5     = "All_5"
+    GO_ALONE  = "Go_Alone"
+    EUCHRE    = "Euchre"
+    DEF_ALONE = "Defend_Alone"
 
 ########
 # Deal #
@@ -57,7 +56,7 @@ class Deal(GameCtxMixin):
     cards_played: list[Hand]      # by position
     tricks_won:   list[int]       # by position, same for both partners
     points:       list[int]       # same as for `tricks_won`
-    result:       Optional[DealResult]
+    result:       set[DealAttr]
 
     def __init__(self, players: list[Player], deck: Deck):
         """
@@ -81,7 +80,7 @@ class Deal(GameCtxMixin):
         self.cards_played = [Hand([]) for _ in range(NUM_PLAYERS)]
         self.tricks_won   = []
         self.points       = []
-        self.result       = None
+        self.result       = set()
 
     def deal_state(self, pos: int) -> DealState:
         """REVISIT: this is a clunky way of narrowing the full state of the deal for the
@@ -141,36 +140,53 @@ class Deal(GameCtxMixin):
             return self.hands[pos].copy_cards()
         return self.hands[pos].playable_cards(trick)
 
-    def set_score(self, pos: int, points: int) -> list[int]:
+    def tabulate(self, trick: Trick) -> None:
+        """
+        """
+        self.tricks_won[trick.winning_pos] += 1
+        self.tricks_won[trick.winning_pos ^ 0x02] += 1  # TODO: fix magic!!!
+
+    def set_score(self, pos: int, points: int) -> None:
         """Set score for the specified position and its partner (0 for the opponents)
         """
         self.points = [0] * NUM_PLAYERS
         self.points[pos] = points
         self.points[pos ^ 0x02] = points
-        return self.points
 
-    def compute_score(self) -> list[int]:
+    def compute_score(self) -> None:
         """
         """
         assert self.deal_phase == DealPhase.COMPLETE
-        win    = self.tricks_won[self.caller_pos] >= 3
+        make   = self.tricks_won[self.caller_pos] >= 3
         all_5  = self.tricks_won[self.caller_pos] == 5
-        if win:
-            if self.go_alone and all_5:
-                self.result = DealResult.ALL_5_ALONE
-                return self.set_score(self.caller_pos, 4)
-            elif all_5:
-                self.result = DealResult.ALL_5
-                return self.set_score(self.caller_pos, 2)
+
+        if make:
+            self.result.add(DealAttr.MAKE)
+        if all_5:
+            self.result.add(DealAttr.ALL_5)
+        if self.go_alone:
+            self.result.add(DealAttr.GO_ALONE)
+        if not make:
+            self.result.add(DealAttr.EUCHRE)
+        if self.def_alone:
+            self.result.add(DealAttr.DEF_ALONE)
+
+        if DealAttr.MAKE in self.result:
+            if DealAttr.ALL_5 in self.result:
+                if DealAttr.GO_ALONE in self.result:
+                    self.set_score(self.caller_pos, 4)
+                else:
+                    self.set_score(self.caller_pos, 2)
             else:
-                self.result = DealResult.MAKE
-                return self.set_score(self.caller_pos, 1)
-        elif self.def_alone:
-            self.result = DealResult.EUCHRE_ALONE
-            return self.set_score(self.def_pos, 4)
+                self.set_score(self.caller_pos, 1)
         else:
-            self.result = DealResult.EUCHRE
-            return self.set_score(self.caller_pos ^ 0x01, 2)  # TODO: fix magic!!!
+            assert DealAttr.EUCHRE in self.result
+            if DealAttr.DEF_ALONE in self.result:
+                self.set_score(self.def_pos, 4)
+            else:
+                self.set_score(self.caller_pos ^ 0x01, 2)  # TODO: fix magic!!!
+        # make sure all branches set the score
+        assert self.points
 
     def deal_cards(self) -> None:
         """Note that the hands, turn card, and buries derived from the deck depend on the
@@ -266,7 +282,7 @@ class Deal(GameCtxMixin):
 
         return self.contract
 
-    def play_cards(self) -> list[int]:
+    def play_cards(self) -> None:
         """Return points resulting from this deal (list indexed by position)
         """
         assert self.deal_phase == DealPhase.CONTRACT
@@ -290,11 +306,10 @@ class Deal(GameCtxMixin):
                 trick.play_card(pos, card)
                 self.hands[pos].remove_card(card)
                 self.cards_played[pos].append_card(card)
-            self.tricks_won[trick.winning_pos] += 1
-            self.tricks_won[trick.winning_pos ^ 0x02] += 1  # TODO: fix magic!!!
+            self.tabulate(trick)
             lead_pos = trick.winning_pos
 
-        return self.compute_score()
+        self.compute_score()
 
     def print(self, file: TextIO = sys.stdout) -> None:
         """
@@ -356,7 +371,7 @@ class Deal(GameCtxMixin):
         if self.deal_phase.value < DealPhase.SCORED.value:
             return
 
-        print(f"Deal Result:  \n  {self.result.value}", file=file)
+        print(f"Deal Result:  \n  {' '.join([res.value for res in self.result])}", file=file)
         print("Deal Points:", file=file)
         for i in range(2):
             caller = " (caller)" if self.caller_pos % 2 == i else ""

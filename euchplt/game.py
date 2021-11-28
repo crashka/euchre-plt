@@ -8,7 +8,7 @@ import random
 
 from .core import LogicError
 from .card import get_deck
-from .deal import DealResult, Deal, NUM_PLAYERS, BIDDER_POS, DEALER_POS
+from .deal import DealAttr, Deal, NUM_PLAYERS, BIDDER_POS, DEALER_POS
 from .player import Player
 from .team import Team
 
@@ -19,16 +19,17 @@ VERBOSE = False  # TEMP!!!
 ############
 
 class GameStat(Enum):
-    DEALS_PLAYED = "Deals Played"
-    DEALS_PASSED = "Deals Passed"
-    TRICKS       = "Tricks"
-    POINTS       = "Points"
-    MAKES        = "Makes"
-    ALL_FIVES    = "All 5's"
-    LONERS       = "Loners"
-    EUCHRED      = "Euchred"
-    EUCHRES      = "Euchres"
-    LONE_EUCHRES = "Lone Euchres"
+    DEALS_PLAYED   = "Deals Played"
+    DEALS_PASSED   = "Deals Passed"
+    TRICKS         = "Tricks"
+    POINTS         = "Points"
+    MAKES          = "Makes"
+    ALL_FIVES      = "All 5's"
+    LONERS         = "Loners"
+    EUCHRED        = "Euchred"
+    LONERS_EUCHRED = "Loners Euchred"
+    EUCHRES        = "Euchres"
+    EUCHRES_ALONE  = "Euchres Alone"
 
 ########
 # Game #
@@ -54,7 +55,7 @@ class Game(object):
         if len(self.teams) != NUM_TEAMS:
             raise LogicError(f"Expected {NUM_TEAMS} teams, got {len(self.teams)}")
         self.deals  = []
-        self.score  = [0] * NUM_TEAMS
+        self.score  = []
         self.stats  = [{stat: 0 for stat in GameStat} for _ in range(NUM_TEAMS)]
         self.winner = None
 
@@ -92,23 +93,22 @@ class Game(object):
         def_team_idx  = self.player_team(players[deal.caller_pos ^ 0x01])[0]
         call_stat     = self.stats[call_team_idx]
         def_stat      = self.stats[def_team_idx]
-        if deal.result == DealResult.MAKE:
-            call_stat[GameStat.MAKES]       += 1
-        elif deal.result == DealResult.ALL_5:
-            call_stat[GameStat.MAKES]       += 1
-            call_stat[GameStat.ALL_FIVES]   += 1
-        elif deal.result == DealResult.ALL_5_ALONE:
-            call_stat[GameStat.MAKES]       += 1
-            call_stat[GameStat.ALL_FIVES]   += 1
-            call_stat[GameStat.LONERS]      += 1
-        elif deal.result == DealResult.EUCHRE:
-            call_stat[GameStat.EUCHRED]     += 1
-            def_stat[GameStat.EUCHRES]      += 1
-        elif deal.result == DealResult.EUCHRE_ALONE:
-            def_stat[GameStat.EUCHRES]      += 1
-            def_stat[GameStat.LONE_EUCHRES] += 1
+
+        if DealAttr.MAKE in deal.result:
+            assert DealAttr.EUCHRE not in deal.result
+            call_stat[GameStat.MAKES] += 1
+            if DealAttr.ALL_5 in deal.result:
+                call_stat[GameStat.ALL_FIVES] += 1
+                if DealAttr.GO_ALONE in deal.result:
+                    call_stat[GameStat.LONERS] += 1
         else:
-            raise LogicError(f"Unknown result '{deal.result}'")
+            assert DealAttr.EUCHRE in deal.result
+            call_stat[GameStat.EUCHRED] += 1
+            if DealAttr.GO_ALONE in deal.result:
+                call_stat[GameStat.LONERS_EUCHRED] += 1
+            def_stat[GameStat.EUCHRES] += 1
+            if DealAttr.DEF_ALONE in deal.result:
+                def_stat[GameStat.EUCHRES_ALONE] += 1
 
     def set_winner(self) -> None:
         """
@@ -130,6 +130,7 @@ class Game(object):
         assert len(seats) == NUM_PLAYERS
         dealer_idx = random.randrange(NUM_PLAYERS)  # relative to `seats`
 
+        self.score = [0] * NUM_TEAMS
         while max(self.score) < GAME_POINTS:
             bidder_idx = (dealer_idx + 1) % NUM_PLAYERS
             players = seats[bidder_idx:] + seats[:bidder_idx]
@@ -180,7 +181,7 @@ class Game(object):
         for j, team in enumerate(self.teams):
             print(f"  {team.name}:", file=file)
             for stat in GameStat:
-                print(f"    {stat.value + ':':13} {self.stats[j][stat]}", file=file)
+                print(f"    {stat.value + ':':15} {self.stats[j][stat]:4}", file=file)
 
 ########
 # main #
