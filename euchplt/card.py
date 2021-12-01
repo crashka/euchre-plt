@@ -54,22 +54,22 @@ class Rank(NamedTuple):
     def __str__(self):
         return self.tag
 
-class Bower(Rank):
+class BowerRank(Rank):
     pass
 
-nine     = Rank(0, 'nine',  1, '9')
-ten      = Rank(1, 'ten',   2, '10')
-jack     = Rank(2, 'jack',  3, 'J')
-queen    = Rank(3, 'queen', 4, 'Q')
-king     = Rank(4, 'king',  5, 'K')
-ace      = Rank(5, 'ace',   6, 'A')
+nine        = Rank(0, 'nine',  1, '9')
+ten         = Rank(1, 'ten',   2, '10')
+jack        = Rank(2, 'jack',  3, 'J')
+queen       = Rank(3, 'queen', 4, 'Q')
+king        = Rank(4, 'king',  5, 'K')
+ace         = Rank(5, 'ace',   6, 'A')
 
-left     = Bower(6, 'left',  7, 'L')
-right    = Bower(7, 'right', 8, 'R')
+left        = BowerRank(6, 'left',  7, 'L')
+right       = BowerRank(7, 'right', 8, 'R')
 
-RANKS    = (nine, ten, jack, queen, king, ace)
-BOWERS   = (left, right)
-ALLRANKS = RANKS + BOWERS
+RANKS       = (nine, ten, jack, queen, king, ace)
+BOWER_RANKS = (left, right)
+ALL_RANKS   = RANKS + BOWER_RANKS
 
 ########
 # Suit #
@@ -114,6 +114,9 @@ class Card(NamedTuple):
     def __str__(self):
         return self.tag
 
+class Bower(Card):
+    pass
+
 card_list = []
 for idx in range(0, len(SUITS) * len(RANKS)):
     rank    = RANKS[idx // len(SUITS)]
@@ -121,16 +124,34 @@ for idx in range(0, len(SUITS) * len(RANKS)):
     name    = "%s of %s" % (rank.name.capitalize(), suit.name.capitalize())
     tag     = "%s%s" % (rank.tag, suit.tag)
     level   = rank.level
-    sortkey = suit.idx * len(ALLRANKS) + rank.idx + 1
+    sortkey = suit.idx * len(ALL_RANKS) + rank.idx + 1
 
     card = Card(idx, rank, suit, name, tag, level, sortkey)
     card_list.append(card)
 
+bower_list = []
+for idx in range(0, len(SUITS) * len(BOWER_RANKS)):
+    rank    = BOWER_RANKS[idx // len(SUITS)]
+    suit    = SUITS[idx % len(SUITS)]
+    name    = "%s Bower for %s" % (rank.name.capitalize(), suit.name.capitalize())
+    tag     = "%s%s" % (rank.tag, suit.tag)
+    level   = rank.level
+    sortkey = suit.idx * len(ALL_RANKS) + rank.idx + 1
+
+    bower = Bower(idx, rank, suit, name, tag, level, sortkey)
+    bower_list.append(bower)
+
 CARDS = tuple(card_list)
 del card_list
 
+BOWERS = tuple(bower_list)
+del bower_list
+
 def find_card(rank: Rank, suit: Suit) -> Card:
     return CARDS[rank.idx * len(SUITS) + suit.idx]
+
+def find_bower(rank: BowerRank, suit: Suit) -> Card:
+    return BOWERS[(rank.idx - len(RANKS)) * len(SUITS) + suit.idx]
 
 ########
 # Deck #
@@ -152,6 +173,7 @@ def get_deck() -> Deck:
 ##############
 
 validate_basedata(RANKS)
-validate_basedata(BOWERS, len(RANKS))
+validate_basedata(BOWER_RANKS, len(RANKS))
 validate_basedata(SUITS)
 validate_basedata(CARDS)
+validate_basedata(BOWERS)

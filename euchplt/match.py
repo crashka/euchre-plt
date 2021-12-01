@@ -135,9 +135,9 @@ def main() -> int:
     """Built-in driver to run through a simple/sample match
     """
     plyr_params = [{},
-                   {'take_high': True},
+                   {'aggressive': True},
                    {},
-                   {'take_high': True}]
+                   {'aggressive': True}]
     players     = [Player("Player 0", StrategySimple, **plyr_params[0]),
                    Player("Player 1", StrategySimple, **plyr_params[1]),
                    Player("Player 2", StrategySimple, **plyr_params[2]),

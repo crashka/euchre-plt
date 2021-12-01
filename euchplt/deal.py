@@ -6,7 +6,7 @@ from enum import Enum
 from typing import Optional, TextIO
 
 from .core import LogicError, ImplementationError
-from .card import SUITS, Card, Deck, get_deck
+from .card import Suit, SUITS, Card, Deck, get_deck
 from .euchre import GameCtxMixin, Hand, Trick, Bid, PASS_BID, NULL_BID, DealState
 from .player import Player
 
@@ -39,48 +39,50 @@ class Deal(GameCtxMixin):
     playing tricks.  Note that `deck` is not shuffled in this class, it is up to the
     instantiator as to what it looks like; see `deal_cards()` for the implications.
     """
-    players:      list[Player]    # by position (0 = first bid, 3 = dealer)
-    deck:         Deck
-    hands:        list[Hand]      # by position
-    turn_card:    Optional[Card]
-    buries:       list[Card]
-    bids:         list[Bid]
-    discard:      Optional[Card]
-    tricks:       list[Trick]
-    contract:     Optional[Bid]
-    caller_pos:   Optional[int]
-    go_alone:     Optional[bool]
-    def_alone:    Optional[bool]
-    def_pos:      Optional[int]   # only used if `def_alone` is True
-    cards_dealt:  list[Hand]      # by position
-    cards_played: list[Hand]      # by position
-    tricks_won:   list[int]       # by position, same for both partners
-    points:       list[int]       # same as for `tricks_won`
-    result:       set[DealAttr]
+    players:        list[Player]    # by position (0 = first bid, 3 = dealer)
+    deck:           Deck
+    hands:          list[Hand]      # by position (active)
+    turn_card:      Optional[Card]
+    buries:         list[Card]
+    bids:           list[Bid]
+    discard:        Optional[Card]
+    tricks:         list[Trick]
+    contract:       Optional[Bid]
+    caller_pos:     Optional[int]
+    go_alone:       Optional[bool]
+    def_alone:      Optional[bool]  # only used if `go_alone`
+    def_pos:        Optional[int]   # only used if `def_alone`
+    cards_dealt:    list[Hand]      # by position (for posterity)
+    played_by_pos:  list[Hand]
+    played_by_suit: dict[Suit, Hand]
+    tricks_won:     list[int]       # by position, same for both partners
+    points:         list[int]       # same as for `tricks_won`
+    result:         set[DealAttr]
 
     def __init__(self, players: list[Player], deck: Deck):
         """
         """
         if len(players) != NUM_PLAYERS:
             raise LogicError(f"Expecting {NUM_PLAYERS} players, got {len(players)}")
-        self.players      = players
-        self.deck         = deck
-        self.hands        = []
-        self.turn_card    = None
-        self.buries       = []
-        self.bids         = []
-        self.discard      = None
-        self.tricks       = []
-        self.contract     = None
-        self.caller_pos   = None
-        self.go_alone     = None
-        self.def_alone    = None
-        self.def_pos      = None
-        self.cards_dealt  = []
-        self.cards_played = [Hand([]) for _ in range(NUM_PLAYERS)]
-        self.tricks_won   = []
-        self.points       = []
-        self.result       = set()
+        self.players        = players
+        self.deck           = deck
+        self.hands          = []
+        self.turn_card      = None
+        self.buries         = []
+        self.bids           = []
+        self.discard        = None
+        self.tricks         = []
+        self.contract       = None
+        self.caller_pos     = None
+        self.go_alone       = None
+        self.def_alone      = None
+        self.def_pos        = None
+        self.cards_dealt    = []
+        self.played_by_pos  = [Hand([]) for _ in range(NUM_PLAYERS)]
+        self.played_by_suit = {s: Hand([]) for s in SUITS}
+        self.tricks_won     = []
+        self.points         = []
+        self.result         = set()
 
     def deal_state(self, pos: int) -> DealState:
         """REVISIT: this is a clunky way of narrowing the full state of the deal for the
@@ -162,12 +164,12 @@ class Deal(GameCtxMixin):
 
         if make:
             self.result.add(DealAttr.MAKE)
+        else:
+            self.result.add(DealAttr.EUCHRE)
         if all_5:
             self.result.add(DealAttr.ALL_5)
         if self.go_alone:
             self.result.add(DealAttr.GO_ALONE)
-        if not make:
-            self.result.add(DealAttr.EUCHRE)
         if self.def_alone:
             self.result.add(DealAttr.DEF_ALONE)
 
@@ -305,7 +307,8 @@ class Deal(GameCtxMixin):
                     raise ImplementationError(f"Bad card played from {self.players[pos]}")
                 trick.play_card(pos, card)
                 self.hands[pos].remove_card(card)
-                self.cards_played[pos].append_card(card)
+                self.played_by_pos[pos].append_card(card)
+                self.played_by_suit[card.effsuit(trick)].append_card(card)
             self.tabulate(trick)
             lead_pos = trick.winning_pos
 
@@ -341,7 +344,7 @@ class Deal(GameCtxMixin):
         if self.discard:
             print(f"Dealer Pickup:\n  {self.turn_card}", file=file)
             print(f"Dealer Discard:\n  {self.discard}", file=file)
-            cards = self.cards_played[DEALER_POS].copy_cards()
+            cards = self.played_by_pos[DEALER_POS].copy_cards()
             cards.sort(key=lambda c: c.sortkey)
             print(f"Dealer Hand (updated):\n  {self.players[DEALER_POS].name}: {Hand(cards)}",
                   file=file)

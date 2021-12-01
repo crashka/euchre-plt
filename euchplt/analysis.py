@@ -26,13 +26,26 @@ class HandAnalysis:
     """
     """
     hand: Hand
+    # first indexed by trump suit, then by individual suit
+    suit_cards_by_trump: dict[Suit, dict[Suit, list[Card]]]
+
+    # TEMP: hardwire this for now (overridable as instance variables),
+    # really need to move all of this to the config file!!!
+    trump_values: list[int] = [0, 0, 0, 1, 2, 4, 7, 10]
+    suit_values:  list[int] = [0, 0, 0, 1, 5, 10]
 
     def __init__(self, hand: Hand):
         self.hand = hand
+        self.suit_cards_by_trump = {t: {} for t in SUITS}
+
+    def get_suit_cards(self, trump_suit: Suit) -> dict[Suit, list[Card]]:
+        if not self.suit_cards_by_trump[trump_suit]:
+            ctx = SUIT_CTX[trump_suit]
+            self.suit_cards_by_trump[trump_suit] = self.hand.cards_by_suit(ctx)
+        return self.suit_cards_by_trump[trump_suit]
 
     def trump_cards(self, trump_suit: Suit, sort: bool = False) -> list[Card]:
-        ctx = SUIT_CTX[trump_suit]
-        ret_cards = self.hand.cards_by_suit(ctx)[trump_suit]
+        ret_cards = self.get_suit_cards(trump_suit)[trump_suit]
         if sort:
             ret_cards.sort(key=lambda c: c.efflevel(ctx), reverse=True)
         return ret_cards
@@ -57,6 +70,17 @@ class HandAnalysis:
         by_rank = self.hand.copy_cards()
         by_rank.sort(key=lambda c: c.efflevel(ctx, offset_trump), reverse=True)
         return by_rank
+
+    def suit_strength(self, suit: Suit, trump_suit: Suit) -> float:
+        """Note that this requires that jacks be replaced by BOWER cards (rank
+        of `right` or `left`)
+        """
+        value_arr = trump_values if suit == trump_suit else suit_values
+        tot_value = 0
+        suit_cards = self.get_suit_cards(trump_suit)[suit]
+        for card in suit_cards:
+           tot_value += value_arr[card.idx]
+        return sum(value_arr) / tot_value
 
 ################
 # PlayAnalysis #

@@ -6,71 +6,67 @@ blocks (e.g. cards), and can be imported by either the player or game-playing mo
 from typing import Optional, NamedTuple
 
 from .core import LogicError
-from .card import ALLRANKS, SUITS, Suit, Card, jack, right, left
+from .card import ALL_RANKS, SUITS, Suit, Card, jack, right, left
 
 ################
 # GameCtxMixin #
 ################
 
 class GameCtxMixin:
-    """
+    """We use private instance variables here to make the setter methods
+    more explicit and differentiated from subclass variables
     """
     _trump_suit: Suit = None
     _lead_card:  Card = None
 
     def set_trump_suit(self, trump_suit: Suit) -> None:
-        """
-        """
+        if self._trump_suit:
+            raise LogicError(f"Cannot change trump_suit for {type(self).__name__}")
         self._trump_suit = trump_suit
 
     def set_lead_card(self, lead_card: Card) -> None:
-        """
-        """
-        self._lead_card  = lead_card
+        if self._lead_card:
+            raise LogicError(f"Cannot change lead_card for {type(self).__name__}")
+        self._lead_card = lead_card
 
     @property
     def trump_suit(self) -> Suit:
-        try:
-            return self._trump_suit
-        except AttributeError:
-            raise LogicError("`trump_suit` never set")
+        return self._trump_suit
 
     @property
     def lead_card(self) -> Card:
-        try:
-            return self._lead_card
-        except AttributeError:
-            raise LogicError("`lead_card` never set")
+        return self._lead_card
 
 ################
 # augment Suit #
 ################
 
-def opp_suit(self) -> Suit:
+def next_suit(self) -> Suit:
     """
     """
-    opp_idx = self.idx ^ 0x3
-    return SUITS[opp_idx]
+    next_idx = self.idx ^ 0x3
+    return SUITS[next_idx]
 
-setattr(Suit, 'opp_suit', opp_suit)
+setattr(Suit, 'next_suit', next_suit)
 
 ################
 # augment Card #
 ################
 
 def efflevel(self, ctx: GameCtxMixin, offset_trump: bool = False) -> int:
-    """
+    """Note that this also works if jacks have been replaced with BOWER cards
+    (i.e rank of `right` or `left`)
     """
     level = None
     if ctx.trump_suit is None:
         raise LogicError("Trump suit not set")
     is_jack  = self.rank == jack
     is_trump = self.suit == ctx.trump_suit
-    is_opp   = self.suit == ctx.trump_suit.opp_suit()
+    is_next  = self.suit == ctx.trump_suit.next_suit()
     if is_jack:
         if is_trump:
             level = right.level
-        elif is_opp:
+        elif is_next:
             level = left.level
             is_trump = True
         else:
@@ -79,7 +75,7 @@ def efflevel(self, ctx: GameCtxMixin, offset_trump: bool = False) -> int:
         level = self.level
     assert isinstance(level, int)
     if is_trump and offset_trump:
-        return level + len(ALLRANKS)
+        return level + len(ALL_RANKS)
     return level
 
 def effsuit(self, ctx: GameCtxMixin) -> Suit:
@@ -88,8 +84,8 @@ def effsuit(self, ctx: GameCtxMixin) -> Suit:
     if ctx.trump_suit is None:
         raise LogicError("Trump suit not set")
     is_jack = self.rank == jack
-    is_opp  = self.suit == ctx.trump_suit.opp_suit()
-    if is_jack and is_opp:
+    is_next = self.suit == ctx.trump_suit.next_suit()
+    if is_jack and is_next:
         return ctx.trump_suit
     return self.suit
 
