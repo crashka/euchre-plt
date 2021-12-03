@@ -22,9 +22,9 @@ def test_find_card():
 
     # finding bowers should always raise an exception
     with pytest.raises(IndexError):
-        bower = find_card(left, clubs)
+        _ = find_card(left, clubs)
     with pytest.raises(IndexError):
-        bower = find_card(right, spades)
+        _ = find_card(right, spades)
 
 def test_find_bower():
     bower = find_bower(left, diamonds)
@@ -40,7 +40,7 @@ def test_find_bower():
     # two different failure modes for mis-use, depending on
     # whether non-bower card index happens to be in bounds
     with pytest.raises(IndexError):
-        bower = find_bower(ten, diamonds)
+        _ = find_bower(ten, diamonds)
 
     bower = find_bower(ace, diamonds)  # errant success
     assert not (bower.rank == ten)     # prove the error

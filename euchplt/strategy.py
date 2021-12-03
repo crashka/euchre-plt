@@ -3,9 +3,9 @@
 
 from random import Random
 
-from .core import LogicError
-from .card import SUITS, Card, jack
-from .euchre import Bid, PASS_BID, defend_suit, Trick, DealState
+from .core import LogicError, log
+from .card import SUITS, Suit, Card, jack
+from .euchre import Bid, PASS_BID, defend_suit, Hand, Trick, DealState
 from .analysis import HandAnalysis, PlayAnalysis
 
 ############
@@ -199,14 +199,84 @@ class StrategySimple(Strategy):
 # StrategySmart #
 #################
 
+class HandAnalysisSmart(HandAnalysis):
+    # TEMP: hardwire this for now (overridable as instance variables),
+    # really need to move all of this to the config file!!!
+    trump_values:     list[int]   = [0, 0, 0, 1, 2, 4, 7, 10]
+    suit_values:      list[int]   = [0, 0, 0, 1, 5, 10]
+    num_trump_values: list[float] = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+    off_aces_values:  list[float] = [0.0, 0.2, 0.5, 1.0]
+    voids_values:     list[float] = [0.0, 0.3, 0.7, 1.0]  # (index capped by number of trump)
+
+    scoring_coeff: dict[str, int] = {
+        'trump_score':     40,
+        'max_suit_score':  10,
+        'num_trump_score': 20,
+        'off_aces_score':  15,
+        'voids_score':     15
+    }
+
+    def __init__(self, hand: Hand):
+        super().__init__(hand)
+
+    def suit_strength(self, suit: Suit, trump_suit: Suit, turn_card: Card = None) -> float:
+        """Note that this requires that jacks be replaced by BOWER cards (rank
+        of `right` or `left`)
+        """
+        value_arr = self.trump_values if suit == trump_suit else self.suit_values
+        tot_value = 0
+        suit_cards = self.get_suit_cards(trump_suit)[suit]
+        for card in suit_cards:
+           tot_value += value_arr[card.rank.idx]
+        return tot_value / sum(value_arr)
+
+    def hand_strength(self, trump_suit: Suit, turn_card: Card = None) -> float:
+        trump_score = None
+        suit_scores = []  # no need to track associated suits, for now
+
+        for suit in SUITS:
+            if suit == trump_suit:
+                trump_score = self.suit_strength(suit, trump_suit)
+            else:
+                suit_scores.append(self.suit_strength(suit, trump_suit))
+        max_suit_score = max(suit_scores)
+        assert isinstance(trump_score, float)
+        assert isinstance(max_suit_score, float)
+
+        num_trump       = len(self.trump_cards(trump_suit))
+        num_trump_score = self.num_trump_values[num_trump]
+        off_aces        = len(self.off_aces(trump_suit))
+        off_aces_score  = self.off_aces_values[off_aces]
+        voids           = len(set(self.voids(trump_suit)) - {trump_suit})
+        voids_score     = self.voids_values[voids]
+
+        strength = 0.0
+        log.info(f"hand: {self.hand} (trump: {trump_suit}, turn card: {turn_card})")
+        for score, coeff in self.scoring_coeff.items():
+            raw_value = locals()[score]
+            assert isinstance(raw_value, float)
+            score_value = locals()[score] * coeff
+            log.info(f"{score:15}: {score_value:6.2f} ({raw_value:.2f} * {coeff:d})")
+            strength += score_value
+        log.info(f"{'hand_strength':15}: {strength:6.2f}")
+
 class StrategySmart(Strategy):
     """
     """
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """
-                        9 10  J  Q  K  A  L  R
-        trump_values = [0, 0, 0, 1, 2, 4, 7, 10]
-        suit_values  = [0, 0, 0, 1, 5, 10]
+        trump_values    = [0, 0, 0, 1, 2, 4, 7, 10]
+        suit_values     = [0, 0, 0, 1, 5, 10]
+        num_trump_score = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+
+        off_aces_score  = [0.0, 0.2, 0.5, 1.0]
+        voids_score     = [0.0, 0.3, 0.7, 1.0] (index capped by number of trump)
+
+        scoring_coeff = {'trump_score':     40,
+                         'max_suit_score':  10,
+                         'num_trump_score': 20,
+                         'off_aces_score':  15,
+                         'voids_score':     15}
 
         scoring aspects (multiple by coefficients):
           - trump strength

@@ -74,7 +74,7 @@ def test_non_trump_lead_cmp():
     ctx.set_trump_suit(trump_suit)
     ctx.set_lead_card(lead_card)
 
-    # test follow aginst trump
+    # test follow against trump
     ref_card  = find_card(king, lead_suit)
     bigger_trump = find_card(ace, trump_suit)
     assert bigger_trump.beats(ref_card, ctx)

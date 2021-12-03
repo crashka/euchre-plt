@@ -6,7 +6,7 @@ blocks (e.g. cards), and can be imported by either the player or game-playing mo
 from typing import Optional, NamedTuple
 
 from .core import LogicError
-from .card import ALL_RANKS, SUITS, Suit, Card, jack, right, left
+from .card import ALL_RANKS, SUITS, Suit, Card, jack, right, left, find_bower
 
 ################
 # GameCtxMixin #
@@ -54,8 +54,8 @@ setattr(Suit, 'next_suit', next_suit)
 ################
 
 def efflevel(self, ctx: GameCtxMixin, offset_trump: bool = False) -> int:
-    """Note that this also works if jacks have been replaced with BOWER cards
-    (i.e rank of `right` or `left`)
+    """Note that this also works if jacks have been replaced with `Bower` types
+    (e.g. by `Hand.cards_by_suit`)
     """
     level = None
     if ctx.trump_suit is None:
@@ -89,6 +89,19 @@ def effsuit(self, ctx: GameCtxMixin) -> Suit:
         return ctx.trump_suit
     return self.suit
 
+def effcard(self, ctx: GameCtxMixin) -> Card:
+    """Translates trump and next suit jacks to bowers, otherwise returns self
+    """
+    bower = None
+    if ctx.trump_suit is None:
+        raise LogicError("Trump suit not set")
+    if self.rank == jack:
+        if self.suit == ctx.trump_suit:
+            bower = find_bower(right, ctx.trump_suit)
+        elif self.suit == ctx.trump_suit.next_suit():
+            bower = find_bower(left, ctx.trump_suit)
+    return bower or self
+
 def beats(self, other: Card, ctx: GameCtxMixin) -> bool:
     """
     """
@@ -119,11 +132,14 @@ def beats(self, other: Card, ctx: GameCtxMixin) -> bool:
 
 setattr(Card, 'efflevel', efflevel)
 setattr(Card, 'effsuit', effsuit)
+setattr(Card, 'effcard', effcard)
 setattr(Card, 'beats', beats)
 
 ########
 # Hand #
 ########
+
+SuitCards = dict[Suit, list[Card]]
 
 class Hand:
     """Behaves as list[Card] in iterable contexts
@@ -157,12 +173,14 @@ class Hand:
     def remove_card(self, card: Card) -> None:
         return self.cards.remove(card)
 
-    def cards_by_suit(self, ctx: GameCtxMixin) -> dict[Suit, list[Card]]:
-        """
+    def cards_by_suit(self, ctx: GameCtxMixin, use_bowers: bool = False) -> SuitCards:
+        """The `use_bowers` flag indicates whether to translate trump and next suit
+        jacks to the equivalent `card.Bower` representation (used for analysis, but
+        not playing, since not recognized by the `deal` module)
         """
         by_suit = {suit: [] for suit in SUITS}
         for card in self.cards:
-            by_suit[card.effsuit(ctx)].append(card)
+            by_suit[card.effsuit(ctx)].append(card.effcard(ctx) if use_bowers else card)
         return by_suit
 
     def can_play(self, card: Card, ctx: GameCtxMixin) -> bool:
@@ -192,7 +210,7 @@ class Hand:
 # Play/Trick #
 ##############
 
-Play = tuple[int, Card]  # [pos, card]
+Play = tuple[int, Card]  # (pos, card)
 
 class Trick(GameCtxMixin):
     """

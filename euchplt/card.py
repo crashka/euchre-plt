@@ -150,7 +150,7 @@ del bower_list
 def find_card(rank: Rank, suit: Suit) -> Card:
     return CARDS[rank.idx * len(SUITS) + suit.idx]
 
-def find_bower(rank: BowerRank, suit: Suit) -> Card:
+def find_bower(rank: BowerRank, suit: Suit) -> Bower:
     return BOWERS[(rank.idx - len(RANKS)) * len(SUITS) + suit.idx]
 
 ########

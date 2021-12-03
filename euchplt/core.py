@@ -19,9 +19,9 @@ CONFIG_FILE   = 'config.yml'
 CONFIG_PATH   = os.path.join(BASE_DIR, CONFIG_DIR, CONFIG_FILE)
 cfg           = utils.Config(CONFIG_PATH)
 
-param         = cfg.config('params')
-env_param     = {'EUCHPLTDEBUG': 'debug'}
-param.update({v: environ[k] for k, v in env_param.items() if k in environ})
+#param         = cfg.config('params')
+#env_param     = {'EUCHPLTDEBUG': 'debug'}
+#param.update({v: environ[k] for k, v in env_param.items() if k in environ})
 
 ###########
 # Logging #
