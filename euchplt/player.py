@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from .core import ConfigError
 from .card import Card
 from .euchre import Bid, Trick, DealState
 from .strategy import Strategy
@@ -13,9 +14,22 @@ class Player:
     name:     str
     strategy: Strategy
 
-    def __init__(self, name: str, strategy_cls: type, **kwargs):
-        self.name     = name
-        self.strategy = strategy_cls(**kwargs)
+    def __init__(self, name: str, base_strategy: type = None, **kwargs):
+        """If `base_strategy` is not specified, then the player strategy (which includes
+        the various parameters) is obtained from the config file
+        """
+        if not base_strategy:
+            players = cfg.config('players')
+            if name not in players:
+                raise RuntimeError(f"Player '{name}' is not known")
+            strat_name = players[name].get('strategy')
+            if not strat_name:
+                raise ConfigError(f"'strategy' not specified for player '{name}'")
+            self.name = name
+            self.strategy = get_strategy(strat_name)
+        else:
+            self.name = name
+            self.strategy = base_strategy(**kwargs)
 
     def __str__(self):
         return self.name

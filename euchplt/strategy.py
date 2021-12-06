@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from typing import Optional
 from random import Random
+from importlib import import_module
 
-from .core import LogicError, log
+from .core import ConfigError, LogicError, cfg, log
 from .card import SUITS, Suit, Card, jack
 from .euchre import Bid, PASS_BID, defend_suit, Hand, Trick, DealState
 from .analysis import HandAnalysis, PlayAnalysis
@@ -12,9 +14,39 @@ from .analysis import HandAnalysis, PlayAnalysis
 # Strategy #
 ############
 
+def get_strategy(strat_name: str):
+    strategies = cfg.config('strategies')
+    if strat_name not in strategies:
+        raise RuntimeError(f"Strategy '{strat_name}' is not known")
+    strat_info   = strategies[strat_name]
+    class_name   = strat_info.get('base_class')
+    module_path  = strat_info.get('module_path')
+    strat_params = strat_info.get('strategy_params')
+    if not class_name:
+        raise ConfigError(f"'base_class' not specified for strategy '{strat_name}'")
+    if module_path:
+        module = import_module(module_path)
+        strat_class = getattr(module, class_name)
+    else:
+        strat_class = globals()[class_name]
+    if strat_params:
+        return strat_class(strat_params)
+    else:
+        return strat_class()
+
 class Strategy:
     """
     """
+    def __init__(self, params: dict = None):
+        params = params or {}
+        cls_name = type(self).__name__
+        base_params = cfg.config('base_strategy_params')
+        if cls_name not in base_params:
+            raise ConfigError(f"Strategy class '{cls_name}' does not exist")
+        for key, base_value in base_params[cls_name].items():
+            setattr(self, key, params.get(key) or base_value)
+        pass  # TEMP: for debugging!!!
+
     def __str__(self):
         return self.__class__.__name__
 
@@ -41,11 +73,12 @@ class Strategy:
 class StrategyRandom(Strategy):
     """
     """
+    seed:   Optional[int] = None
     random: Random
 
-    def __init__(self, seed: int = None):
-        super().__init__()
-        self.random = Random(seed)
+    def __init__(self, params: dict = None):
+        super().__init__(params)
+        self.random = Random(self.seed)
 
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """See base class
@@ -85,11 +118,7 @@ class StrategySimple(Strategy):
     """Represents minimum logic for passable play, very basic strategy, fairly
     conservative (though we add an `aggressive` option)
     """
-    aggressive: bool
-
-    def __init__(self, aggressive: bool = False):
-        super().__init__()
-        self.aggressive = aggressive
+    aggressive: bool = False
 
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """See base class
@@ -176,7 +205,7 @@ class StrategySimple(Strategy):
         if trick.winning_pos == deal.pos ^ 0x02:
             take_order = 1 if (self.aggressive and play_pos == 2) else -1
             cards = follow_cards if follow_cards else by_level
-            for card in cards[::-1]:
+            for card in cards[::take_order]:
                 if card in valid_plays:
                     return card
             raise LogicError("No valid card to play")
@@ -200,26 +229,50 @@ class StrategySimple(Strategy):
 #################
 
 class HandAnalysisSmart(HandAnalysis):
-    # TEMP: hardwire this for now (overridable as instance variables),
-    # really need to move all of this to the config file!!!
-    trump_values:     list[int]   = [0, 0, 0, 1, 2, 4, 7, 10]
-    suit_values:      list[int]   = [0, 0, 0, 1, 5, 10]
-    num_trump_values: list[float] = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
-    off_aces_values:  list[float] = [0.0, 0.2, 0.5, 1.0]
-    voids_values:     list[float] = [0.0, 0.3, 0.7, 1.0]  # (index capped by number of trump)
+    """Example parameter values (current defaults in config.yml):
 
-    scoring_coeff: dict[str, int] = {
-        'trump_score':     40,
-        'max_suit_score':  10,
-        'num_trump_score': 20,
-        'off_aces_score':  15,
-        'voids_score':     15
-    }
+         trump_values     = [0, 0, 0, 1, 2, 4, 7, 10]
+         suit_values      = [0, 0, 0, 1, 5, 10]
+         num_trump_scores = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+         off_aces_scores  = [0.0, 0.2, 0.5, 1.0]
+         voids_scores     = [0.0, 0.3, 0.7, 1.0] (index capped by number of trump)
 
-    def __init__(self, hand: Hand):
+         scoring_coeff    = {'trump_score':     40,
+                             'max_suit_score':  10,
+                             'num_trump_score': 20,
+                             'off_aces_score':  15,
+                             'voids_score':     15}
+
+         hand scoring aspects (multiply by coefficients):
+           - trump strength (add card values)
+           - max off-suit strength (same)
+           - num trump
+           - off-aces
+           - voids
+    """
+    # the following annotations represent the parameters that are specified
+    # in the config file for the class name under `base_analysis_params`
+    # (and which may be overridden under a `hand_analysis` parameter for
+    # a parent strategy's configuration)
+    trump_values:     list[int]
+    suit_values:      list[int]
+    num_trump_values: list[float]
+    off_aces_values:  list[float]
+    voids_values:     list[float]
+    scoring_coeff:    dict[str, int]
+
+    def __init__(self, hand: Hand, params: dict = None):
         super().__init__(hand)
+        params = params or {}
+        cls_name = type(self).__name__
+        base_params = cfg.config('base_analysis_params')
+        if cls_name not in base_params:
+            raise ConfigError(f"Analysis class '{cls_name}' does not exist")
+        for key, base_value in base_params[cls_name].items():
+            setattr(self, key, params.get(key) or base_value)
+        pass  # TEMP: for debugging!!!
 
-    def suit_strength(self, suit: Suit, trump_suit: Suit, turn_card: Card = None) -> float:
+    def suit_strength(self, suit: Suit, trump_suit: Suit) -> float:
         """Note that this requires that jacks be replaced by BOWER cards (rank
         of `right` or `left`)
         """
@@ -227,7 +280,7 @@ class HandAnalysisSmart(HandAnalysis):
         tot_value = 0
         suit_cards = self.get_suit_cards(trump_suit)[suit]
         for card in suit_cards:
-           tot_value += value_arr[card.rank.idx]
+            tot_value += value_arr[card.rank.idx]
         return tot_value / sum(value_arr)
 
     def hand_strength(self, trump_suit: Suit, turn_card: Card = None) -> float:
@@ -244,11 +297,11 @@ class HandAnalysisSmart(HandAnalysis):
         assert isinstance(max_suit_score, float)
 
         num_trump       = len(self.trump_cards(trump_suit))
-        num_trump_score = self.num_trump_values[num_trump]
+        num_trump_score = self.num_trump_scores[num_trump]
         off_aces        = len(self.off_aces(trump_suit))
-        off_aces_score  = self.off_aces_values[off_aces]
+        off_aces_score  = self.off_aces_scores[off_aces]
         voids           = len(set(self.voids(trump_suit)) - {trump_suit})
-        voids_score     = self.voids_values[voids]
+        voids_score     = self.voids_scores[voids]
 
         strength = 0.0
         log.info(f"hand: {self.hand} (trump: {trump_suit}, turn card: {turn_card})")
@@ -256,47 +309,32 @@ class HandAnalysisSmart(HandAnalysis):
             raw_value = locals()[score]
             assert isinstance(raw_value, float)
             score_value = locals()[score] * coeff
-            log.info(f"{score:15}: {score_value:6.2f} ({raw_value:.2f} * {coeff:d})")
+            log.info(f"  {score:15}: {score_value:6.2f} ({raw_value:.2f} * {coeff:d})")
             strength += score_value
         log.info(f"{'hand_strength':15}: {strength:6.2f}")
+        return strength
 
 class StrategySmart(Strategy):
     """
     """
+    bid_thresh:       list[int]
+    alone_premium:    list[int]
+    def_alone_thresh: int
+
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """
-        trump_values    = [0, 0, 0, 1, 2, 4, 7, 10]
-        suit_values     = [0, 0, 0, 1, 5, 10]
-        num_trump_score = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
-
-        off_aces_score  = [0.0, 0.2, 0.5, 1.0]
-        voids_score     = [0.0, 0.3, 0.7, 1.0] (index capped by number of trump)
-
-        scoring_coeff = {'trump_score':     40,
-                         'max_suit_score':  10,
-                         'num_trump_score': 20,
-                         'off_aces_score':  15,
-                         'voids_score':     15}
-
-        scoring aspects (multiple by coefficients):
-          - trump strength
-          - max(off-suit strength)
-          - num trump
-          - off-aces
-          - voids
-
         round 1:
           - non-dealer:
-            - compute score (turn suit)
+            - compute strength (turn suit)
             - adjust for turn card (partner vs. opp)
-            - bid if score > round1_thresh (by position)
+            - bid if strength > round1_thresh (by position)
           - dealer:
-            - compute scores (turn suit) for turn + each discard (including turn)
-            - bid if max(score) > round1_thresh (dealer position)
+            - compute strengths (turn suit) for turn + each discard (including turn)
+            - bid if max(strength) > round1_thresh (dealer position)
         round 2:
           - all players:
-            - compute score for each non-turn suit
-            - bid if max(score) > round2_thresh (by position)
+            - compute strength for each non-turn suit
+            - bid if max(strength) > round2_thresh (by position)
         """
         raise NotImplementedError("Not yet implemented")
 

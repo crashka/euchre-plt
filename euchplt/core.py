@@ -4,7 +4,6 @@ from os import environ
 import os.path
 import logging
 import logging.handlers
-import random
 
 from . import utils
 
@@ -15,13 +14,9 @@ from . import utils
 FILE_DIR      = os.path.dirname(os.path.realpath(__file__))
 BASE_DIR      = os.path.realpath(os.path.join(FILE_DIR, os.pardir))
 CONFIG_DIR    = 'config'
-CONFIG_FILE   = 'config.yml'
+CONFIG_FILE   = environ.get('EUCHPLT_CONFIG_FILE') or 'config.yml'
 CONFIG_PATH   = os.path.join(BASE_DIR, CONFIG_DIR, CONFIG_FILE)
 cfg           = utils.Config(CONFIG_PATH)
-
-#param         = cfg.config('params')
-#env_param     = {'EUCHPLTDEBUG': 'debug'}
-#param.update({v: environ[k] for k, v in env_param.items() if k in environ})
 
 ###########
 # Logging #
@@ -52,6 +47,9 @@ log.addHandler(dflt_hand)
 # Exceptions #
 ##############
 
+class ConfigError(RuntimeError):
+    pass
+
 class LogicError(RuntimeError):
     pass
 
@@ -62,14 +60,9 @@ class ImplementationError(RuntimeError):
 # Basedata Setup #
 ##################
 
-# LATER: only use configured value if debug/dev mode!!!
-#random.seed(param.get('random_seed'))
-
-def validate_basedata(basedata, offset = 0) -> None:
+def validate_basedata(basedata, offset: int = 0) -> None:
     """Make sure that the embedded index for base data elements matches the position
-    within the data structure
-
-    :return: void (failed assert on validation error)
+    within the data structure (failed assert on validation error)
     """
     for elem in basedata:
         assert elem.idx == basedata.index(elem) + offset
