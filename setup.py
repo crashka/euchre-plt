@@ -16,7 +16,8 @@ setup(
         'console_scripts': [
             'deal = euchplt.deal:main',
             'game = euchplt.game:main',
-            'match = euchplt.match:main'
+            'match = euchplt.match:main',
+            'strategy = euchplt.strategy:main'
         ],
     }
 )

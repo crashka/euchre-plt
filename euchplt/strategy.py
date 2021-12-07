@@ -124,6 +124,7 @@ class StrategySimple(Strategy):
         """See base class
         """
         analysis   = HandAnalysis(deal.hand)
+        turn_suit  = deal.turn_card.suit
         bid_suit   = None
         alone      = False
         num_trump  = None
@@ -140,21 +141,22 @@ class StrategySimple(Strategy):
 
         if deal.bid_round == 1:
             # bid if 3 or more trump, and bower/off-ace
-            num_trump  = len(analysis.trump_cards(deal.turn_card.suit))
-            off_aces   = analysis.off_aces(deal.turn_card.suit)
-            num_bowers = len(analysis.bowers(deal.turn_card.suit))
+            num_trump  = len(analysis.trump_cards(turn_suit))
+            off_aces   = analysis.off_aces(turn_suit)
+            num_bowers = len(analysis.bowers(turn_suit))
             if deal.is_dealer:
                 num_trump += 1
                 if deal.turn_card.rank == jack:
                     num_bowers += 1
                 if num_trump >= 2 and len(off_aces) > 0:
-                    bid_suit = deal.turn_card.suit
+                    bid_suit = turn_suit
             elif num_trump >= 3 and (off_aces or num_bowers > 0):
-                bid_suit = deal.turn_card.suit
+                bid_suit = turn_suit
         else:
+            assert deal.bid_round == 2
             # bid if 3 or more trump in any suit, and bower/off-ace
             for suit in SUITS:
-                if suit == deal.turn_card.suit:
+                if suit == turn_suit:
                     continue
                 num_trump  = len(analysis.trump_cards(suit))
                 off_aces   = analysis.off_aces(suit)
@@ -283,7 +285,7 @@ class HandAnalysisSmart(HandAnalysis):
             tot_value += value_arr[card.rank.idx]
         return tot_value / sum(value_arr)
 
-    def hand_strength(self, trump_suit: Suit, turn_card: Card = None) -> float:
+    def hand_strength(self, trump_suit: Suit) -> float:
         trump_score = None
         suit_scores = []  # no need to track associated suits, for now
 
@@ -301,10 +303,12 @@ class HandAnalysisSmart(HandAnalysis):
         off_aces        = len(self.off_aces(trump_suit))
         off_aces_score  = self.off_aces_scores[off_aces]
         voids           = len(set(self.voids(trump_suit)) - {trump_suit})
+        # useful voids capped by number of trump
+        voids           = max(min(voids, num_trump - 1), 0)
         voids_score     = self.voids_scores[voids]
 
         strength = 0.0
-        log.info(f"hand: {self.hand} (trump: {trump_suit}, turn card: {turn_card})")
+        log.info(f"hand: {self.hand} (trump: {trump_suit})")
         for score, coeff in self.scoring_coeff.items():
             raw_value = locals()[score]
             assert isinstance(raw_value, float)
@@ -317,9 +321,10 @@ class HandAnalysisSmart(HandAnalysis):
 class StrategySmart(Strategy):
     """
     """
+    hand_analysis:    dict
     bid_thresh:       list[int]
-    alone_premium:    list[int]
-    def_alone_thresh: int
+    alone_margin:     list[int]
+    def_alone_thresh: list[int]
 
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """
@@ -336,7 +341,63 @@ class StrategySmart(Strategy):
             - compute strength for each non-turn suit
             - bid if max(strength) > round2_thresh (by position)
         """
-        raise NotImplementedError("Not yet implemented")
+        bid_pos       = deal.pos + (deal.bid_round - 1) * 4
+        turn_suit     = deal.turn_card.suit
+        bid_suit      = None
+        strength      = None
+        thresh_margin = None
+        alone         = False
+
+        if def_bid:
+            analysis = HandAnalysisSmart(deal.hand, self.hand_analysis)
+            strength = analysis.hand_strength(deal.contract.suit)
+            if strength > self.def_alone_thresh[bid_pos]:
+                alone = True
+                log.debug(f"Defending on hand strength of {strength:.2f}")
+            return Bid(defend_suit, alone)
+
+        if deal.bid_round == 1:
+            if deal.is_dealer:
+                strengths: list[tuple] = []
+                for card in deal.hand:
+                    hand = deal.hand.copy()
+                    hand.remove_card(card)
+                    hand.append_card(deal.turn_card)
+                    analysis = HandAnalysisSmart(hand, self.hand_analysis)
+                    strengths.append((card, analysis.hand_strength(turn_suit)))
+                strengths.sort(key=lambda t: t[1], reverse=True)
+                if strengths[0][1] > self.bid_thresh[bid_pos]:
+                    thresh_margin = strengths[0][1] - self.bid_thresh[bid_pos]
+                    strength = strengths[0][1]
+                    bid_suit = turn_suit
+                    log.debug(f"Dealer bidding based on discard of {strengths[0][0]}")
+            else:
+                analysis = HandAnalysisSmart(deal.hand, self.hand_analysis)
+                strength = analysis.hand_strength(turn_suit)
+                # TODO: adjust for turn card (partner vs. opp)
+                if strength > self.bid_thresh[bid_pos]:
+                    thresh_margin = strength - self.bid_thresh[bid_pos]
+                    bid_suit = turn_suit
+        else:
+            assert deal.bid_round == 2
+            analysis = HandAnalysisSmart(deal.hand, self.hand_analysis)
+            for suit in SUITS:
+                if suit == turn_suit:
+                    continue
+                strength = analysis.hand_strength(suit)
+                if strength > self.bid_thresh[bid_pos]:
+                    thresh_margin = strength - self.bid_thresh[bid_pos]
+                    bid_suit = suit
+                    break
+
+        if bid_suit:
+            assert thresh_margin is not None
+            log.debug(f"Bidding on hand strength of {strength:.2f}")
+            if thresh_margin > self.alone_margin[bid_pos]:
+                alone = True
+            return Bid(bid_suit, alone)
+
+        return PASS_BID
 
     def discard(self, deal: DealState) -> Card:
         """
@@ -359,7 +420,9 @@ class StrategySmart(Strategy):
             - worry about off-ace vs. low trump?
             - choose between green suit doubletons?
         """
-        raise NotImplementedError("Not yet implemented")
+        analysis = PlayAnalysis(deal)
+        by_level = analysis.cards_by_level(offset_trump=True)
+        return by_level[-1]
 
     def play_card(self, deal: DealState, trick: Trick, valid_plays: list[Card]) -> Card:
         """
@@ -403,7 +466,43 @@ class StrategySmart(Strategy):
             You may need the trump to make your point.
           - If your partner calls next and leads a trump, DO NOT lead trump back.
         """
-        raise NotImplementedError("Not yet implemented")
+        analysis = PlayAnalysis(deal)
+        by_level = analysis.cards_by_level(offset_trump=True)
+        play_pos = len(trick.plays)  # zero-based
+        aggressive = True
+
+        # lead highest card
+        if play_pos == 0:
+            for card in by_level:
+                if card in valid_plays:
+                    return card
+            raise LogicError("No valid card to play")
+
+        lead_card = trick.plays[0][1]
+        follow_cards = analysis.follow_cards(lead_card, sort=True)
+
+        # partner is winning, try and duck (unless `aggressive` third hand)
+        if trick.winning_pos == deal.pos ^ 0x02:
+            take_order = 1 if (aggressive and play_pos == 2) else -1
+            cards = follow_cards if follow_cards else by_level
+            for card in cards[::take_order]:
+                if card in valid_plays:
+                    return card
+            raise LogicError("No valid card to play")
+
+        # opponents winning, take trick if possible
+        cards = follow_cards if follow_cards else by_level
+        # second/third hand take low unless `aggressive` specified (fourth
+        # hand always take low)
+        take_order = 1 if (aggressive and play_pos < 3) else -1
+        for card in cards[::take_order]:
+            if card in valid_plays and card.beats(trick.winning_card, trick):
+                return card
+        # can't take, so just duck or slough off
+        for card in cards[::-1]:
+            if card in valid_plays:
+                return card
+        raise LogicError("No valid card to play")
 
 ##############
 # StrategyML #
@@ -413,3 +512,65 @@ class StrategyML(Strategy):
     """
     """
     pass
+
+########
+# main #
+########
+
+import sys
+import random
+import time
+
+from .core import dbg_hand
+
+from .card import get_deck
+
+def tune_strategy_smart(*args) -> int:
+    """Run through a deck of cards evaluating the strength of each hand "dealt",
+    iterating over the four suits as trump.  This is used for manual inspection
+    to help tune the `HandAnalysisSmart` parameters and biddable theshholds.
+
+    FUTURE: it would be cool to create an interactive utility whereby the human
+    evaluates a number of hands based on biddability, as well as absolute and/or
+    relative hand assessments, and a fitting algorithm determines the full set of
+    parameters implied by the end-user input.
+    """
+    HAND_CARDS = 5
+    seed = int(args[0]) if args else int(time.time()) % 1000000
+    random.seed(seed)
+
+    log.addHandler(dbg_hand)
+    log.info(f"random.seed({seed})")
+
+    deck = get_deck()
+    while len(deck) >= HAND_CARDS:
+        cards = deck[0:HAND_CARDS]
+        cards.sort(key=lambda c: c.sortkey)
+        analysis = HandAnalysisSmart(Hand(cards))
+        for suit in SUITS:
+            hand_strength = analysis.hand_strength(suit)
+        del deck[0:HAND_CARDS]
+
+    return 0
+
+def main() -> int:
+    """Built-in driver to invoke various utility functions.
+
+    Usage: strategy.py <func_name> [<arg> ...]
+
+    Functions/usage:
+      - tune_strategy_smart [<seed>]
+    """
+    if len(sys.argv) < 2:
+        print(f"Utility function not specified", file=sys.stderr)
+        return -1
+    elif sys.argv[1] not in globals():
+        print(f"Unknown utility function '{sys.argv[1]}'", file=sys.stderr)
+        return -1
+
+    util_func = globals()[sys.argv[1]]
+    util_args = sys.argv[2:]
+    return util_func(*util_args)
+
+if __name__ == '__main__':
+    sys.exit(main())

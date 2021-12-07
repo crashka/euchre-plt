@@ -385,15 +385,15 @@ class Deal(GameCtxMixin):
 # main #
 ########
 
-from .strategy import StrategyRandom, StrategySimple
+from .strategy import StrategyRandom, StrategySimple, StrategySmart
 
 def main() -> int:
     """Built-in driver to run through a simple/sample deal
     """
     players = [Player("Player 0", StrategyRandom),
-               Player("Player 1", StrategySimple),
+               Player("Player 1", StrategySmart),
                Player("Player 2", StrategyRandom),
-               Player("Player 3", StrategySimple)]
+               Player("Player 3", StrategySmart)]
 
     deck = get_deck()
     deal = Deal(players, deck)

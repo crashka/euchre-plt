@@ -42,6 +42,9 @@ dbg_hand.setFormatter(LOG_FMTR)
 log = logging.getLogger(LOGGER_NAME)
 log.setLevel(logging.INFO)
 log.addHandler(dflt_hand)
+if environ.get('EUCHPLT_DEBUG'):
+    log.setLevel(logging.DEBUG)
+    log.addHandler(dbg_hand)
 
 ##############
 # Exceptions #

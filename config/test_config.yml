@@ -11,16 +11,16 @@ default:
   base_analysis_params:
     HandAnalysisSmart:
       trump_values:     [0, 0, 0, 1, 2, 4, 7, 10]
-      suit_values:      [0, 0, 0, 1, 5, 10]
-      num_trump_scores: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
-      off_aces_scores:  [0.0, 0.2, 0.5, 1.0]
+      suit_values:      [0, 0, 0, 2, 7, 10]
+      num_trump_scores: [0.0, 0.2, 0.3, 0.65, 0.9, 1.0]
+      off_aces_scores:  [0.0, 0.25, 0.6, 1.0]
       voids_scores:     [0.0, 0.3, 0.7, 1.0]
       scoring_coeff:
-        trump_score:      40
-        max_suit_score:   10
-        num_trump_score:  20
-        off_aces_score:   15
-        voids_score:      15
+        trump_score:      20
+        max_suit_score:   7
+        num_trump_score:  27
+        off_aces_score:   25
+        voids_score:      21
   base_strategy_params:
     StrategyRandom:
       seed:             null
@@ -29,9 +29,9 @@ default:
     StrategySmart:
       hand_analysis:
         # keep this empty here, but may be overridden by individual strategies
-      bid_thresh:       [70, 65, 60, 50, 70, 65, 60, 50]
-      alone_premium:    [10, 10, 10, 10, 10, 10, 10, 10]
-      def_alone_thresh: 70
+      bid_thresh:       [35, 35, 35, 30, 35, 35, 35, 30]
+      alone_margin:     [10, 10, 10, 10, 10, 10, 10, 10]
+      def_alone_thresh: [30, 30, 30, 30, 30, 30, 30, 30]
   strategies:
     Alfa 1:
       module_path:      euchplt.strategy
@@ -59,19 +59,19 @@ default:
         hand_analysis:
           # overrides for HandAnalysisSmart base params
           trump_values:     [0, 0, 0, 1, 2, 4, 7, 10]
-          suit_values:      [0, 0, 0, 1, 5, 10]
-          num_trump_scores: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
-          off_aces_scores:  [0.0, 0.2, 0.5, 1.0]
+          suit_values:      [0, 0, 0, 2, 7, 10]
+          num_trump_scores: [0.0, 0.2, 0.3, 0.65, 0.9, 1.0]
+          off_aces_scores:  [0.0, 0.25, 0.6, 1.0]
           voids_scores:     [0.0, 0.3, 0.7, 1.0]
           scoring_coeff:
-            trump_score:      40
-            max_suit_score:   10
-            num_trump_score:  20
-            off_aces_score:   15
-            voids_score:      15
-        bid_thresh:       [70, 65, 60, 50, 70, 65, 60, 50]
-        alone_premium:    [10, 10, 10, 10, 10, 10, 10, 10]
-        def_alone_thresh: 70
+            trump_score:      20
+            max_suit_score:   7
+            num_trump_score:  23
+            off_aces_score:   25
+            voids_score:      25
+        bid_thresh:       [35, 35, 35, 35, 35, 35, 35, 35]
+        alone_margin:     [10, 10, 10, 10, 10, 10, 10, 10]
+        def_alone_thresh: [35, 35, 35, 35, 35, 35, 35, 35]
   players:
     Player 0:
       strategy:        Bravo 1
