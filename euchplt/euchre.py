@@ -351,3 +351,30 @@ class DealState(NamedTuple):
             raise LogicError("Cannot call before playing phase")
         green_suits = self.turn_card.suit.green_suits()
         return contract.suit in green_suits and len(self.bids) == 6
+
+    @property
+    def trick_num(self) -> int:
+        """Current trick sequence for the deal (first trick = 1)
+        """
+        return len(self.tricks)  # current trick is in the list!
+
+    @property
+    def play_seq(self) -> int:
+        """Current play sequence within trick (lead = 0)
+        """
+        return len(self.cur_trick.plays)  # zero-based
+
+    @property
+    def lead_pos(self) -> int:
+        """Position of the lead player/hand
+        """
+        return (self.pos - self.play_seq) % 4
+
+    @property
+    def winning_pos(self) -> int:
+        return self.cur_trick.winning_pos
+
+    @property
+    def partner_winning(self) -> bool:
+        # note, this also works when `winning_pos == None`
+        return self.cur_trick.winning_pos == self.pos ^ 0x02

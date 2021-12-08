@@ -37,7 +37,7 @@ class HandAnalysis:
 
     def get_suit_cards(self, trump_suit: Suit) -> SuitCards:
         """Note that this always translates jacks into bowers, and sorts by
-        descending rank within each suit
+        descending rank/level within each suit
         """
         if not self.suit_cards_by_trump[trump_suit]:
             ctx = SUIT_CTX[trump_suit]
@@ -120,7 +120,7 @@ class PlayAnalysis:
         lead_suit = lead_card.effsuit(self.ctx)
         return self.hand.cards_by_suit(self.ctx)[lead_suit]
 
-    def singleton_cards(self) -> list[Suit]:
+    def singleton_cards(self) -> list[Card]:
         """Return the singleton cards themselves; the singleton suits are implied
         """
         return self.hand_analysis.singleton_cards(self.ctx.suit)
@@ -144,12 +144,15 @@ class PlayAnalysis:
         return suit_cards
 
     def suit_winners(self) -> dict[Suit, Optional[Card]]:
+        """Return the highest outstanding card for each suit, or None if
+        no cards remaining
+        """
         return {suit: cards[0] if cards else None
                 for suit, cards in self.unplayed_by_suit().items()}
 
     def my_winners(self) -> list[Card]:
-        """Return non-trump suit high cards in the current hand; sort by card
-        level descending
+        """Return flat list of non-trump suit high cards in the current hand;
+        sort by card level descending across suits
         """
         winners = [card for suit, card in self.suit_winners().items()
                    if card in self.hand and card.suit != self.ctx.suit]
@@ -178,7 +181,7 @@ class PlayAnalysis:
         used, the return list IS sorted
         """
         # FIX: this is really bad, translating back and forth between set (for
-        # the difference function) and list (for the ordering)--and for only
+        # the `difference` function) and list (for the ordering)--and for only
         # five freaking elements, MAX--really, really stupid!!!
         unplayed = set(self.trumps_unplayed())
         missing = list(unplayed.difference(self.trump_cards()))

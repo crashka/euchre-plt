@@ -317,12 +317,7 @@ class Deal(GameCtxMixin):
                 valid_plays = self.valid_plays(pos, trick)
                 card = self.players[pos].play_card(self.deal_state(pos), trick, valid_plays)
                 if card not in valid_plays:
-                    # be nice and fix things up if the player/strategy code converts jack
-                    # to bowers; but we need REVISIT the overall protocol, since this is
-                    # pretty ugly stuff!!!
-                    card = card.realcard(self)
-                    if card not in valid_plays:
-                        raise ImplementationError(f"Invalid play ({card}) from {self.players[pos]}")
+                    raise ImplementationError(f"Invalid play ({card}) from {self.players[pos]}")
                 trick.play_card(pos, card)
                 self.hands[pos].remove_card(card)
                 self.played_by_pos[pos].append_card(card)

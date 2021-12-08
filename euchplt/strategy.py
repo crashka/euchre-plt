@@ -8,7 +8,7 @@ from importlib import import_module
 
 from .core import ConfigError, LogicError, cfg, log
 from .card import SUITS, Suit, Card, right, left, ace, jack
-from .euchre import Bid, PASS_BID, defend_suit, Hand, Trick, DealState
+from .euchre import Bid, PASS_BID, NULL_BID, defend_suit, Hand, Trick, DealState
 from .analysis import HandAnalysis, PlayAnalysis
 
 ############
@@ -192,10 +192,9 @@ class StrategySimple(Strategy):
         """
         analysis = PlayAnalysis(deal)
         by_level = analysis.cards_by_level(offset_trump=True)
-        play_pos = len(trick.plays)  # zero-based
 
         # lead highest card
-        if play_pos == 0:
+        if deal.play_seq == 0:
             for card in by_level:
                 if card in valid_plays:
                     return card
@@ -206,7 +205,7 @@ class StrategySimple(Strategy):
 
         # partner is winning, try and duck (unless `aggressive` third hand)
         if trick.winning_pos == deal.pos ^ 0x02:
-            take_order = 1 if (self.aggressive and play_pos == 2) else -1
+            take_order = 1 if (self.aggressive and deal.play_seq == 2) else -1
             cards = follow_cards if follow_cards else by_level
             for card in cards[::take_order]:
                 if card in valid_plays:
@@ -217,7 +216,7 @@ class StrategySimple(Strategy):
         cards = follow_cards if follow_cards else by_level
         # second/third hand take low unless `aggressive` specified (fourth
         # hand always take low)
-        take_order = 1 if (self.aggressive and play_pos < 3) else -1
+        take_order = 1 if (self.aggressive and deal.play_seq < 3) else -1
         for card in cards[::take_order]:
             if card in valid_plays and card.beats(trick.winning_card, trick):
                 return card
@@ -324,7 +323,13 @@ class PlayPlan(Enum):
     PRESERVE_TRUMP = "Preserve_Trump"
 
 class StrategySmart(Strategy):
-    """
+    """Strategy based on rule-based scoring/strength assessments, both for
+    bidding and playing.  The rules are parameterized, so variations can be
+    specified in the config file.
+
+    FUTURE: there is an opportunity to build a framework for optimizing the
+    various parameters, either in an absolute sense, or possibly relative to
+    different opponent profiles.
     """
     hand_analysis:    dict
     bid_thresh:       list[int]
@@ -332,19 +337,23 @@ class StrategySmart(Strategy):
     def_alone_thresh: list[int]
 
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
-        """
+        """General logic:
         round 1:
           - non-dealer:
-            - compute strength (turn suit)
+            - compute hand strength for turn suit
             - adjust for turn card (partner vs. opp)
             - bid if strength > round1_thresh (by position)
           - dealer:
-            - compute strengths (turn suit) for turn + each discard (including turn)
+            - compute strength for turn suit + each possible discard
+              (including turn card)
             - bid if max(strength) > round1_thresh (dealer position)
         round 2:
           - all players:
             - compute strength for each non-turn suit
             - bid if max(strength) > round2_thresh (by position)
+        loners:
+          - go alone if strength exceeds threshold by specified margin parameter
+          - defend alone if strength (for contract suit) > def_alone_thresh
         """
         persist       = deal.player_state
         bid_pos       = deal.pos + (deal.bid_round - 1) * 4
@@ -355,6 +364,9 @@ class StrategySmart(Strategy):
         alone         = False
 
         if def_bid:
+            if deal.is_partner_caller:
+                # generally shouldn't get here, but just in case...
+                return NULL_BID
             analysis = HandAnalysisSmart(deal.hand, self.hand_analysis)
             strength = analysis.hand_strength(deal.contract.suit)
             if strength > self.def_alone_thresh[bid_pos]:
@@ -453,94 +465,19 @@ class StrategySmart(Strategy):
 
     def play_card(self, deal: DealState, trick: Trick, valid_plays: list[Card]) -> Card:
         """
-        lead card plays:
-          - lead_last_card
-          - next_call_lead
-          - draw_trump
-          - lead_off_ace
-          - lead_to_partner_call
-          - lead_to_create_void
-          - lead_suit_winner
-          - lead_low_non_trump
-          - lead_low_from_long_suit
-          - lead_random_card
-        follow card plays:
-          - play_last_card
-          - follow_suit_low
-          - throw_off_to_create_void
-          - throw_off_low
-          - play_low_trump
-          - follow_suit_high
-          - trump_low
-          - play_random_card
-        configurable rule sets:
-          - init_lead
-          - subseq_lead
-          - part_winning
-          - opp_winning
-
-        logic for next_call_lead (especially if calling with weaker hand...):
-          - The best first lead on a next call is a small trump, this is especially
-            true if you hold an off-suit Ace. By leading a small trump you stand the
-            best chance of hitting your partner's hand. Remember, the odds are that
-            he will have at least one bower in his hand.
-          - Leading the right may not be the best move. Your partner may only have
-            one bower in his hand and you don't want them to clash. When you are
-            holding a right/ace combination it's usually best to lead the ace. If
-            the other bower has been turned down, then it is okay to lead the right.
-          - In a hand where you only hold two small cards in next but no power, try
-            leading an off suit that you think your partner may be able to trump.
-            You may need the trump to make your point.
-          - If your partner calls next and leads a trump, DO NOT lead trump back.
         """
         persist = deal.player_state
         if 'play_plan' not in persist:
             persist['play_plan'] = set()
         play_plan = persist['play_plan']
 
-        analysis = PlayAnalysis(deal)
-        by_level = analysis.cards_by_level(offset_trump=True)
-        play_pos = len(trick.plays)  # zero-based
-
+        analysis        = PlayAnalysis(deal)
         trump_cards     = analysis.trump_cards()
+        trumps_played   = analysis.trumps_played()
         trumps_missing  = analysis.trumps_missing()
         off_aces        = analysis.off_aces()
         singleton_cards = analysis.singleton_cards()
         my_winners      = analysis.my_winners()
-
-        aggressive = True
-        # lead highest card
-        if play_pos == 0:
-            for card in by_level:
-                if card in valid_plays:
-                    return card
-            raise LogicError("No valid card to play")
-
-        lead_card = trick.plays[0][1]
-        follow_cards = analysis.follow_cards(lead_card)
-
-        # partner is winning, try and duck (unless `aggressive` third hand)
-        if trick.winning_pos == deal.pos ^ 0x02:
-            take_order = 1 if (aggressive and play_pos == 2) else -1
-            cards = follow_cards if follow_cards else by_level
-            for card in cards[::take_order]:
-                if card in valid_plays:
-                    return card
-            raise LogicError("No valid card to play")
-
-        # opponents winning, take trick if possible
-        cards = follow_cards if follow_cards else by_level
-        # second/third hand take low unless `aggressive` specified (fourth
-        # hand always take low)
-        take_order = 1 if (aggressive and play_pos < 3) else -1
-        for card in cards[::take_order]:
-            if card in valid_plays and card.beats(trick.winning_card, trick):
-                return card
-        # can't take, so just duck or slough off
-        for card in cards[::-1]:
-            if card in valid_plays:
-                return card
-        raise LogicError("No valid card to play")
 
         ###################
         # lead card plays #
@@ -618,7 +555,7 @@ class StrategySmart(Strategy):
             """No trump seen with parter as caller
             """
             if deal.is_partner_call:
-                if trump_cards and not trump_played:
+                if trump_cards and not trumps_played:
                     if analysis.bowers():
                         log.debug("Lead bower to partner's call")
                         return trump_cards[0]
@@ -655,7 +592,7 @@ class StrategySmart(Strategy):
                 log.debug("Try and lead suit winner")
                 # REVISIT: is this the right logic (perhaps makes no sense if preceded by
                 # off-ace rule)???  Should also examine remaining cards in suit!!!
-                return my_winners[0] if trick_no <= 3 else my_suit_winners[-1]
+                return my_winners[0] if deal.trick_num <= 3 else my_winners[-1]
 
         def lead_low_non_trump() -> Optional[Card]:
             pass
@@ -698,8 +635,75 @@ class StrategySmart(Strategy):
             pass
 
         def play_random_card() -> Optional[Card]:
-            pass
+            """This is a catchall, though we should look at cases where this happens and
+            see if there is a better rule to insert before
 
+            Note: always returns value, can be last in ruleset
+            """
+            log.debug("Lead random card")
+            return random.choice(valid_plays)
+
+        #############
+        # rule sets #
+        #############
+
+        # Note, these are static for now, but later could be created dynamically based
+        # on game or deal scenario
+        init_lead    = [next_call_lead,
+                        draw_trump,
+                        lead_off_ace,
+                        lead_to_partner_call,
+                        lead_to_create_void,
+                        lead_low_from_long_suit]
+
+        subseq_lead  = [lead_last_card,
+                        draw_trump,
+                        # maybe swap the next two...
+                        lead_to_partner_call,
+                        lead_off_ace,
+                        lead_suit_winner,
+                        lead_to_create_void,
+                        lead_low_non_trump,
+                        lead_low_from_long_suit]
+
+        part_winning = [play_last_card,
+                        follow_suit_low,
+                        throw_off_to_create_void,
+                        throw_off_low,
+                        play_low_trump,
+                        play_random_card]
+
+        opp_winning  = [play_last_card,
+                        follow_suit_high,
+                        trump_low,
+                        throw_off_to_create_void,
+                        throw_off_low,
+                        play_random_card]
+
+        #########################
+        # pick ruleset and play #
+        #########################
+
+        def apply(ruleset):
+            """REVISIT: perhaps genericize the ruleset thing, in which case
+            we would move it to `core` or `utils` module
+            """
+            result = None
+            for rule in ruleset:
+                result = rule()
+                if result:
+                    break
+            if not result:
+                raise LogicError("Ruleset did not produce valid result ({ruleset})")
+            return result
+
+        if self.play_seq == 0:
+            ruleset = init_lead if deal.trick_num == 1 else subseq_lead
+        else:
+            ruleset = part_winning if deal.partner_winning else opp_winning
+
+        card = apply(ruleset)
+        return card.realcard(self)
 
 ##############
 # StrategyML #
