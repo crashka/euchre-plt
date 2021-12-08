@@ -42,12 +42,17 @@ class GameCtxMixin:
 ################
 
 def next_suit(self) -> Suit:
+    """Next relative to current suit (i.e. assuming it is trump)
     """
+    return SUITS[self.idx ^ 0x3]
+
+def green_suits(self) -> tuple[Suit, Suit]:
+    """Green relative to current suit (i.e. assuming it is trump)
     """
-    next_idx = self.idx ^ 0x3
-    return SUITS[next_idx]
+    return SUITS[self.idx ^ 0x1], SUITS[self.idx ^ 0x2]
 
 setattr(Suit, 'next_suit', next_suit)
+setattr(Suit, 'green_suits', next_suit)
 
 ################
 # augment Card #
@@ -102,6 +107,22 @@ def effcard(self, ctx: GameCtxMixin) -> Card:
             bower = find_bower(left, ctx.trump_suit)
     return bower or self
 
+def realcard(self, ctx: GameCtxMixin) -> Card:
+    """Inverse of `effcard`, translates bowers back to the "real" card (i.e.
+    the one in the deck)
+    """
+    if self.rank not in BOWER_RANKS:
+        return self
+
+    if self.suit != ctx.trump_suit:
+        raise LogicError(f"Bower ({self}) does not match trump suit ({ctx.trump_suit})")
+    if self.rank == right:
+        return find_card(jack, ctx.trump_suit)
+    elif self.rank == left:
+        return find_card(jack, ctx.trump_suit.next_suit())
+
+    raise LogicError(f"Don't know how to get realcard for {self}")
+
 def beats(self, other: Card, ctx: GameCtxMixin) -> bool:
     """
     """
@@ -133,6 +154,7 @@ def beats(self, other: Card, ctx: GameCtxMixin) -> bool:
 setattr(Card, 'efflevel', efflevel)
 setattr(Card, 'effsuit', effsuit)
 setattr(Card, 'effcard', effcard)
+setattr(Card, 'realcard', realcard)
 setattr(Card, 'beats', beats)
 
 ########
@@ -175,7 +197,7 @@ class Hand:
 
     def cards_by_suit(self, ctx: GameCtxMixin, use_bowers: bool = False) -> SuitCards:
         """The `use_bowers` flag indicates whether to translate trump and next suit
-        jacks to the equivalent `card.Bower` representation (used for analysis, but
+        jacks to the equivalent `Bower` representation (may be used for analysis, but
         not playing, since not recognized by the `deal` module)
         """
         by_suit = {suit: [] for suit in SUITS}
@@ -282,16 +304,19 @@ DEFEND_ALONE = Bid(defend_suit, True)
 #############
 
 class DealState(NamedTuple):
-    pos:        int
-    hand:       Hand
-    turn_card:  Optional[Card]
-    bids:       list[Bid]
-    tricks:     list[Trick]
-    contract:   Optional[Bid]
-    caller_pos: Optional[int]
-    go_alone:   Optional[bool]
-    def_alone:  Optional[bool]
-    def_pos:    Optional[int]
+    pos:              int
+    hand:             Hand
+    turn_card:        Optional[Card]
+    bids:             list[Bid]
+    tricks:           list[Trick]
+    contract:         Optional[Bid]
+    caller_pos:       Optional[int]
+    go_alone:         Optional[bool]
+    def_alone:        Optional[bool]
+    def_pos:          Optional[int]
+    played_by_suit:   dict[Suit, Hand]
+    unplayed_by_suit: dict[Suit, set[Card]]
+    player_state:     dict
 
     @property
     def cur_trick(self) -> Trick:
@@ -304,3 +329,25 @@ class DealState(NamedTuple):
     @property
     def is_dealer(self) -> bool:
         return self.pos == 3
+
+    @property
+    def is_caller(self) -> bool:
+        return self.pos == self.caller_pos
+
+    @property
+    def is_partner_caller(self) -> bool:
+        return self.pos ^ 0x02 == self.caller_pos
+
+    @property
+    def is_next_call(self) -> bool:
+        if not contract:
+            raise LogicError("Cannot call before playing phase")
+        next_suit = self.turn_card.suit.next_suit()
+        return contract.suit == next_suit and len(self.bids) == 5
+
+    @property
+    def is_reverse_next(self) -> bool:
+        if not contract:
+            raise LogicError("Cannot call before playing phase")
+        green_suits = self.turn_card.suit.green_suits()
+        return contract.suit in green_suits and len(self.bids) == 6

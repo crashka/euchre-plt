@@ -68,7 +68,9 @@ left        = BowerRank(6, 'left',  7, 'L')
 right       = BowerRank(7, 'right', 8, 'R')
 
 RANKS       = (nine, ten, jack, queen, king, ace)
+NEXT_RANKS  = (nine, ten, queen, king, ace)
 BOWER_RANKS = (left, right)
+TRUMP_RANKS = (nine, ten, queen, king, ace, left, right)
 ALL_RANKS   = RANKS + BOWER_RANKS
 
 ########

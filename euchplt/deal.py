@@ -39,50 +39,54 @@ class Deal(GameCtxMixin):
     playing tricks.  Note that `deck` is not shuffled in this class, it is up to the
     instantiator as to what it looks like; see `deal_cards()` for the implications.
     """
-    players:        list[Player]    # by position (0 = first bid, 3 = dealer)
-    deck:           Deck
-    hands:          list[Hand]      # by position (active)
-    turn_card:      Optional[Card]
-    buries:         list[Card]
-    bids:           list[Bid]
-    discard:        Optional[Card]
-    tricks:         list[Trick]
-    contract:       Optional[Bid]
-    caller_pos:     Optional[int]
-    go_alone:       Optional[bool]
-    def_alone:      Optional[bool]  # only used if `go_alone`
-    def_pos:        Optional[int]   # only used if `def_alone`
-    cards_dealt:    list[Hand]      # by position (for posterity)
-    played_by_pos:  list[Hand]
-    played_by_suit: dict[Suit, Hand]
-    tricks_won:     list[int]       # by position, same for both partners
-    points:         list[int]       # same as for `tricks_won`
-    result:         set[DealAttr]
+    players:          list[Player]    # by position (0 = first bid, 3 = dealer)
+    deck:             Deck
+    hands:            list[Hand]      # by position (active)
+    turn_card:        Optional[Card]
+    buries:           list[Card]
+    bids:             list[Bid]
+    discard:          Optional[Card]
+    tricks:           list[Trick]
+    contract:         Optional[Bid]
+    caller_pos:       Optional[int]
+    go_alone:         Optional[bool]
+    def_alone:        Optional[bool]  # only used if `go_alone`
+    def_pos:          Optional[int]   # only used if `def_alone`
+    cards_dealt:      list[Hand]      # by position (for posterity)
+    played_by_pos:    list[Hand]        # by order of play for a position
+    played_by_suit:   dict[Suit, Hand]  # by order of play within a suit
+    unplayed_by_suit: dict[Suit, set[Card]]  # using sets within a suit
+    tricks_won:       list[int]       # by position, same for both partners
+    points:           list[int]       # same as for `tricks_won`
+    result:           set[DealAttr]
+    player_state:     list[dict]
 
     def __init__(self, players: list[Player], deck: Deck):
         """
         """
         if len(players) != NUM_PLAYERS:
             raise LogicError(f"Expecting {NUM_PLAYERS} players, got {len(players)}")
-        self.players        = players
-        self.deck           = deck
-        self.hands          = []
-        self.turn_card      = None
-        self.buries         = []
-        self.bids           = []
-        self.discard        = None
-        self.tricks         = []
-        self.contract       = None
-        self.caller_pos     = None
-        self.go_alone       = None
-        self.def_alone      = None
-        self.def_pos        = None
-        self.cards_dealt    = []
-        self.played_by_pos  = [Hand([]) for _ in range(NUM_PLAYERS)]
-        self.played_by_suit = {s: Hand([]) for s in SUITS}
-        self.tricks_won     = []
-        self.points         = []
-        self.result         = set()
+        self.players          = players
+        self.deck             = deck
+        self.hands            = []
+        self.turn_card        = None
+        self.buries           = []
+        self.bids             = []
+        self.discard          = None
+        self.tricks           = []
+        self.contract         = None
+        self.caller_pos       = None
+        self.go_alone         = None
+        self.def_alone        = None
+        self.def_pos          = None
+        self.cards_dealt      = []
+        self.played_by_pos    = []
+        self.played_by_suit   = {}
+        self.unplayed_by_suit = {}
+        self.tricks_won       = []
+        self.points           = []
+        self.result           = set()
+        self.player_state     = [{} for _ in range(NUM_PLAYERS)]
 
     def deal_state(self, pos: int) -> DealState:
         """REVISIT: this is a clunky way of narrowing the full state of the deal for the
@@ -92,7 +96,8 @@ class Deal(GameCtxMixin):
         pos %= NUM_PLAYERS
         return DealState(pos, self.hands[pos], self.turn_card, self.bids, self.tricks,
                          self.contract, self.caller_pos, self.go_alone, self.def_alone,
-                         self.def_pos)
+                         self.def_pos, self.played_by_suit, self.unplayed_by_suit,
+                         self.player_state[pos])
 
     @property
     def deal_phase(self) -> DealPhase:
@@ -131,6 +136,14 @@ class Deal(GameCtxMixin):
         """Typically called after `do_bidding()` (not much sense in calling otherwise)
         """
         return self.contract and self.contract == PASS_BID
+
+    def prep_for_play(self) -> None:
+        self.tricks_won     = [0] * NUM_PLAYERS
+        self.played_by_pos  = [Hand([]) for _ in range(NUM_PLAYERS)]
+        self.played_by_suit = {s: Hand([]) for s in SUITS}
+        self.unplayed_by_suit = {s: set() for s in SUITS}
+        for card in self.deck:
+            self.unplayed_by_suit[card.effsuit(self)].add(card)
 
     def valid_plays(self, pos: int, trick: Trick) -> list[Card]:
         """
@@ -291,7 +304,7 @@ class Deal(GameCtxMixin):
         total_tricks = (len(self.deck) - len(self.buries)) // NUM_PLAYERS
         lead_pos = 0
 
-        self.tricks_won = [0] * NUM_PLAYERS
+        self.prep_for_play()
         for _ in range(total_tricks):
             trick = Trick(self)
             self.tricks.append(trick)
@@ -301,14 +314,20 @@ class Deal(GameCtxMixin):
                     continue
                 if self.def_alone and pos == self.def_pos ^ 0x02:  # TODO: fix magic!!!
                     continue
-                valid_cards = self.valid_plays(pos, trick)
-                card = self.players[pos].play_card(self.deal_state(pos), trick, valid_cards)
-                if card not in valid_cards:
-                    raise ImplementationError(f"Bad card played from {self.players[pos]}")
+                valid_plays = self.valid_plays(pos, trick)
+                card = self.players[pos].play_card(self.deal_state(pos), trick, valid_plays)
+                if card not in valid_plays:
+                    # be nice and fix things up if the player/strategy code converts jack
+                    # to bowers; but we need REVISIT the overall protocol, since this is
+                    # pretty ugly stuff!!!
+                    card = card.realcard(self)
+                    if card not in valid_plays:
+                        raise ImplementationError(f"Invalid play ({card}) from {self.players[pos]}")
                 trick.play_card(pos, card)
                 self.hands[pos].remove_card(card)
                 self.played_by_pos[pos].append_card(card)
-                self.played_by_suit[card.effsuit(trick)].append_card(card)
+                self.played_by_suit[card.effsuit(self)].append_card(card)
+                self.unplayed_by_suit[card.effsuit(self)].remove(card)
             self.tabulate(trick)
             lead_pos = trick.winning_pos
 
@@ -390,21 +409,26 @@ from .strategy import StrategyRandom, StrategySimple, StrategySmart
 def main() -> int:
     """Built-in driver to run through a simple/sample deal
     """
+    ndeals = 1
+    if len(sys.argv) > 1:
+        ndeals = int(sys.argv[1])
+
     players = [Player("Player 0", StrategyRandom),
                Player("Player 1", StrategySmart),
                Player("Player 2", StrategyRandom),
                Player("Player 3", StrategySmart)]
 
-    deck = get_deck()
-    deal = Deal(players, deck)
+    for _ in range(ndeals):
+        deck = get_deck()
+        deal = Deal(players, deck)
 
-    deal.deal_cards()
-    deal.do_bidding()
-    if deal.is_passed():
+        deal.deal_cards()
+        deal.do_bidding()
+        if deal.is_passed():
+            deal.print()
+            return 0
+        deal.play_cards()
         deal.print()
-        return 0
-    deal.play_cards()
-    deal.print()
 
     return 0
 

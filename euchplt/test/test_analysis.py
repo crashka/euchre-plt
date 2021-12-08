@@ -32,7 +32,7 @@ def test_hand_analysis():
     trump_cards = analysis.trump_cards(trump_suit)
     assert len(trump_cards) == 4
     assert set(trump_cards) == {card1, card2, right_bower, left_bower}
-    trump_cards = analysis.trump_cards(trump_suit, sort=True)
+    trump_cards = analysis.trump_cards(trump_suit)
     assert trump_cards[0] == right_bower
 
     off_aces = analysis.off_aces(trump_suit)
