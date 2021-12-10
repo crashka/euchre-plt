@@ -6,7 +6,8 @@ blocks (e.g. cards), and can be imported by either the player or game-playing mo
 from typing import Optional, NamedTuple
 
 from .core import LogicError
-from .card import ALL_RANKS, SUITS, Suit, Card, jack, right, left, find_bower
+from .card import ALL_RANKS, BOWER_RANKS, SUITS, Suit, Card, jack, right, left
+from .card import find_card, find_bower
 
 ################
 # GameCtxMixin #
@@ -123,9 +124,10 @@ def realcard(self, ctx: GameCtxMixin) -> Card:
 
     raise LogicError(f"Don't know how to get realcard for {self}")
 
+def same_as(self, other: Card, ctx: GameCtxMixin) -> bool:
+    return self.effcard(ctx) == other.effcard(ctx)
+
 def beats(self, other: Card, ctx: GameCtxMixin) -> bool:
-    """
-    """
     if ctx.lead_card is None:
         raise LogicError("Lead card not set")
     lead_suit = ctx.lead_card.effsuit(ctx)
@@ -155,6 +157,7 @@ setattr(Card, 'efflevel', efflevel)
 setattr(Card, 'effsuit', effsuit)
 setattr(Card, 'effcard', effcard)
 setattr(Card, 'realcard', realcard)
+setattr(Card, 'same_as', same_as)
 setattr(Card, 'beats', beats)
 
 ########
@@ -273,6 +276,13 @@ class Trick(GameCtxMixin):
             return True
         return False
 
+    def lead_trumped(self) -> bool:
+        if not self.lead_card:
+            raise LogicError("Lead card not yet played")
+        non_trump_led = self.lead_card.effsuit(self) != self.trump_suit
+        trump_winning = self.winning_card.effsuit(self) == self.trump_suit
+        return non_trump_led and trump_winning
+
 #######
 # Bid #
 #######
@@ -340,17 +350,17 @@ class DealState(NamedTuple):
 
     @property
     def is_next_call(self) -> bool:
-        if not contract:
+        if not self.contract:
             raise LogicError("Cannot call before playing phase")
         next_suit = self.turn_card.suit.next_suit()
-        return contract.suit == next_suit and len(self.bids) == 5
+        return self.contract.suit == next_suit and len(self.bids) == 5
 
     @property
     def is_reverse_next(self) -> bool:
-        if not contract:
+        if not self.contract:
             raise LogicError("Cannot call before playing phase")
         green_suits = self.turn_card.suit.green_suits()
-        return contract.suit in green_suits and len(self.bids) == 6
+        return self.contract.suit in green_suits and len(self.bids) == 6
 
     @property
     def trick_num(self) -> int:
@@ -378,3 +388,10 @@ class DealState(NamedTuple):
     def partner_winning(self) -> bool:
         # note, this also works when `winning_pos == None`
         return self.cur_trick.winning_pos == self.pos ^ 0x02
+
+    @property
+    def lead_trumped(self) -> bool:
+        """Only valid if lead card has been played for current trick; note, always
+        returns False if trump is led
+        """
+        return self.cur_trick.lead_trumped()

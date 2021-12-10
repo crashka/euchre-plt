@@ -7,7 +7,7 @@ from random import Random
 from importlib import import_module
 
 from .core import ConfigError, LogicError, cfg, log
-from .card import SUITS, Suit, Card, right, left, ace, jack
+from .card import SUITS, Suit, Card, right, ace, jack
 from .euchre import Bid, PASS_BID, NULL_BID, defend_suit, Hand, Trick, DealState
 from .analysis import HandAnalysis, PlayAnalysis
 
@@ -442,9 +442,10 @@ class StrategySmart(Strategy):
         """
         assert deal.turn_card in deal.hand
         turn_suit = deal.turn_card.suit
-        persist   = deal.player_state
-        discard   = persist.get('discard')
+        persist = deal.player_state
 
+        # see if best discard was previously computed
+        discard = persist.get('discard')
         if not discard:
             # REVISIT: for now, just use the same hand strength calculation used for
             # bidding; but LATER we may want to implement a more detailed rule-based
@@ -472,12 +473,14 @@ class StrategySmart(Strategy):
         play_plan = persist['play_plan']
 
         analysis        = PlayAnalysis(deal)
+        # in current hand
         trump_cards     = analysis.trump_cards()
-        trumps_played   = analysis.trumps_played()
-        trumps_missing  = analysis.trumps_missing()
         off_aces        = analysis.off_aces()
         singleton_cards = analysis.singleton_cards()
         my_winners      = analysis.my_winners()
+        # across all hands
+        trumps_played   = analysis.trumps_played()
+        trumps_missing  = analysis.trumps_missing()  # not in current hand or played
 
         ###################
         # lead card plays #
@@ -507,19 +510,19 @@ class StrategySmart(Strategy):
             if deal.is_next_call and trump_cards:
                 if not analysis.bowers():
                     log.debug("No bower, lead small trump")
-                    play_plan.append(PlayPlan.PRESERVE_TRUMP)
+                    play_plan.add(PlayPlan.PRESERVE_TRUMP)
                     return trump_cards[-1]
                 elif len(trump_cards) > 1:
                     if trump_cards[0].rank == right and trump_cards[1].rank == ace:
                         log.debug("Lead ace from right-ace")
-                        play_plan.append(PlayPlan.DRAW_TRUMP)
+                        play_plan.add(PlayPlan.DRAW_TRUMP)
                         return trump_cards[1]
                     if trump_cards[0].level < ace.level:
-                        grn_suitcards = analysis.green_suit_cards()
-                        if grn_suitcards[0]:
+                        suit_cards = analysis.green_suit_cards()
+                        if suit_cards[0]:
                             log.debug("Lead low from longest green suit")
-                            play_plan.append(PlayPlan.DRAW_TRUMP)
-                            return grn_suitcards[0][-1]
+                            play_plan.add(PlayPlan.DRAW_TRUMP)
+                            return suit_cards[0][-1]
 
         def draw_trump() -> Optional[Card]:
             """Draw trump if caller (strong hand), or flush out bower
@@ -534,7 +537,7 @@ class StrategySmart(Strategy):
                         play_plan.remove(PlayPlan.DRAW_TRUMP)
                         return trump_cards[0]
                 elif len(trump_cards) >= 3:
-                    play_plan.append(PlayPlan.DRAW_TRUMP)
+                    play_plan.add(PlayPlan.DRAW_TRUMP)
                     log.debug("Draw trump (or flush out bower)")
                     return trump_cards[0]
 
@@ -552,9 +555,9 @@ class StrategySmart(Strategy):
                     return random.choice(off_aces)
 
         def lead_to_partner_call() -> Optional[Card]:
-            """No trump seen with parter as caller
+            """No trump seen with partner as caller
             """
-            if deal.is_partner_call:
+            if deal.is_partner_caller:
                 if trump_cards and not trumps_played:
                     if analysis.bowers():
                         log.debug("Lead bower to partner's call")
@@ -595,14 +598,29 @@ class StrategySmart(Strategy):
                 return my_winners[0] if deal.trick_num <= 3 else my_winners[-1]
 
         def lead_low_non_trump() -> Optional[Card]:
-            pass
+            """If still trump in hand, lead lowest card (non-trump)
+            """
+            if trump_cards and len(trump_cards) < len(deal.hand):
+                # NOTE: will pick suit by random if multiple cards at min level
+                by_level = analysis.cards_by_level(offset_trump=True)
+                log.debug("Lead lowest non-trump")
+                return by_level[-1]
 
         def lead_low_from_long_suit() -> Optional[Card]:
-            pass
+            """Lead low from long suit (favor green if defending?)
+
+            Note: always returns value, can be last in ruleset
+            """
+            suit_cards: list[list[Card]] = list(analysis.get_suit_cards().values())
+            # cards already sorted (desc) within each suit
+            suit_cards.sort(key=lambda s: len(s), reverse=True)
+            # TODO: a little more logic in choosing suit (perhaps avoid trump, if possible)!!!
+            log.debug("Lead low from longest suit")
+            return suit_cards[0][0]
 
         def lead_random_card() -> Optional[Card]:
-            """This is a catchall, though we should look at cases where this happens and
-            see if there is a better rule to insert before
+            """This is a catch-all, though we should look at cases where this happens
+            and see if there is a better rule to insert before it
 
             Note: always returns value, can be last in ruleset
             """
@@ -613,30 +631,111 @@ class StrategySmart(Strategy):
         # follow card plays #
         #####################
 
+        lead_card = deal.cur_trick.lead_card
+        follow_cards = analysis.follow_cards(lead_card) if lead_card else None
+
         def play_last_card() -> Optional[Card]:
-            pass
+            """
+            """
+            if len(deal.hand) == 1:
+                log.debug("Play last card")
+                return deal.hand.cards[0]
 
         def follow_suit_low() -> Optional[Card]:
-            pass
+            """Follow suit low
+            """
+            if follow_cards:
+                # REVISIT: are there cases where we want to try and take the lead???
+                log.debug("Follow suit low")
+                return follow_cards[-1]
 
         def throw_off_to_create_void() -> Optional[Card]:
-            pass
+            """Create void (if early in deal).  NOTE: this only matters if we've decided not
+            to trump (e.g. to preserve for later)
+            """
+            if trump_cards and singleton_cards:
+                if len(singleton_cards) == 1:
+                    log.debug("Throw off singleton to void suit")
+                    return singleton_cards[0]
+                else:
+                    # REVISIT: perhaps only makes sense in earlier rounds (2 and 3), and also
+                    # reconsider selection if multiple (currently lowest valued)!!!
+                    singleton_cards.sort(key=lambda c: c.efflevel(trick), reverse=True)
+                    log.debug("Throw off singleton to void suit (lowest)")
+                    return singleton_cards[-1]
 
         def throw_off_low() -> Optional[Card]:
-            pass
+            """Throw off lowest non-trump card
+            """
+            if len(trump_cards) < len(deal.hand):
+                # NOTE: this will pick random suit if multiple cards at min level
+                by_level = analysis.cards_by_level(offset_trump=True)
+                log.debug("Throw-off lowest non-trump")
+                return by_level[-1]
 
         def play_low_trump() -> Optional[Card]:
-            pass
+            """Play lowest trump (assumes no non-trump remaining)
+            """
+            if trump_cards and len(trump_cards) == len(deal.hand):
+                # REVISIT: are there cases where we want to play a higher trump???
+                log.debug("Play lowest trump")
+                return trump_cards[-1]
 
         def follow_suit_high() -> Optional[Card]:
-            pass
+            """Follow suit (high if can lead trick, low otherwise)
+            """
+            if follow_cards:
+                if deal.lead_trumped:
+                    log.debug("Follow suit low (trumped)")
+                    return follow_cards[-1]
+                if follow_cards[0].beats(trick.winning_card, trick):
+                    # REVISIT: are there cases where we don't want to try and take the trick,
+                    # or not play???
+                    if deal.play_seq == 3:
+                        for card in follow_cards[::-1]:
+                            if card.beats(trick.winning_card, trick):
+                                log.debug("Follow suit, take winner")
+                                return card
+                    else:
+                        log.debug("Follow suit high")
+                        return follow_cards[0]
+
+                log.debug("Follow suit low (can't beat)")
+                return follow_cards[-1]
 
         def trump_low() -> Optional[Card]:
-            pass
+            """Trump (low) to lead trick
+            """
+            if trump_cards:
+                if deal.lead_trumped:
+                    if trump_cards[0].beats(trick.winning_card, trick):
+                        # REVISIT: are there cases where we don't want to try and take the trick,
+                        # or not play???
+                        if deal.play_seq == 3:
+                            for card in trump_cards:
+                                if card.beats(trick.winning_card, trick):
+                                    log.debug("Overtrump, take winner")
+                                    return card
+                        else:
+                            log.debug("Overtrump high")
+                            return trump_cards[0]
+                else:
+                    # hold onto highest remaining trump (sure winner later), otherwise try and
+                    # take the trick
+                    # REVISIT: are there cases where we want to play a higher trump, or other
+                    # reasons to throw off (esp. if pos == 1 and partner yet to play)???
+                    if len(trump_cards) > 1:
+                        log.debug("Play lowest trump, to lead trick")
+                        return trump_cards[-1]
+                    high_trump = analysis.suit_winners()[trick.trump_suit]
+                    assert high_trump  # must exist, since we have one
+                    if not trump_cards[0].same_as(high_trump, trick):
+                        log.debug("Play last trump, to lead trick")
+                        return trump_cards[0]
 
         def play_random_card() -> Optional[Card]:
-            """This is a catchall, though we should look at cases where this happens and
-            see if there is a better rule to insert before
+            """This is a catch-all, though we should look at cases where this happens
+            and see if there is a better rule to insert before it
 
             Note: always returns value, can be last in ruleset
             """
@@ -697,13 +796,13 @@ class StrategySmart(Strategy):
                 raise LogicError("Ruleset did not produce valid result ({ruleset})")
             return result
 
-        if self.play_seq == 0:
+        if deal.play_seq == 0:
             ruleset = init_lead if deal.trick_num == 1 else subseq_lead
         else:
             ruleset = part_winning if deal.partner_winning else opp_winning
 
         card = apply(ruleset)
-        return card.realcard(self)
+        return card.realcard(trick)
 
 ##############
 # StrategyML #
@@ -729,7 +828,7 @@ from .card import get_deck
 def tune_strategy_smart(*args) -> int:
     """Run through a deck of cards evaluating the strength of each hand "dealt",
     iterating over the four suits as trump.  This is used for manual inspection
-    to help tune the `HandAnalysisSmart` parameters and biddable theshholds.
+    to help tune the `HandAnalysisSmart` parameters and biddable thresholds.
 
     FUTURE: it would be cool to create an interactive utility whereby the human
     evaluates a number of hands based on biddability, as well as absolute and/or
@@ -749,7 +848,7 @@ def tune_strategy_smart(*args) -> int:
         cards.sort(key=lambda c: c.sortkey)
         analysis = HandAnalysisSmart(Hand(cards))
         for suit in SUITS:
-            hand_strength = analysis.hand_strength(suit)
+            _ = analysis.hand_strength(suit)
         del deck[0:HAND_CARDS]
 
     return 0

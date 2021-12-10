@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from .core import ConfigError
+from .core import ConfigError, cfg
 from .card import Card
 from .euchre import Bid, Trick, DealState
-from .strategy import Strategy
+from .strategy import Strategy, get_strategy
 
 ##########
 # Player #

@@ -2,7 +2,7 @@
 
 from typing import Optional
 
-from .card import Suit, SUITS, Card, ace, jack, Bower
+from .card import Suit, SUITS, Card, ace, Bower
 from .euchre import GameCtxMixin, SuitCards, Hand, DealState
 
 ###########
@@ -76,7 +76,9 @@ class HandAnalysis:
         return [cards[0] for cards in suit_cards.values() if len(cards) == 1]
 
     def cards_by_level(self, trump_suit: Suit, offset_trump: bool = False) -> list[Card]:
-        """Note, this does NOT currently translate jacks into bowers
+        """Return cards by descending level.  `offset_trump=True` sorts all trump higher
+        than all non-trump.  Note, this does NOT currently translate jacks into bowers,
+        though recognizes them by effective level and always sorts them highest
         """
         ctx = SUIT_CTX[trump_suit]
         by_level = self.hand.copy_cards()
@@ -101,6 +103,9 @@ class PlayAnalysis:
         self.hand          = deal.hand
         self.hand_analysis = HandAnalysis(self.hand)
 
+    def get_suit_cards(self) -> SuitCards:
+        return self.hand_analysis.get_suit_cards(self.ctx.suit)
+
     def trump_cards(self) -> list[Card]:
         return self.hand_analysis.trump_cards(self.ctx.suit)
 
@@ -115,10 +120,10 @@ class PlayAnalysis:
 
     def follow_cards(self, lead_card: Card) -> list[Card]:
         """Note, this does NOT currently translate jacks into bowers, so cards
-        from this list can be returned by `play_card()`
+        from this list can be returned directly by `play_card()`
         """
         lead_suit = lead_card.effsuit(self.ctx)
-        return self.hand.cards_by_suit(self.ctx)[lead_suit]
+        return self.hand.cards_by_suit(self.ctx, use_bowers=False)[lead_suit]
 
     def singleton_cards(self) -> list[Card]:
         """Return the singleton cards themselves; the singleton suits are implied
@@ -126,16 +131,16 @@ class PlayAnalysis:
         return self.hand_analysis.singleton_cards(self.ctx.suit)
 
     def cards_by_level(self, offset_trump: bool = False) -> list[Card]:
-        """Note, this does NOT currently translate jacks into bowers (based on
-        the HandAnalysis implemention), so cards from this list can be returned
-        by `play_card()`
+        """Return cards by descending level.  Note, this does NOT currently translate
+        jacks into bowers (based on the HandAnalysis implementation), so cards from this
+        list can be returned directly by `play_card()`
         """
         return self.hand_analysis.cards_by_level(self.ctx.suit, offset_trump)
 
     def unplayed_by_suit(self) -> dict[Suit, list[Card]]:
         """Recast card sets as lists, so we can order them by descending level
         within each suit.  Note, this does NOT currently translate jacks into
-        bowers, so cards from this list can be returned by `play_card()`
+        bowers, so cards from this list can be returned directly by `play_card()`
         """
         card_set_iter = self.deal.unplayed_by_suit.items()
         suit_cards = {suit: list(card_set) for suit, card_set in card_set_iter}
@@ -175,7 +180,7 @@ class PlayAnalysis:
         return [card.effcard(self.ctx) for card in card_set]
 
     def trumps_missing(self) -> list[Card]:
-        """Returns trump cards not yet played and not in the currrent hand--
+        """Returns trump cards not yet played and not in the current hand--
         in other words, those that we need to account for.  Note, this DOES
         translate jacks into bowers, so that bower levels and ranks can be
         used, the return list IS sorted
