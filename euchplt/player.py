@@ -14,22 +14,24 @@ class Player:
     name:     str
     strategy: Strategy
 
-    def __init__(self, name: str, base_strategy: type = None, **kwargs):
-        """If `base_strategy` is not specified, then the player strategy (which includes
-        the various parameters) is obtained from the config file
+    def __init__(self, name: str, strategy: Strategy = None):
+        """A player maybe be defined by an entry in the config file (identified
+        by `name`); or if an instantiated `strategy` object, we will create an
+        ad hoc player (in which case `name` is just a label with no additional
+        meaning or association)
         """
-        if not base_strategy:
+        if not strategy:
             players = cfg.config('players')
             if name not in players:
                 raise RuntimeError(f"Player '{name}' is not known")
-            strat_name = players[name].get('strategy')
-            if not strat_name:
+            strategy_name = players[name].get('strategy')
+            if not strategy_name:
                 raise ConfigError(f"'strategy' not specified for player '{name}'")
             self.name = name
-            self.strategy = get_strategy(strat_name)
+            self.strategy = get_strategy(strategy_name)
         else:
             self.name = name
-            self.strategy = base_strategy(kwargs)
+            self.strategy = strategy
 
     def __str__(self):
         return self.name

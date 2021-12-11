@@ -382,7 +382,7 @@ class Deal(GameCtxMixin):
         print("Tricks Won:", file=file)
         for i in range(2):
             caller = " (caller)" if self.caller_pos % 2 == i else ""
-            print(f"  {self.players[i].name} / {self.players[i+2].name}: "
+            print(f"  {self.players[i].name}/{self.players[i+2].name}: "
                   f"{self.tricks_won[i]}{caller}", file=file)
 
         if self.deal_phase.value < DealPhase.SCORED.value:
@@ -392,7 +392,7 @@ class Deal(GameCtxMixin):
         print("Deal Points:", file=file)
         for i in range(2):
             caller = " (caller)" if self.caller_pos % 2 == i else ""
-            print(f"  {self.players[i].name} / {self.players[i+2].name}: "
+            print(f"  {self.players[i].name}/{self.players[i+2].name}: "
                   f"{self.points[i]}{caller}", file=file)
 
 ########
@@ -408,10 +408,10 @@ def main() -> int:
     if len(sys.argv) > 1:
         ndeals = int(sys.argv[1])
 
-    players = [Player("Player 0", StrategyRandom),
-               Player("Player 1", StrategySmart),
-               Player("Player 2", StrategyRandom),
-               Player("Player 3", StrategySmart)]
+    players = [Player("Player 0", StrategyRandom(seed=12345)),
+               Player("Player 1", StrategySmart()),
+               Player("Player 2", StrategyRandom(seed=98765)),
+               Player("Player 3", StrategySmart())]
 
     for _ in range(ndeals):
         deck = get_deck()

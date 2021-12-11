@@ -1,28 +1,52 @@
 # -*- coding: utf-8 -*-
 
-from typing import Iterable
+from typing import Union, Iterable
 
+from .core import cfg, ConfigError
 from .player import Player
+from .strategy import get_strategy
 
 ########
 # Team #
 ########
 
-class Team:
-    """
-    """
-    name:    str
-    players: list[Player]
-    
-    def __init__(self, players: Iterable[Player]):
-        """Currently not getting teams from config file, only assembling them
-        from the players passed in
-        """
-        self.players = list(players)
-        if len(self.players) != 2:
-            raise RuntimeError(f"Expected 2 players, got {len(self.players)}")
+MIXED_STRATEGY = "mixed strategy"
 
-        self.name = ' / '.join(str(p) for p in self.players)
+class Team:
+    name:          str
+    # note that the following is the name of configured strategy in the config
+    # file, and not the instantiated `Strategy` object itself (as in `Player`)
+    team_strategy: str
+    players:       list[Player]
+
+    def __init__(self, team_def: Union[str, Iterable[Player]]):
+        """A team can be defined by an entry in the config file; or by an iterable (with
+        two entries) of instantiated `Player` objects, in which case a team name will be
+        generated
+        """
+        if isinstance(team_def, str):
+            teams = cfg.config('teams')
+            if team_def not in teams:
+                raise RuntimeError(f"Team '{team_def}' is not known")
+            strategy = teams[team_def].get('strategy')
+            if not strategy:
+                raise ConfigError(f"'strategy' not specified for team '{team_def}'")
+            self.name = team_def
+            self.team_strategy = strategy
+            self.players = []
+            for i in range(2):
+                player_name = self.name + f" - Player{i+1}"
+                self.players.append(Player(player_name, get_strategy(self.team_strategy)))
+        else:
+            self.players = list(team_def)
+            if len(self.players) != 2:
+                raise RuntimeError(f"Expected 2 players, got {len(self.players)}")
+
+            self.name = '/'.join(str(p) for p in self.players)
+            if type(self.players[0].strategy) is type(self.players[1].strategy):
+                self.team_strategy = type(self.players[0].strategy).__name__
+            else:
+                self.team_strategy = MIXED_STRATEGY
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.team_strategy})"

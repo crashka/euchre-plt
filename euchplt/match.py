@@ -134,12 +134,7 @@ from .strategy import StrategyRandom, StrategySimple, StrategySmart
 def main() -> int:
     """Built-in driver to run through a simple/sample match
     """
-    players     = [Player("Player 02"),
-                   Player("Player 03"),
-                   Player("Player 06"),
-                   Player("Player 07")]
-    teams       = [Team([players[0], players[1]]),
-                   Team([players[2], players[3]])]
+    teams = [Team("Team 02"), Team("Team 06")]
 
     match = Match(teams)
     match.play()

@@ -15,14 +15,18 @@ from .analysis import SUIT_CTX, HandAnalysis, PlayAnalysis
 # Strategy #
 ############
 
-def get_strategy(strat_name: str):
+def get_strategy(strat_name: str) -> 'Strategy':
+    """Return instantiated Strategy object based on configured strategy, identified
+    by name; note that the named strategy entry may override base parameter values
+    specified for the underlying implementation class
+    """
     strategies = cfg.config('strategies')
     if strat_name not in strategies:
         raise RuntimeError(f"Strategy '{strat_name}' is not known")
     strat_info   = strategies[strat_name]
     class_name   = strat_info.get('base_class')
     module_path  = strat_info.get('module_path')
-    strat_params = strat_info.get('strategy_params')
+    strat_params = strat_info.get('strategy_params') or {}
     if not class_name:
         raise ConfigError(f"'base_class' not specified for strategy '{strat_name}'")
     if module_path:
@@ -30,22 +34,22 @@ def get_strategy(strat_name: str):
         strat_class = getattr(module, class_name)
     else:
         strat_class = globals()[class_name]
-    if strat_params:
-        return strat_class(strat_params)
-    else:
-        return strat_class()
+
+    return strat_class(**strat_params)
 
 class Strategy:
     """
     """
-    def __init__(self, params: dict = None):
-        params = params or {}
+    def __init__(self, **kwargs):
+        """Note that kwargs are parameters overrides on top of base_strategy_params
+        (in the config file) for the underlying implementation class
+        """
         cls_name = type(self).__name__
         base_params = cfg.config('base_strategy_params')
         if cls_name not in base_params:
             raise ConfigError(f"Strategy class '{cls_name}' does not exist")
         for key, base_value in base_params[cls_name].items():
-            setattr(self, key, params.get(key) or base_value)
+            setattr(self, key, kwargs.get(key) or base_value)
         pass  # TEMP: for debugging!!!
 
     def __str__(self):
@@ -77,8 +81,8 @@ class StrategyRandom(Strategy):
     seed:   Optional[int] = None
     random: Random
 
-    def __init__(self, params: dict = None):
-        super().__init__(params)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.random = Random(self.seed)
 
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
@@ -870,7 +874,7 @@ def tune_strategy_smart(*args) -> int:
     return 0
 
 def main() -> int:
-    """Built-in driver to invoke various utility functions.
+    """Built-in driver to invoke various utility functions for the module
 
     Usage: strategy.py <func_name> [<arg> ...]
 
