@@ -15,6 +15,9 @@ class Team:
     players: list[Player]
     
     def __init__(self, players: Iterable[Player]):
+        """Currently not getting teams from config file, only assembling them
+        from the players passed in
+        """
         self.players = list(players)
         if len(self.players) != 2:
             raise RuntimeError(f"Expected 2 players, got {len(self.players)}")

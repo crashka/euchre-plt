@@ -341,6 +341,10 @@ class DealState(NamedTuple):
         return self.pos == 3
 
     @property
+    def is_partner_dealer(self) -> bool:
+        return self.pos == 1
+
+    @property
     def is_caller(self) -> bool:
         return self.pos == self.caller_pos
 

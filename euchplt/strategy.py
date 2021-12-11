@@ -7,9 +7,9 @@ from random import Random
 from importlib import import_module
 
 from .core import ConfigError, LogicError, cfg, log
-from .card import SUITS, Suit, Card, right, ace, jack
+from .card import SUITS, Suit, Rank, Card, right, ace, jack
 from .euchre import Bid, PASS_BID, NULL_BID, defend_suit, Hand, Trick, DealState
-from .analysis import HandAnalysis, PlayAnalysis
+from .analysis import SUIT_CTX, HandAnalysis, PlayAnalysis
 
 ############
 # Strategy #
@@ -318,6 +318,13 @@ class HandAnalysisSmart(HandAnalysis):
         log.info(f"{'hand_strength':15}: {strength:6.2f}")
         return strength
 
+    def turn_card_rank(self, turn_card: Card) -> Rank:
+        """SUPER-HACKY: this doesn't really belong here, need to figure out a nicer way
+        of doing this!!!
+        """
+        ctx = SUIT_CTX[turn_card.suit]
+        return turn_card.effcard(ctx).rank
+
 class PlayPlan(Enum):
     DRAW_TRUMP     = "Draw_Trump"
     PRESERVE_TRUMP = "Preserve_Trump"
@@ -332,9 +339,11 @@ class StrategySmart(Strategy):
     different opponent profiles.
     """
     hand_analysis:    dict
-    bid_thresh:       list[int]
-    alone_margin:     list[int]
-    def_alone_thresh: list[int]
+    turn_card_value:  list[int]  # by rank.idx
+    turn_card_coeff:  list[int]  # by pos (0-3)
+    bid_thresh:       list[int]  # by pos (0-7)
+    alone_margin:     list[int]  # by pos (0-7)
+    def_alone_thresh: list[int]  # by pos (0-7)
 
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """General logic:
@@ -393,7 +402,14 @@ class StrategySmart(Strategy):
             else:
                 analysis = HandAnalysisSmart(deal.hand, self.hand_analysis)
                 strength = analysis.hand_strength(turn_suit)
-                # TODO: adjust for turn card (partner vs. opp)
+                # make adjustment for turn card (up/down for partner/opp.)
+                turn_rank = analysis.turn_card_rank(deal.turn_card)
+                turn_value = self.turn_card_value[turn_rank.idx] / sum(self.turn_card_value)
+                turn_strength = turn_value * self.turn_card_coeff[bid_pos]
+                strength += turn_strength * (1.0 if deal.is_partner_dealer else -1)
+                log.info(f"{'turn card adj':15}: "
+                         f"{'+' if deal.is_partner_dealer else '-'}{turn_strength:.2f}")
+                log.info(f"{'adj_strength':15}: {strength:6.2f}")
                 if strength > self.bid_thresh[bid_pos]:
                     thresh_margin = strength - self.bid_thresh[bid_pos]
                     bid_suit = turn_suit

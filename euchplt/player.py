@@ -29,7 +29,7 @@ class Player:
             self.strategy = get_strategy(strat_name)
         else:
             self.name = name
-            self.strategy = base_strategy(**kwargs)
+            self.strategy = base_strategy(kwargs)
 
     def __str__(self):
         return self.name

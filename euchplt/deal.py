@@ -421,7 +421,7 @@ def main() -> int:
         deal.do_bidding()
         if deal.is_passed():
             deal.print()
-            return 0
+            continue
         deal.play_cards()
         deal.print()
 

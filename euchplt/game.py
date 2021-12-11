@@ -187,21 +187,17 @@ class Game(object):
 # main #
 ########
 
-from .strategy import StrategySimple
+from .strategy import StrategyRandom, StrategySimple, StrategySmart
 
 def main() -> int:
     """Built-in driver to run through a simple/sample game
     """
-    plyr_params = [{},
-                   {'aggressive': True},
-                   {},
-                   {'aggressive': True}]
-    players     = [Player("Player 0", StrategySimple, **plyr_params[0]),
-                   Player("Player 1", StrategySimple, **plyr_params[1]),
-                   Player("Player 2", StrategySimple, **plyr_params[2]),
-                   Player("Player 3", StrategySimple, **plyr_params[3])]
-    teams       = [Team([players[0], players[2]]),
-                   Team([players[1], players[3]])]
+    players     = [Player("Player 02"),
+                   Player("Player 03"),
+                   Player("Player 06"),
+                   Player("Player 07")]
+    teams       = [Team([players[0], players[1]]),
+                   Team([players[2], players[3]])]
 
     game = Game(teams)
     game.play()
