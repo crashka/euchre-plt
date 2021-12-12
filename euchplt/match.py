@@ -40,7 +40,7 @@ class Match(object):
     games:  list[Game]                  # sequential
     score:  list[int]                   # (games) indexed as `teams`
     stats:  list[dict[MatchStat, int]]  # each stat indexed as `teams`
-    winner: Optional[Team]
+    winner: Optional[tuple[int, Team]]
 
     def __init__(self, teams: Iterable[Team]):
         """
@@ -50,8 +50,7 @@ class Match(object):
             raise LogicError(f"Expected {NUM_TEAMS} teams, got {len(self.teams)}")
         self.games  = []
         self.score  = [0] * NUM_TEAMS
-        self.stats  = [{stat: 0 for stat in MatchStatIter()}
-                       for _ in range(NUM_TEAMS)]
+        self.stats  = [{stat: 0 for stat in MatchStatIter()} for _ in teams]
         self.winner = None
 
     def tabulate(self, game: Game) -> None:
@@ -72,7 +71,7 @@ class Match(object):
         winner = None
         for i, team_score in enumerate(self.score):
             if team_score >= MATCH_GAMES:
-                winner = self.teams[i]
+                winner = i, self.teams[i]
                 break
         if not winner:
             raise LogicError("Winner not found")
@@ -116,7 +115,7 @@ class Match(object):
         if not self.winner:
             return
 
-        print(f"Match Winner:\n  {self.winner}")
+        print(f"Match Winner:\n  {self.winner[1]}")
 
     def print_stats(self, file: TextIO = sys.stdout) -> None:
         print("Match Stats:", file=file)
@@ -134,7 +133,8 @@ from .strategy import StrategyRandom, StrategySimple, StrategySmart
 def main() -> int:
     """Built-in driver to run through a simple/sample match
     """
-    teams = [Team("Team 02"), Team("Team 06")]
+    teams = [Team("Team 02"),
+             Team("Team 06")]
 
     match = Match(teams)
     match.play()

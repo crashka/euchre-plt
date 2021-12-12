@@ -38,25 +38,27 @@ def get_strategy(strat_name: str) -> 'Strategy':
     return strat_class(**strat_params)
 
 class Strategy:
-    """
+    """Abstract base class, cannot be instantiated directly
     """
     def __init__(self, **kwargs):
         """Note that kwargs are parameters overrides on top of base_strategy_params
         (in the config file) for the underlying implementation class
         """
-        cls_name = type(self).__name__
+        class_name = type(self).__name__
         base_params = cfg.config('base_strategy_params')
-        if cls_name not in base_params:
-            raise ConfigError(f"Strategy class '{cls_name}' does not exist")
-        for key, base_value in base_params[cls_name].items():
+        if class_name not in base_params:
+            raise ConfigError(f"Strategy class '{class_name}' does not exist")
+        for key, base_value in base_params[class_name].items():
             setattr(self, key, kwargs.get(key) or base_value)
         pass  # TEMP: for debugging!!!
 
     def __str__(self):
-        return self.__class__.__name__
+        return type(self).__name__
 
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
-        """
+        """Note that `deal` contains a dict element named `player_state`, which the
+        implementation may use to persist state between calls (opaque to the calling
+        module)
         """
         raise NotImplementedError("Can't call abstract method")
 
@@ -67,7 +69,11 @@ class Strategy:
         raise NotImplementedError("Can't call abstract method")
 
     def play_card(self, deal: DealState, trick: Trick, valid_plays: list[Card]) -> Card:
-        """
+        """TODO: should probably remove `trick` as an arg (always same as `deal.cur_trick`)
+
+        Note that in `valid_plays`, jacks are NOT translated into bowers, and thus the
+        implementation should also NOT return bowers (`card.realcard()` can be used if
+        bowers are used as part of the analysis)
         """
         raise NotImplementedError("Can't call abstract method")
 
@@ -92,8 +98,8 @@ class StrategyRandom(Strategy):
             alone = self.random.random() < 0.10
             return Bid(defend_suit, alone)
 
-        bid_no = len(deal.bids)
-        do_bid = self.random.random() < 1 / (9 - bid_no)
+        bid_num = len(deal.bids)
+        do_bid = self.random.random() < 1 / (9 - bid_num)
         if do_bid:
             if deal.bid_round == 1:
                 alone = self.random.random() < 0.10
@@ -270,11 +276,11 @@ class HandAnalysisSmart(HandAnalysis):
     def __init__(self, hand: Hand, params: dict = None):
         super().__init__(hand)
         params = params or {}
-        cls_name = type(self).__name__
+        class_name = type(self).__name__
         base_params = cfg.config('base_analysis_params')
-        if cls_name not in base_params:
-            raise ConfigError(f"Analysis class '{cls_name}' does not exist")
-        for key, base_value in base_params[cls_name].items():
+        if class_name not in base_params:
+            raise ConfigError(f"Analysis class '{class_name}' does not exist")
+        for key, base_value in base_params[class_name].items():
             setattr(self, key, params.get(key) or base_value)
         pass  # TEMP: for debugging!!!
 

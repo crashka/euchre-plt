@@ -11,6 +11,7 @@ from .strategy import get_strategy
 ########
 
 MIXED_STRATEGY = "mixed strategy"
+DFLT_PLAYER_IDS = ("Player 1", "Player 2")
 
 class Team:
     name:          str
@@ -22,7 +23,7 @@ class Team:
     def __init__(self, team_def: Union[str, Iterable[Player]]):
         """A team can be defined by an entry in the config file; or by an iterable (with
         two entries) of instantiated `Player` objects, in which case a team name will be
-        generated
+        generated from the player names
         """
         if isinstance(team_def, str):
             teams = cfg.config('teams')
@@ -33,15 +34,13 @@ class Team:
                 raise ConfigError(f"'strategy' not specified for team '{team_def}'")
             self.name = team_def
             self.team_strategy = strategy
-            self.players = []
-            for i in range(2):
-                player_name = self.name + f" - Player{i+1}"
-                self.players.append(Player(player_name, get_strategy(self.team_strategy)))
+            player_names = [f"{self.name} - {p}" for p in DFLT_PLAYER_IDS]
+            self.players = [Player(player_names[0], get_strategy(self.team_strategy)),
+                            Player(player_names[1], get_strategy(self.team_strategy))]
         else:
             self.players = list(team_def)
             if len(self.players) != 2:
                 raise RuntimeError(f"Expected 2 players, got {len(self.players)}")
-
             self.name = '/'.join(str(p) for p in self.players)
             if type(self.players[0].strategy) is type(self.players[1].strategy):
                 self.team_strategy = type(self.players[0].strategy).__name__

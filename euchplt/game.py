@@ -21,12 +21,19 @@ VERBOSE = False  # TEMP!!!
 class GameStat(Enum):
     DEALS_PLAYED   = "Deals Played"
     DEALS_PASSED   = "Deals Passed"
+    CALLS          = "Calls"
+    CALLS_RND_1    = "Calls (round 1)"
+    CALLS_RND_2    = "Calls (round 2)"
+    DEFENSES       = "Defenses"
+    DEFENSES_ALONE = "Defenses Alone"
     TRICKS         = "Tricks"
     POINTS         = "Points"
     MAKES          = "Makes"
     ALL_FIVES      = "All 5's"
-    LONERS_MADE    = "Loners Made"
     EUCHRED        = "Euchred"
+    LONERS_CALLED  = "Loners Called"
+    LONERS_MADE    = "Loners Made"
+    LONERS_FAILED  = "Loners Failed"
     LONERS_EUCHRED = "Loners Euchred"
     EUCHRES        = "Euchres"
     EUCHRES_ALONE  = "Euchres Alone"
@@ -94,6 +101,17 @@ class Game(object):
         call_stat     = self.stats[call_team_idx]
         def_stat      = self.stats[def_team_idx]
 
+        call_stat[GameStat.CALLS] += 1
+        if deal.discard:
+            call_stat[GameStat.CALLS_RND_1] += 1
+        else:
+            call_stat[GameStat.CALLS_RND_2] += 1
+        if DealAttr.GO_ALONE in deal.result:
+            call_stat[GameStat.LONERS_CALLED] += 1
+        def_stat[GameStat.DEFENSES] += 1
+        if DealAttr.DEF_ALONE in deal.result:
+            def_stat[GameStat.DEFENSES_ALONE] += 1
+
         if DealAttr.MAKE in deal.result:
             assert DealAttr.EUCHRE not in deal.result
             call_stat[GameStat.MAKES] += 1
@@ -101,6 +119,8 @@ class Game(object):
                 call_stat[GameStat.ALL_FIVES] += 1
                 if DealAttr.GO_ALONE in deal.result:
                     call_stat[GameStat.LONERS_MADE] += 1
+            elif DealAttr.GO_ALONE in deal.result:
+                call_stat[GameStat.LONERS_FAILED] += 1
         else:
             assert DealAttr.EUCHRE in deal.result
             call_stat[GameStat.EUCHRED] += 1
@@ -125,10 +145,12 @@ class Game(object):
     def play(self) -> None:
         """
         """
-        # TODO: randomize seating within teams!!!
+        # Note, we keep the players in order here (tm0-pl0, tm1-pl0, etc.), it
+        # is up to the caller to specify who actually sits where
         seats = [t.players[n] for n in range(TEAM_PLAYERS) for t in self.teams]
         assert len(seats) == NUM_PLAYERS
-        dealer_idx = random.randrange(NUM_PLAYERS)  # relative to `seats`
+        # "flip for deal" (indexed relative to `seats`)
+        dealer_idx = random.randrange(NUM_PLAYERS)
 
         self.score = [0] * NUM_TEAMS
         while max(self.score) < GAME_POINTS:
