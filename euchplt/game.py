@@ -19,24 +19,42 @@ VERBOSE = False  # TEMP!!!
 ############
 
 class GameStat(Enum):
-    DEALS_PLAYED   = "Deals Played"
-    DEALS_PASSED   = "Deals Passed"
-    CALLS          = "Calls"
-    CALLS_RND_1    = "Calls (round 1)"
-    CALLS_RND_2    = "Calls (round 2)"
-    DEFENSES       = "Defenses"
-    DEFENSES_ALONE = "Defenses Alone"
-    TRICKS         = "Tricks"
-    POINTS         = "Points"
-    MAKES          = "Makes"
-    ALL_FIVES      = "All 5's"
-    EUCHRED        = "Euchred"
-    LONERS_CALLED  = "Loners Called"
-    LONERS_MADE    = "Loners Made"
-    LONERS_FAILED  = "Loners Failed"
-    LONERS_EUCHRED = "Loners Euchred"
-    EUCHRES        = "Euchres"
-    EUCHRES_ALONE  = "Euchres Alone"
+    DEALS_TOTAL       = "Total Deals"
+    DEALS_PLAYED      = "Deals Played"
+    DEALS_PASSED      = "Deals Passed"
+    TRICKS            = "Tricks"
+    POINTS            = "Points"
+    # caller stats
+    CALLS             = "Calls"
+    CALLS_RND_1       = "Calls (round 1)"
+    CALLS_RND_2       = "Calls (round 2)"
+    CALLS_POS_1       = "Calls (position 1)"
+    CALLS_POS_2       = "Calls (position 2)"
+    CALLS_POS_3       = "Calls (position 3)"
+    CALLS_POS_4       = "Calls (position 4)"
+    CALLS_MADE        = "Calls Made"
+    CALLS_ALL_5       = "Calls Made All 5"
+    CALLS_EUCHRED     = "Calls Euchred"
+    LONERS_CALLED     = "Loners Called"
+    LONERS_MADE       = "Loners Made"
+    LONERS_FAILED     = "Loners Failed"
+    LONERS_EUCHRED    = "Loners Euchred"
+    NL_CALLS          = "NL Calls"
+    NL_CALLS_MADE     = "NL Calls Made"
+    NL_CALLS_ALL_5    = "NL Calls Made All 5"
+    NL_CALLS_EUCHRED  = "NL Calls Euchred"
+    # defender stats
+    DEFENSES          = "Defenses"
+    DEF_LOSSES        = "Defense Losses"
+    DEF_EUCHRES       = "Defense Euchres"
+    DEF_LONERS        = "Defend Loners"
+    DEF_LONER_LOSSES  = "Defend Loner Losses"
+    DEF_LONER_STOPS   = "Defend Loner Stops"
+    DEF_LONER_EUCHRES = "Defend Loner Euchres"
+    DEF_ALONES        = "Defenses Alone"
+    DEF_ALONE_LOSSES  = "Defend Alone Losses"
+    DEF_ALONE_STOPS   = "Defend Alone Stops"
+    DEF_ALONE_EUCHRES = "Defend Alone Euchres"
 
 ########
 # Game #
@@ -77,11 +95,15 @@ class Game(object):
     def tabulate(self, players: list[Player], deal: Deal) -> None:
         """
         """
+        GS = GameStat
+        CALL_POS_N = [GS.CALLS_POS_1, GS.CALLS_POS_2, GS.CALLS_POS_3, GS.CALLS_POS_4]
+
         if deal.is_passed():
             for pos in (BIDDER_POS, DEALER_POS):
                 team_idx = self.player_team(players[pos])[0]
                 stat = self.stats[team_idx]
-                stat[GameStat.DEALS_PASSED] += 1
+                stat[GS.DEALS_TOTAL] += 1
+                stat[GS.DEALS_PASSED] += 1
             return
 
         assert len(deal.points) == len(players)
@@ -92,43 +114,68 @@ class Game(object):
             self.score[team_idx] += deal.points[pos]
 
             stat = self.stats[team_idx]
-            stat[GameStat.DEALS_PLAYED] += 1
-            stat[GameStat.TRICKS] += deal.tricks_won[pos]
-            stat[GameStat.POINTS] += deal.points[pos]
+            stat[GS.DEALS_TOTAL] += 1
+            stat[GS.DEALS_PLAYED] += 1
+            stat[GS.TRICKS] += deal.tricks_won[pos]
+            stat[GS.POINTS] += deal.points[pos]
 
         call_team_idx = self.player_team(players[deal.caller_pos])[0]
-        def_team_idx  = self.player_team(players[deal.caller_pos ^ 0x01])[0]
         call_stat     = self.stats[call_team_idx]
+        def_team_idx  = self.player_team(players[deal.caller_pos ^ 0x01])[0]
         def_stat      = self.stats[def_team_idx]
 
-        call_stat[GameStat.CALLS] += 1
+        # bidding/calling
+        call_stat[GS.CALLS] += 1
+        def_stat[GS.DEFENSES] += 1
         if deal.discard:
-            call_stat[GameStat.CALLS_RND_1] += 1
+            call_stat[GS.CALLS_RND_1] += 1
         else:
-            call_stat[GameStat.CALLS_RND_2] += 1
-        if DealAttr.GO_ALONE in deal.result:
-            call_stat[GameStat.LONERS_CALLED] += 1
-        def_stat[GameStat.DEFENSES] += 1
-        if DealAttr.DEF_ALONE in deal.result:
-            def_stat[GameStat.DEFENSES_ALONE] += 1
+            call_stat[GS.CALLS_RND_2] += 1
+        call_stat[CALL_POS_N[deal.caller_pos]] += 1
 
-        if DealAttr.MAKE in deal.result:
-            assert DealAttr.EUCHRE not in deal.result
-            call_stat[GameStat.MAKES] += 1
-            if DealAttr.ALL_5 in deal.result:
-                call_stat[GameStat.ALL_FIVES] += 1
-                if DealAttr.GO_ALONE in deal.result:
-                    call_stat[GameStat.LONERS_MADE] += 1
-            elif DealAttr.GO_ALONE in deal.result:
-                call_stat[GameStat.LONERS_FAILED] += 1
-        else:
-            assert DealAttr.EUCHRE in deal.result
-            call_stat[GameStat.EUCHRED] += 1
-            if DealAttr.GO_ALONE in deal.result:
-                call_stat[GameStat.LONERS_EUCHRED] += 1
-            def_stat[GameStat.EUCHRES] += 1
+        if DealAttr.GO_ALONE in deal.result:
+            call_stat[GS.LONERS_CALLED] += 1
+            def_stat[GS.DEF_LONERS] += 1
             if DealAttr.DEF_ALONE in deal.result:
-                def_stat[GameStat.EUCHRES_ALONE] += 1
+                def_stat[GS.DEF_ALONES] += 1
+            else:
+                call_stat[GS.NL_CALLS] += 1
+
+        # playing/results
+        if DealAttr.MAKE in deal.result:          # MADE...
+            assert DealAttr.EUCHRE not in deal.result
+            call_stat[GS.CALLS_MADE] += 1
+            def_stat[GS.DEF_LOSSES] += 1
+
+            if DealAttr.GO_ALONE in deal.result:  # loner made
+                if DealAttr.ALL_5 in deal.result:
+                    call_stat[GS.CALLS_ALL_5] += 1
+                    call_stat[GS.LONERS_MADE] += 1
+                    def_stat[GS.DEF_LONER_LOSSES] += 1
+                    if DealAttr.DEF_ALONE in deal.result:
+                        def_stat[GS.DEF_ALONE_LOSSES] += 1
+                else:
+                    call_stat[GS.LONERS_FAILED] += 1
+                    def_stat[GS.DEF_LONER_STOPS] += 1
+                    if DealAttr.DEF_ALONE in deal.result:
+                        def_stat[GS.DEF_ALONE_STOPS] += 1
+            else:                                 # non-loner made
+                if DealAttr.ALL_5 in deal.result:
+                    call_stat[GS.CALLS_ALL_5] += 1
+                    call_stat[GS.NL_CALLS_ALL_5] += 1
+                    call_stat[GS.NL_CALLS_MADE] += 1
+        else:                                     # NOT MADE...
+            assert DealAttr.EUCHRE in deal.result
+            call_stat[GS.CALLS_EUCHRED] += 1
+            def_stat[GS.DEF_EUCHRES] += 1
+
+            if DealAttr.GO_ALONE in deal.result:  # loner euchred
+                call_stat[GS.LONERS_EUCHRED] += 1
+                def_stat[GS.DEF_LONER_EUCHRES] += 1
+                if DealAttr.DEF_ALONE in deal.result:
+                    def_stat[GS.DEF_ALONE_EUCHRES] += 1
+            else:                                 # non-loner euchred
+                call_stat[GS.NL_CALLS_EUCHRED] += 1
 
     def set_winner(self) -> None:
         """
@@ -201,9 +248,10 @@ class Game(object):
     def print_stats(self, file: TextIO = sys.stdout) -> None:
         print("Game Stats:", file=file)
         for j, team in enumerate(self.teams):
+            mystats = self.stats[j]
             print(f"  {team.name}:", file=file)
             for stat in GameStat:
-                print(f"    {stat.value + ':':15} {self.stats[j][stat]:4}", file=file)
+                print(f"    {stat.value + ':':24} {mystats[stat]:8}", file=file)
 
 ########
 # main #

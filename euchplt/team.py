@@ -4,7 +4,7 @@ from typing import Union, Iterable
 
 from .core import cfg, ConfigError
 from .player import Player
-from .strategy import get_strategy
+from .strategy import Strategy
 
 ########
 # Team #
@@ -35,8 +35,8 @@ class Team:
             self.name = team_def
             self.team_strategy = strategy
             player_names = [f"{self.name} - {p}" for p in DFLT_PLAYER_IDS]
-            self.players = [Player(player_names[0], get_strategy(self.team_strategy)),
-                            Player(player_names[1], get_strategy(self.team_strategy))]
+            self.players = [Player(player_names[0], Strategy.new(self.team_strategy)),
+                            Player(player_names[1], Strategy.new(self.team_strategy))]
         else:
             self.players = list(team_def)
             if len(self.players) != 2:

@@ -120,9 +120,10 @@ class Match(object):
     def print_stats(self, file: TextIO = sys.stdout) -> None:
         print("Match Stats:", file=file)
         for j, team in enumerate(self.teams):
+            mystats = self.stats[j]
             print(f"  {team.name}:", file=file)
             for stat in MatchStatIter():
-                print(f"    {stat.value + ':':15} {self.stats[j][stat]:4}", file=file)
+                print(f"    {stat.value + ':':24} {mystats[stat]:8}", file=file)
 
 ########
 # main #

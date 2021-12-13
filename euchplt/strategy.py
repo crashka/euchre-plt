@@ -15,31 +15,34 @@ from .analysis import SUIT_CTX, HandAnalysis, PlayAnalysis
 # Strategy #
 ############
 
-def get_strategy(strat_name: str) -> 'Strategy':
-    """Return instantiated Strategy object based on configured strategy, identified
-    by name; note that the named strategy entry may override base parameter values
-    specified for the underlying implementation class
-    """
-    strategies = cfg.config('strategies')
-    if strat_name not in strategies:
-        raise RuntimeError(f"Strategy '{strat_name}' is not known")
-    strat_info   = strategies[strat_name]
-    class_name   = strat_info.get('base_class')
-    module_path  = strat_info.get('module_path')
-    strat_params = strat_info.get('strategy_params') or {}
-    if not class_name:
-        raise ConfigError(f"'base_class' not specified for strategy '{strat_name}'")
-    if module_path:
-        module = import_module(module_path)
-        strat_class = getattr(module, class_name)
-    else:
-        strat_class = globals()[class_name]
-
-    return strat_class(**strat_params)
-
 class Strategy:
     """Abstract base class, cannot be instantiated directly
     """
+    @classmethod
+    def new(cls, strat_name: str) -> 'Strategy':
+        """Return instantiated Strategy object based on configured strategy, identified
+        by name; note that the named strategy entry may override base parameter values
+        specified for the underlying implementation class
+        """
+        strategies = cfg.config('strategies')
+        if strat_name not in strategies:
+            raise RuntimeError(f"Strategy '{strat_name}' is not known")
+        strat_info   = strategies[strat_name]
+        class_name   = strat_info.get('base_class')
+        module_path  = strat_info.get('module_path')
+        strat_params = strat_info.get('strategy_params') or {}
+        if not class_name:
+            raise ConfigError(f"'base_class' not specified for strategy '{strat_name}'")
+        if module_path:
+            module = import_module(module_path)
+            strat_class = getattr(module, class_name)
+        else:
+            strat_class = globals()[class_name]
+        if not issubclass(strat_class, cls):
+            raise ConfigError(f"'{strat_class.__name__}' not subclass of '{cls.__name__}'")
+
+        return strat_class(**strat_params)
+
     def __init__(self, **kwargs):
         """Note that kwargs are parameters overrides on top of base_strategy_params
         (in the config file) for the underlying implementation class

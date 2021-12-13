@@ -4,7 +4,7 @@
 from .core import ConfigError, cfg
 from .card import Card
 from .euchre import Bid, Trick, DealState
-from .strategy import Strategy, get_strategy
+from .strategy import Strategy
 
 ##########
 # Player #
@@ -28,7 +28,7 @@ class Player:
             if not strategy_name:
                 raise ConfigError(f"'strategy' not specified for player '{name}'")
             self.name = name
-            self.strategy = get_strategy(strategy_name)
+            self.strategy = Strategy.new(strategy_name)
         else:
             self.name = name
             self.strategy = strategy
