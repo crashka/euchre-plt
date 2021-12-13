@@ -6,6 +6,7 @@ from enum import Enum
 from itertools import chain
 from typing import Optional, Union, TypeVar, Iterable, Iterator, TextIO
 from numbers import Number
+import csv
 
 from .core import cfg, ConfigError
 from .team import Team
@@ -41,6 +42,9 @@ VERBOSE = False  # TEMP!!!
 class TournStatXtra(Enum):
     MATCHES_PLAYED = "Matches Played"
     MATCHES_WON    = "Matches Won"
+
+    def __str__(self):
+        return self.value
 
 TournStat = Union[TournStatXtra, MatchStatXtra, GameStat]
 def TournStatIter() -> Iterator: return chain(TournStatXtra, MatchStatXtra, GameStat)
@@ -78,6 +82,12 @@ class CompStat(Enum):
     DEF_ALONE_EUCH_PCT = "Defend Alone Euchre Pct"
     DEF_ALONE_STOP_PCT = "Defend Alone Stop Pct"
     DEF_ALONE_LOSE_PCT = "Defend Alone Lose Pct"
+
+    def __str__(self):
+        return self.value
+
+AllStat = Union[TournStatXtra, MatchStatXtra, GameStat, CompStat]
+def AllStatIter() -> Iterator: return chain(TournStatXtra, MatchStatXtra, GameStat, CompStat)
 
 CS = CompStat
 TS = TournStatXtra
@@ -240,18 +250,31 @@ class Tournament:
         print(f"Tournament Winner{plural}:\n  {', '.join(winner_names)}")
 
     def print_stats(self, file: TextIO = sys.stdout) -> None:
+        CSF = CompStatFormulas
         print("Tournament Stats:", file=file)
         for j, team in enumerate(self.teams.values()):
-            mystats = self.team_stats[team.name]
+            base_stats = self.team_stats[team.name]
             print(f"  {team.name}:", file=file)
             for stat in TournStatIter():
-                print(f"    {stat.value+':':24} {mystats[stat]:8}", file=file)
-            CSF = CompStatFormulas
+                print(f"    {stat.value+':':24} {base_stats[stat]:8}", file=file)
             for stat in CompStat:
-                numer = mystats[CSF[stat][0]]
+                num = base_stats[CSF[stat][0]]
                 # make this negative so anomalies will show up!
-                denom = mystats[CSF[stat][1]] or -1
-                print(f"    {stat.value+':':24} {numer/denom*100.0:7.2f}%", file=file)
+                den = base_stats[CSF[stat][1]] or -1
+                print(f"    {stat.value + ':':24} {num / den * 100.0:7.2f}%", file=file)
+
+    def dump_stats(self, file: TextIO = sys.stdout) -> None:
+        TEAM_COL = 'Team'
+        CSF = CompStatFormulas
+        fields = [TEAM_COL] + list(AllStatIter())
+        writer = csv.DictWriter(file, fieldnames=fields, dialect='excel-tab')
+        writer.writeheader()
+        for j, team in enumerate(self.teams.values()):
+            base_stats = self.team_stats[team.name]
+            comp_stats = {stat: base_stats[CSF[stat][0]] / (base_stats[CSF[stat][1]] or -1)
+                          for stat in CompStat}
+            stats_row = {TEAM_COL: team.name} | base_stats | comp_stats
+            writer.writerow(stats_row)
 
 ##############
 # RoundRobin #
@@ -361,14 +384,20 @@ def round_robin_bracket(*args) -> int:
     return 0
 
 def run_tournament(*args) -> int:
+    stats_file = None
     if len(args) < 1:
         raise RuntimeError("Tournament name not specified")
     if len(args) > 1:
         tourney = Tournament.new(args[0], passes=int(args[1]))
+        if len(args) > 2:
+            stats_file = args[2]
     else:
         tourney = Tournament.new(args[0])
     tourney.play()
     tourney.print()
+    if stats_file:
+        with open(stats_file, 'w', newline='') as file:
+            tourney.dump_stats(file)
 
     return 0
 
@@ -379,7 +408,7 @@ def main() -> int:
 
     Functions/usage:
       - round_robin_bracket [<n_teams>]
-      - run_tournament [<name> | <team_name> ...]
+      - run_tournament <name> [<passes> [<stats_file>]]
     """
     if len(sys.argv) < 2:
         print(f"Utility function not specified", file=sys.stderr)

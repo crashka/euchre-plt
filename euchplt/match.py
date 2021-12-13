@@ -24,6 +24,9 @@ class MatchStatXtra(Enum):
     GAMES_PLAYED = "Games Played"
     GAMES_WON    = "Games Won"
 
+    def __str__(self):
+        return self.value
+
 MatchStat = Union[MatchStatXtra, GameStat]
 def MatchStatIter() -> Iterator: return chain(MatchStatXtra, GameStat)
 

@@ -56,6 +56,9 @@ class GameStat(Enum):
     DEF_ALONE_STOPS   = "Defend Alone Stops"
     DEF_ALONE_EUCHRES = "Defend Alone Euchres"
 
+    def __str__(self):
+        return self.value
+
 ########
 # Game #
 ########

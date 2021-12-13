@@ -194,3 +194,9 @@ default:
         - Team 11
         - Team 12
         - Team 13
+    Tourney B:
+      tourn_class:     RoundRobin
+      tourn_params:
+      teams:
+        - Team 00
+        - Team 01
