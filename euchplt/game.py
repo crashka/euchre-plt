@@ -163,10 +163,10 @@ class Game(object):
                     if DealAttr.DEF_ALONE in deal.result:
                         def_stat[GS.DEF_ALONE_STOPS] += 1
             else:                                 # non-loner made
+                call_stat[GS.NL_CALLS_MADE] += 1
                 if DealAttr.ALL_5 in deal.result:
                     call_stat[GS.CALLS_ALL_5] += 1
                     call_stat[GS.NL_CALLS_ALL_5] += 1
-                    call_stat[GS.NL_CALLS_MADE] += 1
         else:                                     # NOT MADE...
             assert DealAttr.EUCHRE in deal.result
             call_stat[GS.CALLS_EUCHRED] += 1
