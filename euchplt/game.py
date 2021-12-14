@@ -141,8 +141,8 @@ class Game(object):
             def_stat[GS.DEF_LONERS] += 1
             if DealAttr.DEF_ALONE in deal.result:
                 def_stat[GS.DEF_ALONES] += 1
-            else:
-                call_stat[GS.NL_CALLS] += 1
+        else:
+            call_stat[GS.NL_CALLS] += 1
 
         # playing/results
         if DealAttr.MAKE in deal.result:          # MADE...

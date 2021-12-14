@@ -6,6 +6,7 @@ from enum import Enum
 from itertools import chain
 from typing import Optional, Union, TypeVar, Iterable, Iterator, TextIO
 from numbers import Number
+import random
 import shelve
 import csv
 
@@ -147,18 +148,8 @@ class EloRatings:
     team_ratings: dict[str, float]        # indexed by team name
     ratings_hist: dict[str, list[float]]  # list of updates, indexed by team name
 
-    def __init__(self, teams: Iterable[Team]):
-        self.team_ratings = self.load(teams)
-        # seed history with initial ratings
-        self.ratings_hist = {t.name: [self.team_ratings[t.name]] for t in teams}
-
-    def get(self, team: Team) -> tuple[float, list[float]]:
-        """Returns tuple of current rating and list of rating history (i.e. all of
-        the updates for the current instantiation) for `team`
-        """
-        return self.team_ratings[team.name], self.ratings_hist[team.name]
-
-    def load(self, teams: Optional[Iterable[Team]] = None) -> dict[str, float]:
+    @staticmethod
+    def load(teams: Optional[Iterable[Team]] = None) -> dict[str, float]:
         """Loads Elo ratings from the database; return ratings for specified teams
         only (initializing them, if not yet existing), or the entire database (with
         no initializations) if `teams` is not passed in.
@@ -172,6 +163,17 @@ class EloRatings:
             else:
                 team_elo = {k: v for k, v in db.items()}
         return team_elo
+
+    def __init__(self, teams: Iterable[Team]):
+        self.team_ratings = self.load(teams)
+        # seed history with initial ratings
+        self.ratings_hist = {t.name: [self.team_ratings[t.name]] for t in teams}
+
+    def get(self, team: Team) -> tuple[float, list[float]]:
+        """Returns tuple of current rating and list of rating history (i.e. all of
+        the updates for the current instantiation) for `team`
+        """
+        return self.team_ratings[team.name], self.ratings_hist[team.name]
 
     def update(self, matches: Iterable[Match], collective: bool = False) -> None:
         """Recomputes Elo ratings for teams participating in `matches`; does not
@@ -306,17 +308,15 @@ class Tournament:
         raise NotImplementedError("Can't call abstract method")
 
     def print(self, file: TextIO = sys.stdout) -> None:
-        print("Teams:", file=file)
-        for i, team in enumerate(self.teams.values()):
-            print(f"  {team}", file=file)
-            for j, player in enumerate(team.players):
-                print(f"    {player}", file=file)
+        if VERBOSE:
+            print("Teams:", file=file)
+            for i, team in enumerate(self.teams.values()):
+                print(f"  {team}", file=file)
+                for j, player in enumerate(team.players):
+                    print(f"    {player}", file=file)
 
-        for i, match in enumerate(self.matches):
-            print(f"Match #{i + 1}:", file=file)
-            if VERBOSE:
-                match.print(file=file)
-            else:
+            for i, match in enumerate(self.matches):
+                print(f"Match #{i + 1}:", file=file)
                 match.print_score(file=file)
 
         self.print_score(file=file)
@@ -392,6 +392,7 @@ class RoundRobin(Tournament):
         teams_list = list(teams)
         if len(teams_list) % 2 == 1:
             teams_list.append(None)
+        random.shuffle(teams_list)
         n_teams = len(teams_list)
         n_matchups = n_teams // 2
         list_head = teams_list[:1]
@@ -420,7 +421,10 @@ class RoundRobin(Tournament):
         for pass_num in range(self.passes):
             for round_num, matchups in enumerate(self.get_matchups(self.teams.values())):
                 for matchup in matchups:
+                    if None in matchup:
+                        continue
                     match = Match(matchup)
+                    self.matches.append(match)
                     match.play()
                     self.tabulate(match)
 
