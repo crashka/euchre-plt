@@ -11,7 +11,7 @@ from .strategy import Strategy
 ########
 
 MIXED_STRATEGY = "mixed strategy"
-DFLT_PLAYER_IDS = ("Player 1", "Player 2")
+DFLT_PLAYER_IDS = ("Player A", "Player B")
 
 class Team:
     name:          str

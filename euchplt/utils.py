@@ -82,14 +82,17 @@ logging.setLoggerClass(MyLogger)
 # Misc #
 ########
 
-def prettyprint(data, indent: str = 4, sort_keys: bool = True, noprint: bool = False) -> None:
+def prettyprint(data, indent: int = 4, sort_keys: bool = True, noprint: bool = False) -> str:
     """Nicer version of pprint (which is actually kind of ugly)
 
     Note: assumes that input data can be dumped to json (typically a list or dict)
     """
     pattern = re.compile(r'^', re.MULTILINE)
     spaces = ' ' * indent
-    if noprint:
-        return re.sub(pattern, spaces, json.dumps(data, indent=indent, sort_keys=sort_keys, ensure_ascii=False))
-    else:
-        print(re.sub(pattern, spaces, json.dumps(data, indent=indent, sort_keys=sort_keys, ensure_ascii=False)))
+    data_json = json.dumps(data, indent=indent, sort_keys=sort_keys, ensure_ascii=False)
+    pretty = re.sub(pattern, spaces, data_json)
+    if not noprint:
+        print(pretty)
+    # no harm in always returning the formatted data (can be ignored by caller, if only
+    # interested in printing)
+    return pretty

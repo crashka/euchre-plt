@@ -169,7 +169,8 @@ class Deal(GameCtxMixin):
         self.points[pos ^ 0x02] = points
 
     def compute_score(self) -> None:
-        """
+        """In addition to computing the score, this also sets the DealAttr tags in
+        `self.result`; calls set_score() to record the score
         """
         assert self.deal_phase == DealPhase.COMPLETE
         make   = self.tricks_won[self.caller_pos] >= 3

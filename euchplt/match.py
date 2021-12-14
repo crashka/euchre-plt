@@ -43,7 +43,7 @@ class Match(object):
     games:  list[Game]                  # sequential
     score:  list[int]                   # (games) indexed as `teams`
     stats:  list[dict[MatchStat, int]]  # each stat indexed as `teams`
-    winner: Optional[tuple[int, Team]]
+    winner: Optional[tuple[int, Team]]  # tuple(idx, team)
 
     def __init__(self, teams: Iterable[Team]):
         """

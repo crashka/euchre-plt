@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from os import environ
+from os import environ, rename
 import os.path
+from datetime import datetime
 import logging
 import logging.handlers
 
@@ -17,6 +18,30 @@ CONFIG_DIR    = 'config'
 CONFIG_FILE   = environ.get('EUCHPLT_CONFIG_FILE') or 'config.yml'
 CONFIG_PATH   = os.path.join(BASE_DIR, CONFIG_DIR, CONFIG_FILE)
 cfg           = utils.Config(CONFIG_PATH)
+
+########
+# Data #
+########
+
+DATA_DIR    = 'data'
+ARCH_DT_FMT = '%Y%m%d_%H%M%S'
+
+def DataFile(file_name: str) -> str:
+    """Return full path name (in DATA_DIR), given name of file
+    """
+    return os.path.join(BASE_DIR, DATA_DIR, file_name)
+
+def ArchiveDataFile(file_name: str) -> str:
+    """Rename data file to "archived" version (current datetime appended),
+    which also has the effect of removing it from the file system, so that
+    a new version can be created
+    """
+    data_file = DataFile(file_name)
+    arch_dt = datetime.now().strftime(ARCH_DT_FMT)
+    try:
+        rename(data_file, data_file + '-' + arch_dt)
+    except FileNotFoundError:
+        pass
 
 ###########
 # Logging #

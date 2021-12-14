@@ -71,10 +71,10 @@ class Game(object):
     """
     """
     teams:  list[Team]
-    deals:  list[Deal]                 # sequential
-    score:  list[int]                  # (points) indexed as `teams`
-    stats:  list[dict[GameStat, int]]  # each stat indexed as `teams`
-    winner: Optional[tuple[int, Team]]
+    deals:  list[Deal]                  # sequential
+    score:  list[int]                   # (points) indexed as `teams`
+    stats:  list[dict[GameStat, int]]   # each stat indexed as `teams`
+    winner: Optional[tuple[int, Team]]  # tuple(idx, team)
 
     def __init__(self, teams: Iterable[Team]):
         """
