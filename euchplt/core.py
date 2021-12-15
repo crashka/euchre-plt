@@ -19,6 +19,8 @@ CONFIG_FILE   = environ.get('EUCHPLT_CONFIG_FILE') or 'config.yml'
 CONFIG_PATH   = os.path.join(BASE_DIR, CONFIG_DIR, CONFIG_FILE)
 cfg           = utils.Config(CONFIG_PATH)
 
+DEBUG         = int(environ.get('EUCHPLT_DEBUG') or 0)
+
 ########
 # Data #
 ########
@@ -67,9 +69,10 @@ dbg_hand.setFormatter(LOG_FMTR)
 log = logging.getLogger(LOGGER_NAME)
 log.setLevel(logging.INFO)
 log.addHandler(dflt_hand)
-if environ.get('EUCHPLT_DEBUG'):
+if DEBUG:
     log.setLevel(logging.DEBUG)
-    log.addHandler(dbg_hand)
+    if DEBUG > 1:
+        log.addHandler(dbg_hand)
 
 ##############
 # Exceptions #

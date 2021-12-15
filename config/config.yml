@@ -178,10 +178,15 @@ default:
   tournaments:
     Tourney A:
       tourn_class:     RoundRobin
-      tourn_params:    {passes: 2}
+      tourn_params:
+        passes:          2
+        elo_int:         match
+        elo_rating:
+          elo_db:          elo_rating.db
+          reset_ratings:   true
+          d_value:         400
+          k_factor:        32
       teams:
-        #- Team 00
-        #- Team 01
         - Team 02
         - Team 03
         - Team 04
@@ -196,7 +201,8 @@ default:
         - Team 13
     Tourney B:
       tourn_class:     RoundRobin
-      tourn_params:    {passes: 5}
+      tourn_params:
+        passes:          5
       teams:
         - Team 02
         - Team 06

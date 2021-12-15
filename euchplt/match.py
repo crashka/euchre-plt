@@ -6,12 +6,10 @@ from enum import Enum
 from itertools import chain
 from typing import Optional, Union, Iterable, Iterator, TextIO
 
-from .core import LogicError
+from .core import DEBUG, LogicError
 from .player import Player
 from .team import Team
 from .game import GameStat, Game, NUM_TEAMS
-
-VERBOSE = False  # TEMP!!!
 
 #############
 # MatchStat #
@@ -91,29 +89,34 @@ class Match(object):
 
         self.set_winner()
 
-    def print(self, file: TextIO = sys.stdout) -> None:
+    def print(self, file: TextIO = sys.stdout, verbose: int = 0) -> None:
+        """Setting the `verbose` flag (or DEBUG mode) will print out details
+        for individual games, as well as printing match stats
         """
-        """
+        verbose = max(verbose, DEBUG)
+
         print("Teams:", file=file)
         for i, team in enumerate(self.teams):
             print(f"  {team}", file=file)
             for j, player in enumerate(team.players):
                 print(f"    {player}", file=file)
 
-        for i, game in enumerate(self.games):
-            print(f"Game #{i + 1}:", file=file)
-            if VERBOSE:
-                game.print(file=file)
-            else:
-                game.print_score(file=file)
+        if verbose:
+            for i, game in enumerate(self.games):
+                print(f"Game #{i + 1}:", file=file)
+                if verbose > 1:
+                    game.print(file=file)
+                else:
+                    game.print_score(file=file)
 
         self.print_score(file=file)
-        self.print_stats(file=file)
+        if verbose:
+            self.print_stats(file=file)
 
     def print_score(self, file: TextIO = sys.stdout) -> None:
         print("Match Score:", file=file)
-        for j, team in enumerate(self.teams):
-            print(f"  {team.name}: {self.score[j]}", file=file)
+        for i, team in enumerate(self.teams):
+            print(f"  {team.name}: {self.score[i]}", file=file)
 
         if not self.winner:
             return
@@ -122,8 +125,8 @@ class Match(object):
 
     def print_stats(self, file: TextIO = sys.stdout) -> None:
         print("Match Stats:", file=file)
-        for j, team in enumerate(self.teams):
-            mystats = self.stats[j]
+        for i, team in enumerate(self.teams):
+            mystats = self.stats[i]
             print(f"  {team.name}:", file=file)
             for stat in MatchStatIter():
                 print(f"    {stat.value + ':':24} {mystats[stat]:8}", file=file)
@@ -142,7 +145,7 @@ def main() -> int:
 
     match = Match(teams)
     match.play()
-    match.print()
+    match.print(verbose=1)
 
     return 0
 

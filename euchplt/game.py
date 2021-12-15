@@ -6,13 +6,11 @@ from enum import Enum
 from typing import Optional, Iterable, TextIO
 import random
 
-from .core import LogicError
+from .core import DEBUG, LogicError
 from .card import get_deck
 from .deal import DealAttr, Deal, NUM_PLAYERS, BIDDER_POS, DEALER_POS
 from .player import Player
 from .team import Team
-
-VERBOSE = False  # TEMP!!!
 
 ############
 # GameStat #
@@ -219,29 +217,34 @@ class Game(object):
 
         self.set_winner()
 
-    def print(self, file: TextIO = sys.stdout) -> None:
+    def print(self, file: TextIO = sys.stdout, verbose: int = 0) -> None:
+        """Setting the `verbose` flag (or DEBUG mode) will print out details
+        for individual deals, as well as printing game stats
         """
-        """
+        verbose = max(verbose, DEBUG)
+
         print("Teams:", file=file)
         for i, team in enumerate(self.teams):
             print(f"  {team}", file=file)
             for j, player in enumerate(team.players):
                 print(f"    {player}", file=file)
 
-        for i, deal in enumerate(self.deals):
-            print(f"Deal #{i + 1}:", file=file)
-            if VERBOSE:
-                deal.print(file=file)
-            else:
-                deal.print_score(file=file)
+        if verbose:
+            for i, deal in enumerate(self.deals):
+                print(f"Deal #{i + 1}:", file=file)
+                if verbose > 1:
+                    deal.print(file=file)
+                else:
+                    deal.print_score(file=file)
 
         self.print_score(file=file)
-        self.print_stats(file=file)
+        if verbose:
+            self.print_stats(file=file)
 
     def print_score(self, file: TextIO = sys.stdout) -> None:
         print("Game Score:", file=file)
-        for j, team in enumerate(self.teams):
-            print(f"  {team.name}: {self.score[j]}", file=file)
+        for i, team in enumerate(self.teams):
+            print(f"  {team.name}: {self.score[i]}", file=file)
 
         if not self.winner:
             return
@@ -250,8 +253,8 @@ class Game(object):
 
     def print_stats(self, file: TextIO = sys.stdout) -> None:
         print("Game Stats:", file=file)
-        for j, team in enumerate(self.teams):
-            mystats = self.stats[j]
+        for i, team in enumerate(self.teams):
+            mystats = self.stats[i]
             print(f"  {team.name}:", file=file)
             for stat in GameStat:
                 print(f"    {stat.value + ':':24} {mystats[stat]:8}", file=file)
@@ -274,7 +277,7 @@ def main() -> int:
 
     game = Game(teams)
     game.play()
-    game.print()
+    game.print(verbose=1)
 
     return 0
 

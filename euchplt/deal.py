@@ -5,12 +5,10 @@ import sys
 from enum import Enum
 from typing import Optional, TextIO
 
-from .core import LogicError, ImplementationError
+from .core import DEBUG, LogicError, ImplementationError
 from .card import Suit, SUITS, Card, Deck, get_deck
 from .euchre import GameCtxMixin, Hand, Trick, Bid, PASS_BID, NULL_BID, DealState
 from .player import Player
-
-VERBOSE = True  # TEMP!!!
 
 ###########
 # `Enum`s #
@@ -329,11 +327,13 @@ class Deal(GameCtxMixin):
 
         self.compute_score()
 
-    def print(self, file: TextIO = sys.stdout) -> None:
-        """
+    def print(self, file: TextIO = sys.stdout, verbose: int = 0) -> None:
+        """Setting the `verbose` flag (or DEBUG mode) will print out details
+        for individual tricks
         """
         if self.deal_phase.value < DealPhase.DEALT.value:
             return
+        verbose = max(verbose, DEBUG)
 
         print("Hands:", file=file)
         for pos in range(NUM_PLAYERS):
@@ -364,7 +364,7 @@ class Deal(GameCtxMixin):
             print(f"Dealer Hand (updated):\n  {self.players[DEALER_POS].name}: {Hand(cards)}",
                   file=file)
 
-        if VERBOSE:
+        if verbose:
             print("Tricks:", file=file)
             for trick_num, trick in enumerate(self.tricks):
                 print(f"  Trick #{trick_num + 1}:", file=file)
@@ -424,7 +424,7 @@ def main() -> int:
             deal.print()
             continue
         deal.play_cards()
-        deal.print()
+        deal.print(verbose=1)
 
     return 0
 
