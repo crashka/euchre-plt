@@ -234,7 +234,7 @@ class EloRating:
             r_delta = self.k_factor * (s[name] - e[name])
             self.team_ratings[name] += r_delta
             self.ratings_hist[name].append(self.team_ratings[name])
-        
+
     def persist(self, archive: bool = False) -> None:
         """Merges current Elo ratings with the existing database; the previous
         version may be archived, if requested.  See CAVEAT in `load()` regarding
@@ -627,7 +627,7 @@ def main() -> int:
       - round_robin_bracket [teams=<num_teams>]
       - run_tournament <name> [passes=<passes>] [elo_int=<elo_int>] [stats_file=<stats_file>]
                        [elo_file=<elo_file>] [seed=<rand_seed>]
-                              
+
     """
     if len(sys.argv) < 2:
         print(f"Utility function not specified", file=sys.stderr)
@@ -656,7 +656,7 @@ def main() -> int:
                 args_done = True
         kw, val = arg.split('=', 1)
         kwargs[kw] = typecast(val)
-        
+
     return util_func(*args, **kwargs)
 
 if __name__ == '__main__':
