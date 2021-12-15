@@ -321,14 +321,14 @@ class HandAnalysisSmart(HandAnalysis):
         voids_score     = self.voids_scores[voids]
 
         strength = 0.0
-        log.info(f"hand: {self.hand} (trump: {trump_suit})")
+        log.debug(f"hand: {self.hand} (trump: {trump_suit})")
         for score, coeff in self.scoring_coeff.items():
             raw_value = locals()[score]
             assert isinstance(raw_value, float)
             score_value = locals()[score] * coeff
-            log.info(f"  {score:15}: {score_value:6.2f} ({raw_value:.2f} * {coeff:d})")
+            log.debug(f"  {score:15}: {score_value:6.2f} ({raw_value:.2f} * {coeff:d})")
             strength += score_value
-        log.info(f"{'hand_strength':15}: {strength:6.2f}")
+        log.debug(f"{'hand_strength':15}: {strength:6.2f}")
         return strength
 
     def turn_card_rank(self, turn_card: Card) -> Rank:
@@ -420,9 +420,9 @@ class StrategySmart(Strategy):
                 turn_value = self.turn_card_value[turn_rank.idx] / sum(self.turn_card_value)
                 turn_strength = turn_value * self.turn_card_coeff[bid_pos]
                 strength += turn_strength * (1.0 if deal.is_partner_dealer else -1)
-                log.info(f"{'turn card adj':15}: "
+                log.debug(f"{'turn card adj':15}: "
                          f"{'+' if deal.is_partner_dealer else '-'}{turn_strength:.2f}")
-                log.info(f"{'adj_strength':15}: {strength:6.2f}")
+                log.debug(f"{'adj_strength':15}: {strength:6.2f}")
                 if strength > self.bid_thresh[bid_pos]:
                     thresh_margin = strength - self.bid_thresh[bid_pos]
                     bid_suit = turn_suit

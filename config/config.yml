@@ -180,12 +180,12 @@ default:
       tourn_class:     RoundRobin
       tourn_params:
         passes:          2
-        elo_int:         match
+        elo_int:         pass
         elo_rating:
           elo_db:          elo_rating.db
           reset_ratings:   true
           d_value:         400
-          k_factor:        32
+          k_factor:        24
       teams:
         - Team 02
         - Team 03
