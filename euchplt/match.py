@@ -4,10 +4,10 @@
 import sys
 from enum import Enum
 from itertools import chain
-from typing import Optional, Union, Iterable, Iterator, TextIO
+from collections.abc import Iterator, Iterable
+from typing import Optional, Union, TextIO
 
 from .core import DEBUG, LogicError
-from .player import Player
 from .team import Team
 from .game import GameStat, POS_STATS, Game, NUM_TEAMS
 

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from typing import Union, Iterable
+from collections.abc import Iterable
+from typing import Union
 
 from .core import cfg, ConfigError
 from .player import Player

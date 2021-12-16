@@ -4,7 +4,8 @@
 import sys
 from enum import Enum
 from itertools import chain
-from typing import Optional, Union, TypeVar, Iterable, Iterator, TextIO
+from collections.abc import Mapping, Iterator, Iterable
+from typing import Optional, Union, TypeVar, TextIO
 from numbers import Number
 import random
 import shelve
@@ -48,6 +49,9 @@ class TournStatXtra(Enum):
 
 TournStat = Union[TournStatXtra, MatchStatXtra, GameStat]
 def TournStatIter() -> Iterator: return chain(TournStatXtra, MatchStatXtra, GameStat)
+
+# the following represents mapping for *base* stats (computed stats NOT included)
+StatsMap = Mapping[TournStat, int]
 
 class CompStat(Enum):
     MATCH_WIN_PCT      = "Match Win Pct"
@@ -394,7 +398,7 @@ class Tournament:
 
         self.print_score(file=file)
         if verbose:
-            self.print_stats(file=file, by_pos=(verbose > 0))
+            self.print_stats(file=file, by_pos=(verbose > 1))
             self.elo_rating.print(file=file, verbose=verbose)
 
     def print_score(self, file: TextIO = sys.stdout) -> None:
@@ -442,25 +446,85 @@ class Tournament:
                         pos_str = f"Pos {i}:"
                         print(f"      {pos_str:22} {nums[i] / dens[i] * 100.0:7.2f}%", file=file)
 
-    def stats_header(self) -> list[str]:
-        """Stats names return correspond to the keys for `iter_stats()` yield
+    def stats_header(self, by_pos: bool = False) -> list[Union[str, AllStat]]:
+        """Header fields must correspond to the keys for `iter_stats()` yield.  CAVEAT:
+        type for stats fields is AllStat if `by_pos = False`, but `str` if `by_pos` is
+        specified as True.  This is somewhat whacky, but it is rather desirable to have
+        slightly stronger integrity for the former case.  However, this can't be done
+        for the latter case as well, since the stats are generated/virtual.
         """
+        if by_pos:
+            return self._stats_by_pos_header()
         TEAM_COL = 'Team'
         fields = [TEAM_COL] + list(AllStatIter())
         return fields
 
-    def iter_stats(self) -> dict[str, Number]:
-        """Keys for stats output correspond to the list returned by `stats_header()`
+    def _stats_by_pos_header(self) -> list[str]:
+        """Stats names return correspond to the keys for `iter_stats()` yield
         """
+        def expand(stat_iter: Iterable[AllStat]) -> str:
+            for stat in stat_iter:
+                yield str(stat)
+                if stat in POS_STATS | POS_COMP_STATS:
+                    for i in range(8):
+                        yield str(stat) + f" (Pos {i})"
+
         TEAM_COL = 'Team'
-        CSF = CompStatFormulas
+        fields = [TEAM_COL] + list(expand(AllStatIter()))
+        return fields
+
+    def iter_stats(self, by_pos: bool = False) -> dict[Union[str, AllStat], Number]:
+        """Keys for stats output correspond to the list returned by `stats_header()`
+        (see CAVEAT in the method docstring there).
+        """
+        if by_pos:
+            yield from self._iter_stats_by_pos()
+            return
+
+        def comp_stats_gen(stats_map: StatsMap) -> tuple[str, int]:
+            CSF = CompStatFormulas
+            for stat in CSF:
+                num = stats_map[CSF[stat][0]]
+                den = stats_map[CSF[stat][1]]
+                yield stat, num / den if den else None
+
+        TEAM_COL = 'Team'
         for name in self.teams:
             base_stats = self.team_stats[name]
-            # avoid divide by zero, make this negative so anomalies (i.e. numerator is not
-            # zero) will show up!
-            comp_stats = {stat: base_stats[CSF[stat][0]] / (base_stats[CSF[stat][1]] or -1)
-                          for stat in CompStat}
-            stats_row = {TEAM_COL: name} | base_stats | comp_stats
+            comp_stats = comp_stats_gen(self.team_stats[name])
+            stats_row = {TEAM_COL: name} | base_stats | dict(comp_stats)
+            yield stats_row
+
+    def _iter_stats_by_pos(self) -> dict[str, Number]:
+        """Keys for stats output correspond to the list returned by `stats_header()`
+        """
+        def stats_gen(stats_map: StatsMap, pos_stats_map: StatsMap) -> tuple[str, int]:
+            for stat, value in stats_map.items():
+                yield str(stat), value
+                if stat in POS_STATS:
+                    pos_stat = pos_stats_map[stat]
+                    for i in range(8):
+                        field_name = str(stat) + f" (Pos {i})"
+                        yield field_name, pos_stat[i]
+
+        def comp_stats_gen(stats_map: StatsMap, pos_stats_map: StatsMap) -> tuple[str, int]:
+            CSF = CompStatFormulas
+            for stat in CSF:
+                num = stats_map[CSF[stat][0]]
+                den = stats_map[CSF[stat][1]]
+                yield str(stat), num / den if den else None
+                if stat in POS_COMP_STATS:
+                    nums = pos_stats_map[CSF[stat][0]]
+                    dens = pos_stats_map[CSF[stat][1]]
+                    for i in range(8):
+                        field_name = str(stat) + f" (Pos {i})"
+                        yield field_name, nums[i] / dens[i] if dens[i] else None
+
+        TEAM_COL = 'Team'
+        for name in self.teams:
+            base_stats = stats_gen(self.team_stats[name], self.pos_stats[name])
+            comp_stats = comp_stats_gen(self.team_stats[name], self.pos_stats[name])
+            stats_row = {TEAM_COL: name} | dict(base_stats) | dict(comp_stats)
             yield stats_row
 
 ##############
@@ -610,6 +674,7 @@ def run_tournament(*args, **kwargs) -> int:
     tourn_keys = ('passes', 'elo_int')
     tourn_args = {k: kwargs.get(k) for k in tourn_keys if kwargs.get(k)}
     stats_file = kwargs.get('stats_file')
+    pos_stats  = kwargs.get('pos_stats')
     elo_file   = kwargs.get('elo_file')
     seed       = kwargs.get('seed')
 
@@ -619,11 +684,12 @@ def run_tournament(*args, **kwargs) -> int:
     tourney.play()
     tourney.print(verbose=1)
     if stats_file:
+        by_pos = bool(pos_stats)
         with open(stats_file, 'w', newline='') as file:
-            header = tourney.stats_header()
+            header = tourney.stats_header(by_pos=by_pos)
             writer = csv.DictWriter(file, fieldnames=header, dialect='excel-tab')
             writer.writeheader()
-            for row in tourney.iter_stats():
+            for row in tourney.iter_stats(by_pos=by_pos):
                 writer.writerow(row)
     if elo_file:
         with open(elo_file, 'w', newline='') as file:
@@ -643,7 +709,7 @@ def main() -> int:
     Functions/usage:
       - round_robin_bracket [teams=<num_teams>]
       - run_tournament <name> [passes=<passes>] [elo_int=<elo_int>] [stats_file=<stats_file>]
-                       [elo_file=<elo_file>] [seed=<rand_seed>]
+                       [pos_stats=<bool>] [elo_file=<elo_file>] [seed=<rand_seed>]
 
     """
     if len(sys.argv) < 2:

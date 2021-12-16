@@ -3,7 +3,8 @@
 
 import sys
 from enum import Enum
-from typing import Optional, Iterable, TextIO
+from collections.abc import Iterable
+from typing import Optional, TextIO
 import random
 
 from .core import DEBUG, LogicError
@@ -51,14 +52,14 @@ class GameStat(Enum):
     def __str__(self):
         return self.value
 
-NON_POS_STATS = set((GameStat.DEALS_TOTAL,
-                     GameStat.DEALS_PLAYED,
-                     GameStat.DEALS_PASSED,
-                     GameStat.TRICKS,
-                     GameStat.POINTS))
-# note that we don't care if there is no order to POS_STATS,
-# since we won't ever iterate on this directly (at least not
-# for reporting)
+NON_POS_STATS = {GameStat.DEALS_TOTAL,
+                 GameStat.DEALS_PLAYED,
+                 GameStat.DEALS_PASSED,
+                 GameStat.TRICKS,
+                 GameStat.POINTS}
+# note that we don't reall care if there is no order to POS_STATS,
+# since we won't ever iterate on this directly (at least not for
+# reporting purposes)
 POS_STATS = set(GameStat) - NON_POS_STATS
 
 ########
@@ -107,9 +108,9 @@ class Game(object):
         if deal.is_passed():
             for pos in (BIDDER_POS, DEALER_POS):
                 team_idx = self.player_team(players[pos])[0]
-                stat = self.stats[team_idx]
-                stat[GS.DEALS_TOTAL] += 1
-                stat[GS.DEALS_PASSED] += 1
+                team_stats = self.stats[team_idx]
+                team_stats[GS.DEALS_TOTAL] += 1
+                team_stats[GS.DEALS_PASSED] += 1
             return
 
         assert len(deal.points) == len(players)
@@ -119,11 +120,11 @@ class Game(object):
             team_idx = self.player_team(players[pos])[0]
             self.score[team_idx] += deal.points[pos]
 
-            stat = self.stats[team_idx]
-            stat[GS.DEALS_TOTAL] += 1
-            stat[GS.DEALS_PLAYED] += 1
-            stat[GS.TRICKS] += deal.tricks_won[pos]
-            stat[GS.POINTS] += deal.points[pos]
+            team_stats = self.stats[team_idx]
+            team_stats[GS.DEALS_TOTAL] += 1
+            team_stats[GS.DEALS_PLAYED] += 1
+            team_stats[GS.TRICKS] += deal.tricks_won[pos]
+            team_stats[GS.POINTS] += deal.points[pos]
 
         call_team_idx = self.player_team(players[deal.caller_pos])[0]
         def_team_idx = self.player_team(players[deal.caller_pos ^ 0x01])[0]
