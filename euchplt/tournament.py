@@ -392,7 +392,23 @@ class Tournament:
         self.winner = tuple(winners)
         self.elo_rating.persist(archive=True)
 
+    def play_match(self, matchup: Iterable[Team], update_elo: bool = True) -> None:
+        """Uniform/common method for conducting a match within the tournament
+
+        REVISIT: it's kind of ugly to take `update_elo` as an arg and just
+        pass it along, but `tabulate()` needs it (see above) and really does
+        belong with in this sequence [or not???]
+        """
+        match = Match(matchup)
+        self.matches.append(match)
+        match.play()
+        self.tabulate(match, update_elo=update_elo)
+
     def play(self, **kwargs) -> None:
+        """Abstract method to be implemented by all subclasses, who should
+        then invoke `play_match()` to conduct each of the matchups created
+        for the tournament type
+        """
         raise NotImplementedError("Can't call abstract method")
 
     def print(self, file: TextIO = sys.stdout, verbose: int = 0) -> None:
@@ -580,10 +596,7 @@ class RoundRobin(Tournament):
                 for matchup in matchups:
                     if None in matchup:
                         continue
-                    match = Match(matchup)
-                    self.matches.append(match)
-                    match.play()
-                    self.tabulate(match, update_elo=int_match)
+                    self.play_match(matchup, update_elo=int_match)
                     match_num += 1
                 self.tabulate_round(self.matches[round_start:], update_elo=int_round)
             self.tabulate_pass(self.matches[pass_start:], update_elo=int_pass)
@@ -685,7 +698,6 @@ def main() -> int:
       - round_robin_bracket [teams=<num_teams>]
       - run_tournament <name> [passes=<passes>] [elo_int=<elo_int>] [stats_file=<stats_file>]
                        [elo_file=<elo_file>] [seed=<rand_seed>]
-
     """
     if len(sys.argv) < 2:
         print(f"Utility function not specified", file=sys.stderr)
@@ -695,18 +707,18 @@ def main() -> int:
         return -1
     util_func = globals()[sys.argv[1]]
 
-    def typecast(argval: str) -> Union[str, Number]:
-        if argval.isdecimal():
-            return int(argval)
-        if argval.isnumeric():
-            return float(argval)
+    def typecast(val: str) -> Union[str, Number, bool]:
+        if val.isdecimal():
+            return int(val)
+        if val.isnumeric():
+            return float(val)
         if val.lower() in ['false', 'f', 'no', 'n']:
             return False
         if val.lower() in ['true', 't', 'yes', 'y']:
             return True
         if val.lower() in ['null', 'none', 'nil']:
             return None
-        return argval if len(argval) > 0 else None
+        return val if len(val) > 0 else None
 
     args = []
     kwargs = {}

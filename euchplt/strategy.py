@@ -352,11 +352,30 @@ class StrategySmart(Strategy):
     different opponent profiles.
     """
     hand_analysis:    dict
+    # bid parameters
     turn_card_value:  list[int]  # by rank.idx
     turn_card_coeff:  list[int]  # by pos (0-3)
     bid_thresh:       list[int]  # by pos (0-7)
     alone_margin:     list[int]  # by pos (0-7)
     def_alone_thresh: list[int]  # by pos (0-7)
+    # play parameters
+    init_lead:        list[str]
+    subseq_lead:      list[str]
+    part_winning:     list[str]
+    opp_winning:      list[str]
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # do a cursory validation of the method names within the rulesets
+        # for `play_cards()`; don't think we can "compile" them into real
+        # function objects from here, so we'll have to do that at runtime
+        # for now (unless/until we can get really clever about this)
+        play_card_vars = set(self.__class__.play_card.__code__.co_varnames)
+        ruleset_names = ('init_lead', 'subseq_lead', 'part_winning', 'opp_winning')
+        for name in ruleset_names:
+            ruleset = getattr(self, name)
+            if unknown := set(ruleset) - play_card_vars:
+                raise ConfigError(f"Unknown method(s) '{', '.join(unknown)}' in ruleset '{name}'")
 
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """General logic:
@@ -775,38 +794,13 @@ class StrategySmart(Strategy):
         # rule sets #
         #############
 
-        # Note, these are static for now, but later could be created dynamically based
-        # on game or deal scenario
-        init_lead    = [next_call_lead,
-                        draw_trump,
-                        lead_off_ace,
-                        lead_to_partner_call,
-                        lead_to_create_void,
-                        lead_low_from_long_suit]
-
-        subseq_lead  = [lead_last_card,
-                        draw_trump,
-                        # maybe swap the next two...
-                        lead_to_partner_call,
-                        lead_off_ace,
-                        lead_suit_winner,
-                        lead_to_create_void,
-                        lead_low_non_trump,
-                        lead_low_from_long_suit]
-
-        part_winning = [play_last_card,
-                        follow_suit_low,
-                        throw_off_to_create_void,
-                        throw_off_low,
-                        play_low_trump,
-                        play_random_card]
-
-        opp_winning  = [play_last_card,
-                        follow_suit_high,
-                        trump_low,
-                        throw_off_to_create_void,
-                        throw_off_low,
-                        play_random_card]
+        # Note, these are static for now (loaded from the config file), but later could
+        # be created and/or adjusted dynamically based on game or deal scenario
+        func_locals  = locals()
+        init_lead    = [func_locals[rule] for rule in self.init_lead]
+        subseq_lead  = [func_locals[rule] for rule in self.subseq_lead]
+        part_winning = [func_locals[rule] for rule in self.part_winning]
+        opp_winning  = [func_locals[rule] for rule in self.opp_winning]
 
         #########################
         # pick ruleset and play #
