@@ -282,15 +282,20 @@ class EloRating:
 ##############
 
 class Tournament:
-    name:         str
-    teams:        dict[str, Team]                  # indexed by team name
-    matches:      list[Match]                      # sequential
-    team_matches: dict[str, list[Match]]           # indexed as `teams`
-    team_score:   dict[str, list[Number]]          # [matches, elo_points], indexed as `teams`
-    team_stats:   dict[str, dict[TournStat, int]]  # indexed as `teams`
-    pos_stats:    dict[str, dict[TournStat, list[int]]]   # tabulate stats by call_pos
-    winner:       Optional[tuple[Team, ...]]
-    elo_rating:   EloRating
+    name:           str
+    teams:          dict[str, Team]                  # indexed by team name
+    # NOTE the different naming convention for position-related stats
+    # stuff here, compared to Game and Match classes (should probably
+    # make it all consistent at some point)!!!
+    pos_stats:      set[GameStat]
+    pos_comp_stats: set[CompStat]
+    matches:        list[Match]                      # sequential
+    team_matches:   dict[str, list[Match]]           # indexed as `teams`
+    team_score:     dict[str, list[Number]]          # [matches, elo_points], indexed as `teams`
+    team_stats:     dict[str, dict[TournStat, int]]  # indexed as `teams`
+    team_pos_stats: dict[str, dict[TournStat, list[int]]]   # tabulate stats by call_pos
+    winner:         Optional[tuple[Team, ...]]
+    elo_rating:     EloRating
 
     @classmethod
     def new(cls, tourn_name: str, **kwargs) -> 'Tournament':
@@ -329,15 +334,23 @@ class Tournament:
             raise RuntimeError("At least two teams must be specified")
         if len(self.teams) < idx + 1:
             raise RuntimeError("Team names must be unique")
+        pos_stats           = kwargs.get('pos_stats') or []
+        pos_comp_stats      = kwargs.get('pos_comp_stats') or []
+        elo_params          = kwargs.get('elo_rating') or {}
 
-        self.matches      = []
-        self.team_matches = {name: [] for name in self.teams}
-        self.team_score   = {name: [0, 0.0] for name in teams}
-        self.team_stats   = {name: {stat: 0 for stat in TournStatIter()} for name in teams}
-        self.pos_stats    = {name: {stat: [0] * 8 for stat in POS_STATS} for name in teams}
-        self.winner       = None
-        elo_params        = kwargs.get('elo_rating') or {}
-        self.elo_rating   = EloRating(self.teams.values(), elo_params)
+        self.pos_stats      = set(GameStat[s.upper()] for s in pos_stats)
+        self.pos_comp_stats = set(CompStat[s.upper()] for s in pos_comp_stats)
+        for stat in self.pos_comp_stats:
+            if set(CompStatFormulas[stat]) - self.pos_stats:
+                raise ConfigError(f"Stat '{stat.name}' has missing dependencies in 'pos_stats'")
+
+        self.matches        = []
+        self.team_matches   = {name: [] for name in self.teams}
+        self.team_score     = {name: [0, 0.0] for name in teams}
+        self.team_stats     = {name: {stat: 0 for stat in TournStatIter()} for name in teams}
+        self.team_pos_stats = {name: {stat: [0] * 8 for stat in self.pos_stats} for name in teams}
+        self.winner         = None
+        self.elo_rating     = EloRating(self.teams.values(), elo_params)
 
     def tabulate(self, match: Match, update_elo: bool = True) -> None:
         """Tabulate the result of a single match.  Subclasses may choose to implement and
@@ -356,8 +369,8 @@ class Tournament:
 
             for stat in MatchStatIter():
                 self.team_stats[team.name][stat] += match.stats[i][stat]
-                if stat in POS_STATS:
-                    my_stat_list = self.pos_stats[team.name][stat]
+                if stat in self.pos_stats:
+                    my_stat_list = self.team_pos_stats[team.name][stat]
                     match_stat_list = match.pos_stats[i][stat]
                     for j in range(8):
                         my_stat_list[j] += match_stat_list[j]
@@ -398,7 +411,7 @@ class Tournament:
 
         self.print_score(file=file)
         if verbose:
-            self.print_stats(file=file, by_pos=(verbose > 1))
+            self.print_stats(file=file, by_pos=(verbose > 0))
             self.elo_rating.print(file=file, verbose=verbose)
 
     def print_score(self, file: TextIO = sys.stdout) -> None:
@@ -423,8 +436,8 @@ class Tournament:
             print(f"  {name}:", file=file)
             for stat in TournStatIter():
                 print(f"    {stat.value + ':':24} {base_stats[stat]:8}", file=file)
-                if by_pos and stat in POS_STATS:
-                    pos_stat = self.pos_stats[name][stat]
+                if by_pos and stat in self.pos_stats:
+                    pos_stat = self.team_pos_stats[name][stat]
                     stat_tot = sum(pos_stat)
                     for i in range(8):
                         pos_str = f"Pos {i}:"
@@ -437,35 +450,22 @@ class Tournament:
                     print(f"    {stat.value + ':':24}   ", NOT_APPLICABLE, file=file)
                     continue
                 print(f"    {stat.value + ':':24} {num / den * 100.0:7.2f}%", file=file)
-                if by_pos and stat in POS_COMP_STATS:
-                    nums = self.pos_stats[name][CSF[stat][0]]
-                    dens = self.pos_stats[name][CSF[stat][1]]
+                if by_pos and stat in self.pos_comp_stats:
+                    nums = self.team_pos_stats[name][CSF[stat][0]]
+                    dens = self.team_pos_stats[name][CSF[stat][1]]
                     for i in range(8):
                         if not dens[i]:
                             continue
                         pos_str = f"Pos {i}:"
                         print(f"      {pos_str:22} {nums[i] / dens[i] * 100.0:7.2f}%", file=file)
 
-    def stats_header(self, by_pos: bool = False) -> list[Union[str, AllStat]]:
-        """Header fields must correspond to the keys for `iter_stats()` yield.  CAVEAT:
-        type for stats fields is AllStat if `by_pos = False`, but `str` if `by_pos` is
-        specified as True.  This is somewhat whacky, but it is rather desirable to have
-        slightly stronger integrity for the former case.  However, this can't be done
-        for the latter case as well, since the stats are generated/virtual.
-        """
-        if by_pos:
-            return self._stats_by_pos_header()
-        TEAM_COL = 'Team'
-        fields = [TEAM_COL] + list(AllStatIter())
-        return fields
-
-    def _stats_by_pos_header(self) -> list[str]:
-        """Stats names return correspond to the keys for `iter_stats()` yield
+    def stats_header(self) -> list[str]:
+        """Header fields must correspond to the keys for `iter_stats()` yield
         """
         def expand(stat_iter: Iterable[AllStat]) -> str:
             for stat in stat_iter:
                 yield str(stat)
-                if stat in POS_STATS | POS_COMP_STATS:
+                if stat in self.pos_stats | self.pos_comp_stats:
                     for i in range(8):
                         yield str(stat) + f" (Pos {i})"
 
@@ -473,35 +473,13 @@ class Tournament:
         fields = [TEAM_COL] + list(expand(AllStatIter()))
         return fields
 
-    def iter_stats(self, by_pos: bool = False) -> dict[Union[str, AllStat], Number]:
-        """Keys for stats output correspond to the list returned by `stats_header()`
-        (see CAVEAT in the method docstring there).
-        """
-        if by_pos:
-            yield from self._iter_stats_by_pos()
-            return
-
-        def comp_stats_gen(stats_map: StatsMap) -> tuple[str, int]:
-            CSF = CompStatFormulas
-            for stat in CSF:
-                num = stats_map[CSF[stat][0]]
-                den = stats_map[CSF[stat][1]]
-                yield stat, num / den if den else None
-
-        TEAM_COL = 'Team'
-        for name in self.teams:
-            base_stats = self.team_stats[name]
-            comp_stats = comp_stats_gen(self.team_stats[name])
-            stats_row = {TEAM_COL: name} | base_stats | dict(comp_stats)
-            yield stats_row
-
-    def _iter_stats_by_pos(self) -> dict[str, Number]:
-        """Keys for stats output correspond to the list returned by `stats_header()`
+    def iter_stats(self) -> dict[str, Number]:
+        """Keys for stats output correspond to the field names returned by `stats_header()`
         """
         def stats_gen(stats_map: StatsMap, pos_stats_map: StatsMap) -> tuple[str, int]:
             for stat, value in stats_map.items():
                 yield str(stat), value
-                if stat in POS_STATS:
+                if stat in self.pos_stats:
                     pos_stat = pos_stats_map[stat]
                     for i in range(8):
                         field_name = str(stat) + f" (Pos {i})"
@@ -513,7 +491,7 @@ class Tournament:
                 num = stats_map[CSF[stat][0]]
                 den = stats_map[CSF[stat][1]]
                 yield str(stat), num / den if den else None
-                if stat in POS_COMP_STATS:
+                if stat in self.pos_comp_stats:
                     nums = pos_stats_map[CSF[stat][0]]
                     dens = pos_stats_map[CSF[stat][1]]
                     for i in range(8):
@@ -522,8 +500,8 @@ class Tournament:
 
         TEAM_COL = 'Team'
         for name in self.teams:
-            base_stats = stats_gen(self.team_stats[name], self.pos_stats[name])
-            comp_stats = comp_stats_gen(self.team_stats[name], self.pos_stats[name])
+            base_stats = stats_gen(self.team_stats[name], self.team_pos_stats[name])
+            comp_stats = comp_stats_gen(self.team_stats[name], self.team_pos_stats[name])
             stats_row = {TEAM_COL: name} | dict(base_stats) | dict(comp_stats)
             yield stats_row
 
@@ -667,14 +645,12 @@ def round_robin_bracket(*args, **kwargs) -> int:
     return 0
 
 def run_tournament(*args, **kwargs) -> int:
-    stats_file = None
     if len(args) < 1:
         raise RuntimeError("Tournament name not specified")
     tourn_name = args[0]
     tourn_keys = ('passes', 'elo_int')
     tourn_args = {k: kwargs.get(k) for k in tourn_keys if kwargs.get(k)}
     stats_file = kwargs.get('stats_file')
-    pos_stats  = kwargs.get('pos_stats')
     elo_file   = kwargs.get('elo_file')
     seed       = kwargs.get('seed')
 
@@ -684,12 +660,11 @@ def run_tournament(*args, **kwargs) -> int:
     tourney.play()
     tourney.print(verbose=1)
     if stats_file:
-        by_pos = bool(pos_stats)
         with open(stats_file, 'w', newline='') as file:
-            header = tourney.stats_header(by_pos=by_pos)
+            header = tourney.stats_header()
             writer = csv.DictWriter(file, fieldnames=header, dialect='excel-tab')
             writer.writeheader()
-            for row in tourney.iter_stats(by_pos=by_pos):
+            for row in tourney.iter_stats():
                 writer.writerow(row)
     if elo_file:
         with open(elo_file, 'w', newline='') as file:
@@ -709,7 +684,7 @@ def main() -> int:
     Functions/usage:
       - round_robin_bracket [teams=<num_teams>]
       - run_tournament <name> [passes=<passes>] [elo_int=<elo_int>] [stats_file=<stats_file>]
-                       [pos_stats=<bool>] [elo_file=<elo_file>] [seed=<rand_seed>]
+                       [elo_file=<elo_file>] [seed=<rand_seed>]
 
     """
     if len(sys.argv) < 2:
@@ -720,12 +695,18 @@ def main() -> int:
         return -1
     util_func = globals()[sys.argv[1]]
 
-    def typecast(arg: str) -> Union[str, Number]:
-        if arg.isdecimal():
-            return int(arg)
-        if arg.isnumeric():
-            return float(arg)
-        return arg if len(arg) > 0 else None
+    def typecast(argval: str) -> Union[str, Number]:
+        if argval.isdecimal():
+            return int(argval)
+        if argval.isnumeric():
+            return float(argval)
+        if val.lower() in ['false', 'f', 'no', 'n']:
+            return False
+        if val.lower() in ['true', 't', 'yes', 'y']:
+            return True
+        if val.lower() in ['null', 'none', 'nil']:
+            return None
+        return argval if len(argval) > 0 else None
 
     args = []
     kwargs = {}

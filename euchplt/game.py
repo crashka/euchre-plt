@@ -57,9 +57,9 @@ NON_POS_STATS = {GameStat.DEALS_TOTAL,
                  GameStat.DEALS_PASSED,
                  GameStat.TRICKS,
                  GameStat.POINTS}
-# note that we don't reall care if there is no order to POS_STATS,
-# since we won't ever iterate on this directly (at least not for
-# reporting purposes)
+# note, we don't really care if there is no order to POS_STATS since
+# we won't (or shouldn't) ever want to iterate on this directly (at
+# least not for reporting purposes)
 POS_STATS = set(GameStat) - NON_POS_STATS
 
 ########
