@@ -9,7 +9,7 @@ from typing import Optional, Union, Iterable, Iterator, TextIO
 from .core import DEBUG, LogicError
 from .player import Player
 from .team import Team
-from .game import GameStat, Game, NUM_TEAMS
+from .game import GameStat, POS_STATS, Game, NUM_TEAMS
 
 #############
 # MatchStat #
@@ -37,11 +37,12 @@ MATCH_GAMES = 2
 class Match(object):
     """
     """
-    teams:  list[Team]
-    games:  list[Game]                  # sequential
-    score:  list[int]                   # (games) indexed as `teams`
-    stats:  list[dict[MatchStat, int]]  # each stat indexed as `teams`
-    winner: Optional[tuple[int, Team]]  # tuple(idx, team)
+    teams:     list[Team]
+    games:     list[Game]                  # sequential
+    score:     list[int]                   # (games) indexed as `teams`
+    stats:     list[dict[MatchStat, int]]  # each stat indexed as `teams`
+    pos_stats: list[dict[MatchStat, list[int]]]   # tabulate stats by call_pos
+    winner:    Optional[tuple[int, Team]]  # tuple(idx, team)
 
     def __init__(self, teams: Iterable[Team]):
         """
@@ -49,10 +50,11 @@ class Match(object):
         self.teams = list(teams)
         if len(self.teams) != NUM_TEAMS:
             raise LogicError(f"Expected {NUM_TEAMS} teams, got {len(self.teams)}")
-        self.games  = []
-        self.score  = [0] * NUM_TEAMS
-        self.stats  = [{stat: 0 for stat in MatchStatIter()} for _ in teams]
-        self.winner = None
+        self.games     = []
+        self.score     = [0] * NUM_TEAMS
+        self.stats     = [{stat: 0 for stat in MatchStatIter()} for _ in teams]
+        self.pos_stats = [{stat: [0] * 8 for stat in POS_STATS} for _ in teams]
+        self.winner    = None
 
     def tabulate(self, game: Game) -> None:
         """
@@ -65,6 +67,11 @@ class Match(object):
 
             for stat in GameStat:
                 self.stats[i][stat] += game.stats[i][stat]
+                if stat in POS_STATS:
+                    my_stat_list = self.pos_stats[i][stat]
+                    game_stat_list = game.pos_stats[i][stat]
+                    for j in range(8):
+                        my_stat_list[j] += game_stat_list[j]
 
     def set_winner(self) -> None:
         """

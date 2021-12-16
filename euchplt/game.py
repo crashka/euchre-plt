@@ -24,12 +24,6 @@ class GameStat(Enum):
     POINTS            = "Points"
     # caller stats
     CALLS             = "Calls"
-    CALLS_RND_1       = "Calls (round 1)"
-    CALLS_RND_2       = "Calls (round 2)"
-    CALLS_POS_1       = "Calls (position 1)"
-    CALLS_POS_2       = "Calls (position 2)"
-    CALLS_POS_3       = "Calls (position 3)"
-    CALLS_POS_4       = "Calls (position 4)"
     CALLS_MADE        = "Calls Made"
     CALLS_ALL_5       = "Calls Made All 5"
     CALLS_EUCHRED     = "Calls Euchred"
@@ -57,6 +51,16 @@ class GameStat(Enum):
     def __str__(self):
         return self.value
 
+NON_POS_STATS = set((GameStat.DEALS_TOTAL,
+                     GameStat.DEALS_PLAYED,
+                     GameStat.DEALS_PASSED,
+                     GameStat.TRICKS,
+                     GameStat.POINTS))
+# note that we don't care if there is no order to POS_STATS,
+# since we won't ever iterate on this directly (at least not
+# for reporting)
+POS_STATS = set(GameStat) - NON_POS_STATS
+
 ########
 # Game #
 ########
@@ -68,11 +72,12 @@ GAME_POINTS  = 10
 class Game(object):
     """
     """
-    teams:  list[Team]
-    deals:  list[Deal]                  # sequential
-    score:  list[int]                   # (points) indexed as `teams`
-    stats:  list[dict[GameStat, int]]   # each stat indexed as `teams`
-    winner: Optional[tuple[int, Team]]  # tuple(idx, team)
+    teams:     list[Team]
+    deals:     list[Deal]                  # sequential
+    score:     list[int]                   # (points) indexed as `teams`
+    stats:     list[dict[GameStat, int]]   # each stat indexed as `teams`
+    pos_stats: list[dict[GameStat, list[int]]]   # tabulate stats by call_pos
+    winner:    Optional[tuple[int, Team]]  # tuple(idx, team)
 
     def __init__(self, teams: Iterable[Team]):
         """
@@ -80,10 +85,11 @@ class Game(object):
         self.teams = list(teams)
         if len(self.teams) != NUM_TEAMS:
             raise LogicError(f"Expected {NUM_TEAMS} teams, got {len(self.teams)}")
-        self.deals  = []
-        self.score  = []
-        self.stats  = [{stat: 0 for stat in GameStat} for _ in range(NUM_TEAMS)]
-        self.winner = None
+        self.deals     = []
+        self.score     = []
+        self.stats     = [{stat: 0 for stat in GameStat} for _ in range(NUM_TEAMS)]
+        self.pos_stats = [{stat: [0] * 8 for stat in POS_STATS} for _ in range(NUM_TEAMS)]
+        self.winner    = None
 
     def player_team(self, player: Player) -> tuple[int, Team]:
         """
@@ -97,7 +103,6 @@ class Game(object):
         """
         """
         GS = GameStat
-        CALL_POS_N = [GS.CALLS_POS_1, GS.CALLS_POS_2, GS.CALLS_POS_3, GS.CALLS_POS_4]
 
         if deal.is_passed():
             for pos in (BIDDER_POS, DEALER_POS):
@@ -121,62 +126,65 @@ class Game(object):
             stat[GS.POINTS] += deal.points[pos]
 
         call_team_idx = self.player_team(players[deal.caller_pos])[0]
-        call_stat     = self.stats[call_team_idx]
-        def_team_idx  = self.player_team(players[deal.caller_pos ^ 0x01])[0]
-        def_stat      = self.stats[def_team_idx]
+        def_team_idx = self.player_team(players[deal.caller_pos ^ 0x01])[0]
+        # this the position of the "call" (not caller), so range is 0-7!
+        call_pos = deal.caller_pos + (0 if deal.discard else 4)
+
+        def call_stat_incr(stat: GameStat, value: int = 1) -> None:
+            self.stats[call_team_idx][stat] += value
+            self.pos_stats[call_team_idx][stat][call_pos] += value
+
+        def def_stat_incr(stat: GameStat, value: int = 1) -> None:
+            self.stats[def_team_idx][stat] += value
+            self.pos_stats[def_team_idx][stat][call_pos] += value
 
         # bidding/calling
-        call_stat[GS.CALLS] += 1
-        def_stat[GS.DEFENSES] += 1
-        if deal.discard:
-            call_stat[GS.CALLS_RND_1] += 1
-        else:
-            call_stat[GS.CALLS_RND_2] += 1
-        call_stat[CALL_POS_N[deal.caller_pos]] += 1
+        call_stat_incr(GS.CALLS)
+        def_stat_incr(GS.DEFENSES)
 
         if DealAttr.GO_ALONE in deal.result:
-            call_stat[GS.LONERS_CALLED] += 1
-            def_stat[GS.DEF_LONERS] += 1
+            call_stat_incr(GS.LONERS_CALLED)
+            def_stat_incr(GS.DEF_LONERS)
             if DealAttr.DEF_ALONE in deal.result:
-                def_stat[GS.DEF_ALONES] += 1
+                def_stat_incr(GS.DEF_ALONES)
         else:
-            call_stat[GS.NL_CALLS] += 1
+            call_stat_incr(GS.NL_CALLS)
 
         # playing/results
         if DealAttr.MAKE in deal.result:          # MADE...
             assert DealAttr.EUCHRE not in deal.result
-            call_stat[GS.CALLS_MADE] += 1
-            def_stat[GS.DEF_LOSSES] += 1
+            call_stat_incr(GS.CALLS_MADE)
+            def_stat_incr(GS.DEF_LOSSES)
 
             if DealAttr.GO_ALONE in deal.result:  # loner made
                 if DealAttr.ALL_5 in deal.result:
-                    call_stat[GS.CALLS_ALL_5] += 1
-                    call_stat[GS.LONERS_MADE] += 1
-                    def_stat[GS.DEF_LONER_LOSSES] += 1
+                    call_stat_incr(GS.CALLS_ALL_5)
+                    call_stat_incr(GS.LONERS_MADE)
+                    def_stat_incr(GS.DEF_LONER_LOSSES)
                     if DealAttr.DEF_ALONE in deal.result:
-                        def_stat[GS.DEF_ALONE_LOSSES] += 1
+                        def_stat_incr(GS.DEF_ALONE_LOSSES)
                 else:
-                    call_stat[GS.LONERS_FAILED] += 1
-                    def_stat[GS.DEF_LONER_STOPS] += 1
+                    call_stat_incr(GS.LONERS_FAILED)
+                    def_stat_incr(GS.DEF_LONER_STOPS)
                     if DealAttr.DEF_ALONE in deal.result:
-                        def_stat[GS.DEF_ALONE_STOPS] += 1
+                        def_stat_incr(GS.DEF_ALONE_STOPS)
             else:                                 # non-loner made
-                call_stat[GS.NL_CALLS_MADE] += 1
+                call_stat_incr(GS.NL_CALLS_MADE)
                 if DealAttr.ALL_5 in deal.result:
-                    call_stat[GS.CALLS_ALL_5] += 1
-                    call_stat[GS.NL_CALLS_ALL_5] += 1
+                    call_stat_incr(GS.CALLS_ALL_5)
+                    call_stat_incr(GS.NL_CALLS_ALL_5)
         else:                                     # NOT MADE...
             assert DealAttr.EUCHRE in deal.result
-            call_stat[GS.CALLS_EUCHRED] += 1
-            def_stat[GS.DEF_EUCHRES] += 1
+            call_stat_incr(GS.CALLS_EUCHRED)
+            def_stat_incr(GS.DEF_EUCHRES)
 
             if DealAttr.GO_ALONE in deal.result:  # loner euchred
-                call_stat[GS.LONERS_EUCHRED] += 1
-                def_stat[GS.DEF_LONER_EUCHRES] += 1
+                call_stat_incr(GS.LONERS_EUCHRED)
+                def_stat_incr(GS.DEF_LONER_EUCHRES)
                 if DealAttr.DEF_ALONE in deal.result:
-                    def_stat[GS.DEF_ALONE_EUCHRES] += 1
+                    def_stat_incr(GS.DEF_ALONE_EUCHRES)
             else:                                 # non-loner euchred
-                call_stat[GS.NL_CALLS_EUCHRED] += 1
+                call_stat_incr(GS.NL_CALLS_EUCHRED)
 
     def set_winner(self) -> None:
         """

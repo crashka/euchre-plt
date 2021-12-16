@@ -12,7 +12,7 @@ import csv
 
 from .core import DEBUG, cfg, ConfigError, DataFile, ArchiveDataFile
 from .team import Team
-from .game import GameStat
+from .game import GameStat, POS_STATS
 from .match import MatchStatXtra, MatchStatIter, Match
 
 """
@@ -54,12 +54,6 @@ class CompStat(Enum):
     GAME_WIN_PCT       = "Game Win Pct"
     DEAL_PASS_PCT      = "Deal Pass Pct"
     CALL_PCT           = "Call Pct"
-    CALL_RND_1_PCT     = "Call Round 1 Pct"
-    CALL_RND_2_PCT     = "Call Round 2 Pct"
-    CALL_POS_1_PCT     = "Call Position 1 Pct"
-    CALL_POS_2_PCT     = "Call Position 2 Pct"
-    CALL_POS_3_PCT     = "Call Position 3 Pct"
-    CALL_POS_4_PCT     = "Call Position 4 Pct"
     CALL_MAKE_PCT      = "Call Make Pct"
     CALL_ALL_5_PCT     = "Call All 5 Pct"
     CALL_EUCH_PCT      = "Call Euchred Pct"
@@ -101,12 +95,6 @@ CompStatFormulas = {
     CS.GAME_WIN_PCT       : (MS.GAMES_WON,         MS.GAMES_PLAYED),
     CS.DEAL_PASS_PCT      : (GS.DEALS_PASSED,      GS.DEALS_TOTAL),
     CS.CALL_PCT           : (GS.CALLS,             GS.DEALS_TOTAL),
-    CS.CALL_RND_1_PCT     : (GS.CALLS_RND_1,       GS.DEALS_TOTAL),
-    CS.CALL_RND_2_PCT     : (GS.CALLS_RND_2,       GS.DEALS_TOTAL),
-    CS.CALL_POS_1_PCT     : (GS.CALLS_POS_1,       GS.DEALS_TOTAL),
-    CS.CALL_POS_2_PCT     : (GS.CALLS_POS_2,       GS.DEALS_TOTAL),
-    CS.CALL_POS_3_PCT     : (GS.CALLS_POS_3,       GS.DEALS_TOTAL),
-    CS.CALL_POS_4_PCT     : (GS.CALLS_POS_4,       GS.DEALS_TOTAL),
     CS.CALL_MAKE_PCT      : (GS.CALLS_MADE,        GS.CALLS),
     CS.CALL_ALL_5_PCT     : (GS.CALLS_ALL_5,       GS.CALLS),
     CS.CALL_EUCH_PCT      : (GS.CALLS_EUCHRED,     GS.CALLS),
@@ -130,6 +118,10 @@ CompStatFormulas = {
     CS.DEF_ALONE_STOP_PCT : (GS.DEF_ALONE_STOPS,   GS.DEF_ALONES),
     CS.DEF_ALONE_LOSE_PCT : (GS.DEF_ALONE_LOSSES,  GS.DEF_ALONES)
 }
+
+# generate list of CompStat entries that can be computed by position
+# (i.e. both operands are in POS_STATS)
+POS_COMP_STATS = set(stat for stat, opnds in CompStatFormulas.items() if POS_STATS >= set(opnds))
 
 ###############
 # elo ratings #
@@ -276,7 +268,6 @@ class EloRating:
         """Ratings history data corresponding to the fields returned by `elo_header()`
         """
         TEAM_COL = 'Team'
-        CSF = CompStatFormulas
         for name, ratings in self.ratings_hist.items():
             team_hist = {f"Elo {i}": val for i, val in enumerate(ratings)}
             hist_row = {TEAM_COL: name} | team_hist
@@ -293,6 +284,7 @@ class Tournament:
     team_matches: dict[str, list[Match]]           # indexed as `teams`
     team_score:   dict[str, list[Number]]          # [matches, elo_points], indexed as `teams`
     team_stats:   dict[str, dict[TournStat, int]]  # indexed as `teams`
+    pos_stats:    dict[str, dict[TournStat, list[int]]]   # tabulate stats by call_pos
     winner:       Optional[tuple[Team, ...]]
     elo_rating:   EloRating
 
@@ -338,6 +330,7 @@ class Tournament:
         self.team_matches = {name: [] for name in self.teams}
         self.team_score   = {name: [0, 0.0] for name in teams}
         self.team_stats   = {name: {stat: 0 for stat in TournStatIter()} for name in teams}
+        self.pos_stats    = {name: {stat: [0] * 8 for stat in POS_STATS} for name in teams}
         self.winner       = None
         elo_params        = kwargs.get('elo_rating') or {}
         self.elo_rating   = EloRating(self.teams.values(), elo_params)
@@ -359,6 +352,11 @@ class Tournament:
 
             for stat in MatchStatIter():
                 self.team_stats[team.name][stat] += match.stats[i][stat]
+                if stat in POS_STATS:
+                    my_stat_list = self.pos_stats[team.name][stat]
+                    match_stat_list = match.pos_stats[i][stat]
+                    for j in range(8):
+                        my_stat_list[j] += match_stat_list[j]
 
         if update_elo:
             self.elo_rating.update([match])
@@ -396,7 +394,7 @@ class Tournament:
 
         self.print_score(file=file)
         if verbose:
-            self.print_stats(file=file)
+            self.print_stats(file=file, by_pos=(verbose > 0))
             self.elo_rating.print(file=file, verbose=verbose)
 
     def print_score(self, file: TextIO = sys.stdout) -> None:
@@ -412,20 +410,37 @@ class Tournament:
         winner_names = (t.name for t in self.winner)
         print(f"Tournament Winner{plural}:\n  {', '.join(winner_names)}")
 
-    def print_stats(self, file: TextIO = sys.stdout) -> None:
+    def print_stats(self, file: TextIO = sys.stdout, by_pos: bool = False) -> None:
         CSF = CompStatFormulas
+        NOT_APPLICABLE = "n/a"
         print("Tournament Stats:", file=file)
         for name in self.teams:
             base_stats = self.team_stats[name]
             print(f"  {name}:", file=file)
             for stat in TournStatIter():
-                print(f"    {stat.value+':':24} {base_stats[stat]:8}", file=file)
+                print(f"    {stat.value + ':':24} {base_stats[stat]:8}", file=file)
+                if by_pos and stat in POS_STATS:
+                    pos_stat = self.pos_stats[name][stat]
+                    stat_tot = sum(pos_stat)
+                    for i in range(8):
+                        pos_str = f"Pos {i}:"
+                        pct_str = f" ({pos_stat[i] / stat_tot * 100.0:5.2f}%)" if stat_tot else ""
+                        print(f"      {pos_str:22} {pos_stat[i]:8}{pct_str}", file=file)
             for stat in CompStat:
                 num = base_stats[CSF[stat][0]]
-                # avoid divide by zero, make this negative so anomalies (i.e. numerator
-                # is not zero) will show up!
-                den = base_stats[CSF[stat][1]] or -1
+                den = base_stats[CSF[stat][1]]
+                if not den:
+                    print(f"    {stat.value + ':':24}   ", NOT_APPLICABLE, file=file)
+                    continue
                 print(f"    {stat.value + ':':24} {num / den * 100.0:7.2f}%", file=file)
+                if by_pos and stat in POS_COMP_STATS:
+                    nums = self.pos_stats[name][CSF[stat][0]]
+                    dens = self.pos_stats[name][CSF[stat][1]]
+                    for i in range(8):
+                        if not dens[i]:
+                            continue
+                        pos_str = f"Pos {i}:"
+                        print(f"      {pos_str:22} {nums[i] / dens[i] * 100.0:7.2f}%", file=file)
 
     def stats_header(self) -> list[str]:
         """Stats names return correspond to the keys for `iter_stats()` yield
@@ -441,6 +456,8 @@ class Tournament:
         CSF = CompStatFormulas
         for name in self.teams:
             base_stats = self.team_stats[name]
+            # avoid divide by zero, make this negative so anomalies (i.e. numerator is not
+            # zero) will show up!
             comp_stats = {stat: base_stats[CSF[stat][0]] / (base_stats[CSF[stat][1]] or -1)
                           for stat in CompStat}
             stats_row = {TEAM_COL: name} | base_stats | comp_stats
@@ -466,6 +483,14 @@ class RoundRobin(Tournament):
     def get_matchups(teams: Iterable[T]) -> Iterator[list[tuple[TO, TO]]]:
         """Note that `None` in a matchup represents a bye
         """
+        def rotate(my_list: list[TO], n: int = 1) -> list[TO]:
+            return my_list[n:] + my_list[:n]
+
+        def matchups(my_field: list[TO]) -> Iterator[tuple[TO, TO]]:
+            home = my_field[:n_matchups]
+            away = reversed(my_field[n_matchups:])
+            return zip(home, away)
+
         teams_list = list(teams)
         if len(teams_list) % 2 == 1:
             teams_list.append(None)
@@ -474,14 +499,6 @@ class RoundRobin(Tournament):
         n_matchups = n_teams // 2
         list_head = teams_list[:1]
         list_tail = teams_list[1:]
-
-        def rotate(my_list: list[TO], n: int = 1) -> list[TO]:
-            return my_list[n:] + my_list[:n]
-
-        def matchups(my_field: list[TO]) -> Iterator[tuple[TO, TO]]:
-            home = my_field[:n_matchups]
-            away = reversed(my_field[n_matchups:])
-            return zip(home, away)
 
         for _ in range(n_teams - 1):
             field = list_head + list_tail
