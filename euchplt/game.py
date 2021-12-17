@@ -73,14 +73,17 @@ GAME_POINTS  = 10
 class Game(object):
     """
     """
+    # params/config
     teams:     list[Team]
+
+    # state
     deals:     list[Deal]                  # sequential
     score:     list[int]                   # (points) indexed as `teams`
     stats:     list[dict[GameStat, int]]   # each stat indexed as `teams`
-    pos_stats: list[dict[GameStat, list[int]]]   # tabulate stats by call_pos
+    pos_stats: list[dict[GameStat, list[int]]]  # tabulate stats by call_pos
     winner:    Optional[tuple[int, Team]]  # tuple(idx, team)
 
-    def __init__(self, teams: Iterable[Team]):
+    def __init__(self, teams: Iterable[Team], **kwargs):
         """
         """
         self.teams = list(teams)

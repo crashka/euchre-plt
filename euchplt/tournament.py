@@ -281,19 +281,27 @@ class EloRating:
 # Tournament #
 ##############
 
+# superset of tournament subdivisions that subclasses may coopt for
+# their own usage/interpretation (other than `MATCH`, of course)
+TournUnit = Enum('TournUnit', 'MATCH ROUND PASS')
+
 class Tournament:
+    # params/config
     name:           str
-    teams:          dict[str, Team]                  # indexed by team name
+    teams:          dict[str, Team]  # indexed by team name
+    match_games:    Optional[int]
     # NOTE the different naming convention for position-related stats
     # stuff here, compared to Game and Match classes (should probably
     # make it all consistent at some point)!!!
     pos_stats:      set[GameStat]
     pos_comp_stats: set[CompStat]
+
+    # state
     matches:        list[Match]                      # sequential
     team_matches:   dict[str, list[Match]]           # indexed as `teams`
     team_score:     dict[str, list[Number]]          # [matches, elo_points], indexed as `teams`
     team_stats:     dict[str, dict[TournStat, int]]  # indexed as `teams`
-    team_pos_stats: dict[str, dict[TournStat, list[int]]]   # tabulate stats by call_pos
+    team_pos_stats: dict[str, dict[TournStat, list[int]]]  # tabulate stats by call_pos
     winner:         Optional[tuple[Team, ...]]
     elo_rating:     EloRating
 
@@ -334,15 +342,15 @@ class Tournament:
             raise RuntimeError("At least two teams must be specified")
         if len(self.teams) < idx + 1:
             raise RuntimeError("Team names must be unique")
+        self.match_games = kwargs.get('match_games')  # if empty, let `Match` determine
+
         pos_stats           = kwargs.get('pos_stats') or []
         pos_comp_stats      = kwargs.get('pos_comp_stats') or []
-        elo_params          = kwargs.get('elo_rating') or {}
-
         self.pos_stats      = set(GameStat[s.upper()] for s in pos_stats)
         self.pos_comp_stats = set(CompStat[s.upper()] for s in pos_comp_stats)
         for stat in self.pos_comp_stats:
-            if set(CompStatFormulas[stat]) - self.pos_stats:
-                raise ConfigError(f"Stat '{stat.name}' has missing dependencies in 'pos_stats'")
+            if missing := set(CompStatFormulas[stat]) - self.pos_stats:
+                raise ConfigError(f"Missing dependency {', '.join(missing)} for stat '{stat.name}'")
 
         self.matches        = []
         self.team_matches   = {name: [] for name in self.teams}
@@ -350,7 +358,13 @@ class Tournament:
         self.team_stats     = {name: {stat: 0 for stat in TournStatIter()} for name in teams}
         self.team_pos_stats = {name: {stat: [0] * 8 for stat in self.pos_stats} for name in teams}
         self.winner         = None
-        self.elo_rating     = EloRating(self.teams.values(), elo_params)
+
+        # TODO: move all of this Elo stuff to the subclass (including the
+        # instance variable)!!!
+        reset_elo = kwargs.get('reset_elo') or False
+        elo_params = kwargs.get('elo_params') or {}
+        elo_params['reset_ratings'] = reset_elo
+        self.elo_rating = EloRating(self.teams.values(), elo_params)
 
     def tabulate(self, match: Match, update_elo: bool = True) -> None:
         """Tabulate the result of a single match.  Subclasses may choose to implement and
@@ -399,7 +413,7 @@ class Tournament:
         pass it along, but `tabulate()` needs it (see above) and really does
         belong with in this sequence [or not???]
         """
-        match = Match(matchup)
+        match = Match(matchup, match_games=self.match_games)
         self.matches.append(match)
         match.play()
         self.tabulate(match, update_elo=update_elo)
@@ -427,7 +441,7 @@ class Tournament:
 
         self.print_score(file=file)
         if verbose:
-            self.print_stats(file=file, by_pos=(verbose > 0))
+            self.print_stats(file=file, by_pos=(verbose > 1))
             self.elo_rating.print(file=file, verbose=verbose)
 
     def print_score(self, file: TextIO = sys.stdout) -> None:
@@ -525,17 +539,15 @@ class Tournament:
 # RoundRobin #
 ##############
 
-DFLT_PASSES  = 1
-DFLT_ELO_INT = 'PASS'
-
-EloInt = Enum('EloInt', 'MATCH ROUND PASS')
+DFLT_PASSES     = 1
+DFLT_ELO_UPDATE = 'PASS'
 
 T = TypeVar('T')
 TO = Optional[T]
 
 class RoundRobin(Tournament):
-    passes:  int
-    elo_int: EloInt
+    passes:     int
+    elo_update: TournUnit
 
     @staticmethod
     def get_matchups(teams: Iterable[T]) -> Iterator[list[tuple[TO, TO]]]:
@@ -565,9 +577,11 @@ class RoundRobin(Tournament):
 
     def __init__(self, name: str, teams: Union[Iterable[str], Iterable[Team]], **kwargs):
         super().__init__(name, teams, **kwargs)
-        self.passes  = kwargs.get('passes') or DFLT_PASSES
-        elo_int_str  = kwargs.get('elo_int') or DFLT_ELO_INT
-        self.elo_int = EloInt[elo_int_str.upper()]
+        self.passes = kwargs.get('passes') or DFLT_PASSES
+
+        reset_elo = kwargs.get('reset_elo') or False
+        elo_update = kwargs.get('elo_update') or DFLT_ELO_UPDATE
+        self.elo_update = TournUnit[elo_update.upper()]
 
     def tabulate_round(self, matches: list[Match], update_elo: bool = False) -> None:
         """For now, we don't do anything here--since every teams plays at most
@@ -584,9 +598,9 @@ class RoundRobin(Tournament):
             self.elo_rating.update(matches, collective=True)
 
     def play(self, **kwargs) -> None:
-        int_match = self.elo_int == EloInt.MATCH
-        int_round = self.elo_int == EloInt.ROUND
-        int_pass  = self.elo_int == EloInt.PASS
+        upd_match = self.elo_update == TournUnit.MATCH
+        upd_round = self.elo_update == TournUnit.ROUND
+        upd_pass  = self.elo_update == TournUnit.PASS
 
         match_num = 0  # corresponds to index within `self.matches`
         for pass_num in range(self.passes):
@@ -596,10 +610,10 @@ class RoundRobin(Tournament):
                 for matchup in matchups:
                     if None in matchup:
                         continue
-                    self.play_match(matchup, update_elo=int_match)
+                    self.play_match(matchup, update_elo=upd_match)
                     match_num += 1
-                self.tabulate_round(self.matches[round_start:], update_elo=int_round)
-            self.tabulate_pass(self.matches[pass_start:], update_elo=int_pass)
+                self.tabulate_round(self.matches[round_start:], update_elo=upd_round)
+            self.tabulate_pass(self.matches[pass_start:], update_elo=upd_pass)
 
         self.set_winner()
 
@@ -661,8 +675,8 @@ def run_tournament(*args, **kwargs) -> int:
     if len(args) < 1:
         raise RuntimeError("Tournament name not specified")
     tourn_name = args[0]
-    tourn_keys = ('passes', 'elo_int')
-    tourn_args = {k: kwargs.get(k) for k in tourn_keys if kwargs.get(k)}
+    tourn_keys = ('match_games', 'passes', 'elo_update', 'reset_elo')
+    tourn_args = {k: kwargs.get(k) for k in tourn_keys if kwargs.get(k) is not None}
     stats_file = kwargs.get('stats_file')
     elo_file   = kwargs.get('elo_file')
     seed       = kwargs.get('seed')
@@ -696,8 +710,9 @@ def main() -> int:
 
     Functions/usage:
       - round_robin_bracket [teams=<num_teams>]
-      - run_tournament <name> [passes=<passes>] [elo_int=<elo_int>] [stats_file=<stats_file>]
-                       [elo_file=<elo_file>] [seed=<rand_seed>]
+      - run_tournament <name> [match_games=<n_games>] [passes=<passes>] [stats_file=<stats_file>]
+                       [reset_elo=<bool>] [elo_update=<tourn_unit>] [elo_file=<elo_file>]
+                       [seed=<rand_seed>]
     """
     if len(sys.argv) < 2:
         print(f"Utility function not specified", file=sys.stderr)

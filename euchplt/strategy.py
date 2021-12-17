@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from enum import Enum
-from typing import Optional
+from typing import ClassVar, Optional
 from random import Random
 from importlib import import_module
 
@@ -364,6 +364,9 @@ class StrategySmart(Strategy):
     part_winning:     list[str]
     opp_winning:      list[str]
 
+    RULESETS: ClassVar[tuple[str, ...]] = ('init_lead', 'subseq_lead',
+                                           'part_winning', 'opp_winning')
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # do a cursory validation of the method names within the rulesets
@@ -371,8 +374,7 @@ class StrategySmart(Strategy):
         # function objects from here, so we'll have to do that at runtime
         # for now (unless/until we can get really clever about this)
         play_card_vars = set(self.__class__.play_card.__code__.co_varnames)
-        ruleset_names = ('init_lead', 'subseq_lead', 'part_winning', 'opp_winning')
-        for name in ruleset_names:
+        for name in self.RULESETS:
             ruleset = getattr(self, name)
             if unknown := set(ruleset) - play_card_vars:
                 raise ConfigError(f"Unknown method(s) '{', '.join(unknown)}' in ruleset '{name}'")
@@ -795,7 +797,7 @@ class StrategySmart(Strategy):
         #############
 
         # Note, these are static for now (loaded from the config file), but later could
-        # be created and/or adjusted dynamically based on game or deal scenario
+        # be created and/or adjusted dynamically based on match/game or deal scenario
         func_locals  = locals()
         init_lead    = [func_locals[rule] for rule in self.init_lead]
         subseq_lead  = [func_locals[rule] for rule in self.subseq_lead]
@@ -867,12 +869,12 @@ def tune_strategy_smart(*args) -> int:
 
     deck = get_deck()
     while len(deck) >= HAND_CARDS:
-        cards = deck[0:HAND_CARDS]
+        cards = deck[:HAND_CARDS]
         cards.sort(key=lambda c: c.sortkey)
         analysis = HandAnalysisSmart(Hand(cards))
         for suit in SUITS:
             _ = analysis.hand_strength(suit)
-        del deck[0:HAND_CARDS]
+        del deck[:HAND_CARDS]
 
     return 0
 

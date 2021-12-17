@@ -32,24 +32,30 @@ def MatchStatIter() -> Iterator: return chain(MatchStatXtra, GameStat)
 # Match #
 #########
 
-MATCH_GAMES = 2
+DFLT_MATCH_GAMES = 2
 
 class Match(object):
     """
     """
-    teams:     list[Team]
+    # params/config
+    teams:       list[Team]
+    match_games: int
+
+    # state
     games:     list[Game]                  # sequential
     score:     list[int]                   # (games) indexed as `teams`
     stats:     list[dict[MatchStat, int]]  # each stat indexed as `teams`
-    pos_stats: list[dict[MatchStat, list[int]]]   # tabulate stats by call_pos
+    pos_stats: list[dict[MatchStat, list[int]]]  # tabulate stats by call_pos
     winner:    Optional[tuple[int, Team]]  # tuple(idx, team)
 
-    def __init__(self, teams: Iterable[Team]):
+    def __init__(self, teams: Iterable[Team], **kwargs):
         """
         """
         self.teams = list(teams)
         if len(self.teams) != NUM_TEAMS:
             raise LogicError(f"Expected {NUM_TEAMS} teams, got {len(self.teams)}")
+        self.match_games = kwargs.get('match_games') or DFLT_MATCH_GAMES
+
         self.games     = []
         self.score     = [0] * NUM_TEAMS
         self.stats     = [{stat: 0 for stat in MatchStatIter()} for _ in teams]
@@ -78,7 +84,7 @@ class Match(object):
         """
         winner = None
         for i, team_score in enumerate(self.score):
-            if team_score >= MATCH_GAMES:
+            if team_score >= self.match_games:
                 winner = i, self.teams[i]
                 break
         if not winner:
@@ -88,7 +94,7 @@ class Match(object):
     def play(self) -> None:
         """
         """
-        while max(self.score) < MATCH_GAMES:
+        while max(self.score) < self.match_games:
             game = Game(self.teams)
             self.games.append(game)
             game.play()
