@@ -297,9 +297,9 @@ class Tournament:
     pos_comp_stats: set[CompStat]
 
     # state
-    matches:        list[Match]                      # sequential
-    team_matches:   dict[str, list[Match]]           # indexed as `teams`
+    matches:        list[Match]                      # sequential,
     team_score:     dict[str, list[Number]]          # [matches, elo_points], indexed as `teams`
+    team_score_opp: dict[str, dict[str, list[Number]]]  # same as previous, per opponent team
     team_stats:     dict[str, dict[TournStat, int]]  # indexed as `teams`
     team_pos_stats: dict[str, dict[TournStat, list[int]]]  # tabulate stats by call_pos
     winner:         Optional[tuple[Team, ...]]
@@ -353,8 +353,9 @@ class Tournament:
                 raise ConfigError(f"Missing dependency {', '.join(missing)} for stat '{stat.name}'")
 
         self.matches        = []
-        self.team_matches   = {name: [] for name in self.teams}
         self.team_score     = {name: [0, 0.0] for name in teams}
+        self.team_score_opp = {name: {opp: [0, 0.0] for opp in teams if opp is not name}
+                               for name in teams}
         self.team_stats     = {name: {stat: 0 for stat in TournStatIter()} for name in teams}
         self.team_pos_stats = {name: {stat: [0] * 8 for stat in self.pos_stats} for name in teams}
         self.winner         = None
@@ -375,11 +376,14 @@ class Tournament:
         may be computed (must be managed by the subclass, for now)
         """
         for i, team in enumerate(match.teams):
+            opp = match.teams[i ^ 0x01]
             self.team_stats[team.name][TournStatXtra.MATCHES_PLAYED] += 1
             self.team_score[team.name][1] += match.score[i] / sum(match.score)
+            self.team_score_opp[team.name][opp.name][1] += match.score[i] / sum(match.score)
             if team == match.winner[1]:
                 self.team_stats[team.name][TournStatXtra.MATCHES_WON] += 1
                 self.team_score[team.name][0] += 1
+                self.team_score_opp[team.name][opp.name][0] += 1
 
             for stat in MatchStatIter():
                 self.team_stats[team.name][stat] += match.stats[i][stat]
@@ -439,16 +443,21 @@ class Tournament:
                 print(f"Match #{i + 1}:", file=file)
                 match.print_score(file=file)
 
-        self.print_score(file=file)
+        self.print_score(file=file, vs_opp=True)
         if verbose:
             self.print_stats(file=file, by_pos=(verbose > 1))
             self.elo_rating.print(file=file, verbose=verbose)
 
-    def print_score(self, file: TextIO = sys.stdout) -> None:
+    def print_score(self, file: TextIO = sys.stdout, vs_opp: bool = False) -> None:
         print("Tournament Score:", file=file)
         for name in self.teams:
             print(f"  {name}: {self.team_score[name][0]} "
                   f"({self.team_score[name][1]:.2f})", file=file)
+            if vs_opp:
+                for opp_name, score in self.team_score_opp[name].items():
+                    opp_score = self.team_score_opp[opp_name][name]
+                    print(f"    vs {opp_name}: {score[0]} - {opp_score[0]} "
+                          f"({score[1]:.2f} - {opp_score[1]:.2f})", file=file)
 
         if not self.winner:
             return
@@ -589,6 +598,7 @@ class RoundRobin(Tournament):
         """
         if update_elo:
             self.elo_rating.update(matches, collective=True)
+        # CONSIDER: is there any analysis or reporting we want to do for the round???
 
     def tabulate_pass(self, matches: list[Match], update_elo: bool = False) -> None:
         """Do collective Elo ratings updates, if requested (otherwise nothing else to
@@ -596,22 +606,23 @@ class RoundRobin(Tournament):
         """
         if update_elo:
             self.elo_rating.update(matches, collective=True)
+        # TODO:
+        #   - emit results and stats for the pass
+        #   - truncate self.matches
 
     def play(self, **kwargs) -> None:
         upd_match = self.elo_update == TournUnit.MATCH
         upd_round = self.elo_update == TournUnit.ROUND
         upd_pass  = self.elo_update == TournUnit.PASS
 
-        match_num = 0  # corresponds to index within `self.matches`
         for pass_num in range(self.passes):
-            pass_start = match_num
+            pass_start = len(self.matches)
             for round_num, matchups in enumerate(self.get_matchups(self.teams.values())):
-                round_start = match_num
+                round_start = len(self.matches)
                 for matchup in matchups:
                     if None in matchup:
                         continue
                     self.play_match(matchup, update_elo=upd_match)
-                    match_num += 1
                 self.tabulate_round(self.matches[round_start:], update_elo=upd_round)
             self.tabulate_pass(self.matches[pass_start:], update_elo=upd_pass)
 
@@ -680,12 +691,13 @@ def run_tournament(*args, **kwargs) -> int:
     stats_file = kwargs.get('stats_file')
     elo_file   = kwargs.get('elo_file')
     seed       = kwargs.get('seed')
+    verbose    = kwargs.get('verbose') or 0
 
     if seed:
         random.seed(seed)
     tourney = Tournament.new(tourn_name, **tourn_args)
     tourney.play()
-    tourney.print(verbose=1)
+    tourney.print(verbose=verbose)
     if stats_file:
         with open(stats_file, 'w', newline='') as file:
             header = tourney.stats_header()
@@ -712,7 +724,7 @@ def main() -> int:
       - round_robin_bracket [teams=<num_teams>]
       - run_tournament <name> [match_games=<n_games>] [passes=<passes>] [stats_file=<stats_file>]
                        [reset_elo=<bool>] [elo_update=<tourn_unit>] [elo_file=<elo_file>]
-                       [seed=<rand_seed>]
+                       [seed=<rand_seed>] [verbose=<level>]
     """
     if len(sys.argv) < 2:
         print(f"Utility function not specified", file=sys.stderr)

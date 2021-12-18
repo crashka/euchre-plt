@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from collections.abc import Iterable
+from typing import Union, Optional
+import os.path
 import logging
 import json
 import re
@@ -10,43 +13,89 @@ import yaml
 # Config Management #
 #####################
 
+DEFAULT_PROFILE = 'default'
+
 class Config:
     """Manages YAML config information, features include:
-      - Caching by config file
-      - Fetching by section
-      - Overlays on 'default' profile
-    """
-    cfg_profiles = dict()  # {config_file: {profile_name: {section_name: ...}}}
+      - Loading from multiple config files
+      - Caching of aggregated config file parameters
+      - Named "profiles" to override 'default' profile parameters
 
-    def __init__(self, path: str):
+    Config file structure:
+    ---
+    default:
+      my_section:
+        my_param: value
+
+    alt_profile:
+      my_section:
+        my_param: alt_value  # overwrites value from 'default' profile
+    """
+    config_dir:   Optional[str]
+    filepaths:    list[str]        # list of file pathnames loaded
+    profile_data: dict[str, dict]  # config indexed by profile (including 'default')
+
+    def __init__(self, files: Union[str, Iterable[str]], config_dir: str = None):
+        """Note that `files` can be specified as an interable, or a comma-separated
+        list of file names (no spaces)
         """
-        :param path: path to YAML config file
+        if isinstance(files, str):
+            load_files = files.split(',')
+        else:
+            if not isinstance(files, Iterable):
+                raise RuntimeError("Bad argument, 'files' not iterable")
+            load_files = list(files)
+
+        self.config_dir = config_dir
+        self.filepaths = []
+        self.profile_data = {}
+        for file in load_files:
+            self.load(file)
+
+    def load(self, file: str) -> bool:
+        """Load a config file, overwriting existing parameter entries at the section
+        level (i.e. direct children within a section).  Deeper merging within these
+        top-level parameters is not supported.  Note that additional config files
+        can be loaded at any time.  A config file that has already been loaded will
+        be politely skipped, with a `False` return value being the only rebuke.
         """
-        self.path = path
-        if Config.cfg_profiles.get(self.path) is None:
-            Config.cfg_profiles[self.path] = {}
+        path = os.path.join(self.config_dir, file) if self.config_dir else os.path.realpath(file)
+        if path in self.filepaths:
+            return False
+
+        with open(path, 'r') as f:
+            cfg = yaml.safe_load(f)
+            if not cfg:  # could be bad YAML or empty config
+                raise RuntimeError(f"Could not load from '{file}'")
+
+        for profile in cfg:
+            if profile not in self.profile_data:
+                self.profile_data[profile] = {}
+            for section in cfg[profile]:
+                if section not in self.profile_data[profile]:
+                    self.profile_data[profile][section] = {}
+                self.profile_data[profile][section].update(cfg[profile][section])
+
+        self.filepaths.append(path)
+        return True
 
     def config(self, section: str, profile: str = None) -> dict:
-        """Get config section for specified profile
-
-        :param section: section within profile (or 'default')
-        :param profile: [optional] if specified, overlay entries on top of 'default' profile
-        :return: dict indexed by key
+        """Get parameters for configuration section (empty dict is returned if
+        section is not found).  If `profile` is specified, the parameter values
+        for that profile override values from the 'default' profile (which must
+        exist).
         """
-        if profile in Config.cfg_profiles[self.path]:
-            return Config.cfg_profiles[self.path][profile].get(section, {})
-
-        with open(self.path, 'r') as f:
-            cfg = yaml.safe_load(f)
-        if cfg:
-            prof_data = cfg.get('default', {})
-            if profile:
-                prof_data.update(cfg.get(profile, {}))
-            Config.cfg_profiles[self.path][profile] = prof_data
-        else:
-            Config.cfg_profiles[self.path][profile] = {}
-
-        return Config.cfg_profiles[self.path][profile].get(section, {})
+        if DEFAULT_PROFILE not in self.profile_data:
+            raise RuntimeError(f"Default profile ('{DEFAULT_PROFILE}') never loaded")
+        default_data = self.profile_data[DEFAULT_PROFILE]
+        ret_params  = default_data.get(section, {})
+        if profile:
+            if profile not in self.profile_data:
+                raise RuntimeError(f"Profile '{profile}' never loaded")
+            profile_data = self.profile_data[profile]
+            profile_params = profile_data.get(section, {})
+            ret_params.update(profile_params)
+        return ret_params
 
 #########################
 # Trace logging support #

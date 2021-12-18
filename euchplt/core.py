@@ -12,14 +12,18 @@ from . import utils
 # Config/Environment #
 ######################
 
-FILE_DIR      = os.path.dirname(os.path.realpath(__file__))
-BASE_DIR      = os.path.realpath(os.path.join(FILE_DIR, os.pardir))
-CONFIG_DIR    = 'config'
-CONFIG_FILE   = environ.get('EUCHPLT_CONFIG_FILE') or 'config.yml'
-CONFIG_PATH   = os.path.join(BASE_DIR, CONFIG_DIR, CONFIG_FILE)
-cfg           = utils.Config(CONFIG_PATH)
+DFLT_CONFIG_FILES = ['base_config.yml',
+                     'players_teams.yml',
+                     'strategies.yml',
+                     'tournaments.yml']
 
-DEBUG         = int(environ.get('EUCHPLT_DEBUG') or 0)
+FILE_DIR     = os.path.dirname(os.path.realpath(__file__))
+BASE_DIR     = os.path.realpath(os.path.join(FILE_DIR, os.pardir))
+CONFIG_DIR   = os.path.join(BASE_DIR, 'config')
+CONFIG_FILES = environ.get('EUCH_CONFIG_FILES') or DFLT_CONFIG_FILES
+cfg          = utils.Config(CONFIG_FILES, CONFIG_DIR)
+
+DEBUG        = int(environ.get('EUCH_DEBUG') or 0)
 
 ########
 # Data #
@@ -33,7 +37,7 @@ def DataFile(file_name: str) -> str:
     """
     return os.path.join(BASE_DIR, DATA_DIR, file_name)
 
-def ArchiveDataFile(file_name: str) -> str:
+def ArchiveDataFile(file_name: str) -> None:
     """Rename data file to "archived" version (current datetime appended),
     which also has the effect of removing it from the file system, so that
     a new version can be created

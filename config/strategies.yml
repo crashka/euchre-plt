@@ -1,0 +1,56 @@
+---
+default:
+  strategies:
+    Alfa 1:
+      module_path:      euchplt.strategy
+      base_class:       StrategyRandom
+    Alfa 2:
+      module_path:      euchplt.strategy
+      base_class:       StrategyRandom
+      strategy_params:
+        seed:             99999
+    Bravo 1:
+      module_path:      euchplt.strategy
+      base_class:       StrategySimple
+    Bravo 2:
+      module_path:      euchplt.strategy
+      base_class:       StrategySimple
+      strategy_params:
+        aggressive:       true
+    Charlie 1:
+      module_path:      euchplt.strategy
+      base_class:       StrategySmart
+    Charlie 2:
+      module_path:      euchplt.strategy
+      base_class:       StrategySmart
+      strategy_params:
+        hand_analysis:
+          # overrides for HandAnalysisSmart base params
+        bid_thresh:       [35, 35, 35, 35, 35, 35, 35, 35]
+        def_alone_thresh: [35, 35, 35, 35, 35, 35, 35, 35]
+    Charlie 3:
+      module_path:      euchplt.strategy
+      base_class:       StrategySmart
+      strategy_params:
+        hand_analysis:
+          # overrides for HandAnalysisSmart base params
+          scoring_coeff:
+            trump_score:      20
+            max_suit_score:   7
+            num_trump_score:  23
+            off_aces_score:   25
+            voids_score:      25
+    Charlie 4:
+      module_path:      euchplt.strategy
+      base_class:       StrategySmart
+      strategy_params:
+        hand_analysis:
+          # overrides for HandAnalysisSmart base params
+          scoring_coeff:
+            trump_score:      20
+            max_suit_score:   7
+            num_trump_score:  23
+            off_aces_score:   25
+            voids_score:      25
+        bid_thresh:       [35, 35, 35, 35, 35, 35, 35, 35]
+        def_alone_thresh: [35, 35, 35, 35, 35, 35, 35, 35]

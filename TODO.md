@@ -3,18 +3,19 @@
 _[In roughly in priority order, within each section...]_
 
 #### Smaller Stuff ####
-- Rename 'euchplt' to 'pltform' *[do we still want to do this???]*
-- Add match- and game-level parameters, e.g. 'match_games'
-- Move Elo stuff to its own module; allow strategy subclasses to control
-  Elo computation
-- Push 'pos_stats' settings down to match and game
-- Report rank information for stats
-- Dump config parameters for tournament runs
-- Refactor polymorphic modules into subpackages (specifically, 'strategy'
-  and 'hand_analysis')
 - Memory management for long-running tounaments; i.e. process/document, and
   then release, completed matches, base on an interval, with appropriate
   notifications to subclass implementaions
+- Move Elo stuff to its own module; allow strategy subclasses to control
+  Elo computation
+- Print incremental results, stats (e.g. round robin pass)
+- Report rank information for stats
+- Dump config parameters for tournament runs
+- Modified round robin format, where lower teams drop out in stages
+- Performance tuning for 'effevel', 'effcard', and 'trump_suit'
+- Push 'pos_stats' settings down to match and game
+- Refactor polymorphic modules into subpackages (specifically, 'strategy'
+  and 'hand_analysis')
 - Strategy tracker, for manual analysis of problem stats
     - Bidding optimization
         - NL Euchre Pct (too aggressive?)
@@ -25,7 +26,6 @@ _[In roughly in priority order, within each section...]_
         - Call Make Pct
         - NL Call Pct
 - Optimize base params for 'HandAnalysisSmart' and 'StrategySmart'
-- Print incremental stats (e.g. round robin pass)
 
 #### Bigger/Feature-Level Stuff ####
 - ML learning frameworks

@@ -1,0 +1,53 @@
+---
+default:
+  players:
+    Player 00:
+      strategy:        Alfa 1
+    Player 01:
+      strategy:        Alfa 1
+    Player 02:
+      strategy:        Bravo 1
+    Player 03:
+      strategy:        Bravo 1
+    Player 04:
+      strategy:        Bravo 2
+    Player 05:
+      strategy:        Bravo 2
+    Player 06:
+      strategy:        Charlie 1
+    Player 07:
+      strategy:        Charlie 1
+    Player 08:
+      strategy:        Charlie 2
+    Player 09:
+      strategy:        Charlie 2
+
+  teams:
+    Team 00:
+      strategy:        Alfa 1
+    Team 01:
+      strategy:        Alfa 1
+    Team 02:
+      strategy:        Bravo 1
+    Team 03:
+      strategy:        Bravo 1
+    Team 04:
+      strategy:        Bravo 2
+    Team 05:
+      strategy:        Bravo 2
+    Team 06:
+      strategy:        Charlie 1
+    Team 07:
+      strategy:        Charlie 1
+    Team 08:
+      strategy:        Charlie 2
+    Team 09:
+      strategy:        Charlie 2
+    Team 10:
+      strategy:        Charlie 3
+    Team 11:
+      strategy:        Charlie 3
+    Team 12:
+      strategy:        Charlie 4
+    Team 13:
+      strategy:        Charlie 4
