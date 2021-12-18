@@ -8,13 +8,13 @@ from collections.abc import Mapping, Iterator, Iterable
 from typing import Optional, Union, TypeVar, TextIO
 from numbers import Number
 import random
-import shelve
 import csv
 
-from .core import DEBUG, cfg, ConfigError, DataFile, ArchiveDataFile
+from .core import DEBUG, cfg, ConfigError
 from .team import Team
 from .game import GameStat, POS_STATS
 from .match import MatchStatXtra, MatchStatIter, Match
+from .elo_rating import EloRating
 
 """
 Formats:
@@ -127,156 +127,6 @@ CompStatFormulas = {
 # (i.e. both operands are in POS_STATS)
 POS_COMP_STATS = set(stat for stat, opnds in CompStatFormulas.items() if POS_STATS >= set(opnds))
 
-###############
-# elo ratings #
-###############
-
-DFLT_ELO_DB      = 'elo_rating.db'
-DFLT_INIT_RATING = 1500.0
-DFLT_D_VALUE     = 400
-DFLT_K_FACTOR    = 24
-
-class EloRating:
-    """Elo ratings are currently persisted using `shelve`, see caveats below.
-    """
-    elo_db:       str
-    init_rating:  float
-    d_value:      int
-    k_factor:     int
-    team_ratings: dict[str, float]        # indexed by team name
-    ratings_hist: dict[str, list[float]]  # list of updates, indexed by team name
-
-    def __init__(self, teams: Iterable[Team], params: dict = None):
-        params = params or {}
-        self.elo_db        = params.get('elo_db')        or DFLT_ELO_DB
-        self.reset_ratings = params.get('reset_ratings') or False
-        self.init_rating   = params.get('init_rating')   or DFLT_INIT_RATING
-        self.d_value       = params.get('d_value')       or DFLT_D_VALUE
-        self.k_factor      = params.get('k_factor')      or DFLT_K_FACTOR
-
-        if self.reset_ratings:
-            self.team_ratings = {t.name: self.init_rating for t in teams}
-        else:
-            self.team_ratings = self.load(teams)
-        # seed history with initial ratings
-        self.ratings_hist = {t.name: [self.team_ratings[t.name]] for t in teams}
-
-    def load(self, teams: Optional[Iterable[Team]] = None) -> dict[str, float]:
-        """Loads Elo ratings from the database; return ratings for specified teams
-        only (initializing them, if not yet existing), or the entire database (with
-        no initializations) if `teams` is not passed in.
-
-        CAVEAT: there is currently no locking or integrity mechanisms for the
-        database, so conflicts can happen if concurrently accessed!!!
-        """
-        with shelve.open(DataFile(self.elo_db)) as db:
-            if teams:
-                team_elo = {t.name: db.get(t.name) or self.init_rating for t in teams}
-            else:
-                team_elo = {k: v for k, v in db.items()}
-        return team_elo
-
-    def get(self, team: Team) -> tuple[float, list[float]]:
-        """Returns tuple of current rating and list of rating history (i.e. all of
-        the updates for the current instantiation) for `team`
-        """
-        return self.team_ratings[team.name], self.ratings_hist[team.name]
-
-    def update(self, matches: Iterable[Match], collective: bool = False) -> None:
-        """Recomputes Elo ratings for teams participating in `matches`; does not
-        affect the rating for any teams not specified.  Note that these updates
-        are not persisted until `persist()` is called.
-        """
-        if collective:
-            return self._update_collective(matches)
-        # The remainder of this method computes new Elo ratings on a sequential
-        # per-match basis.  This does the right thing within a tournament round
-        # where individual teams will only play once, otherwise the "collective"
-        # alternative should be considered
-        for match in matches:
-            r = []  # inbound rating
-            q = []
-            e = []  # expected score
-            s = []  # actual score
-            for i, team in enumerate(match.teams):
-                r.append(self.team_ratings[team.name])
-                q.append(pow(10.0, r[i] / self.d_value))
-            # loop again, since we need complete `q`
-            for i, team in enumerate(match.teams):
-                e.append(q[i] / sum(q))
-                s.append(match.score[i] / sum(match.score))
-                r_delta = self.k_factor * (s[i] - e[i])
-                self.team_ratings[team.name] += r_delta
-                self.ratings_hist[team.name].append(self.team_ratings[team.name])
-
-    def _update_collective(self, matches: Iterable[Match]) -> None:
-        """We sum the inbound ratings and scores, and do single bulk computations
-        for some segment of the tournament in which inbound ratings are fixed.
-        """
-        e = {name: 0.0 for name in self.team_ratings}  # sum of expected scores
-        s = {name: 0.0 for name in self.team_ratings}  # sum of actual scores
-        for match in matches:
-            r = []  # inbound rating
-            q = []
-            for i, team in enumerate(match.teams):
-                r.append(self.team_ratings[team.name])
-                q.append(pow(10.0, r[i] / self.d_value))
-            # loop again, since we need complete `q`
-            for i, team in enumerate(match.teams):
-                e[team.name] += q[i] / sum(q)
-                s[team.name] += match.score[i] / sum(match.score)
-
-        for name in self.team_ratings:
-            r_delta = self.k_factor * (s[name] - e[name])
-            self.team_ratings[name] += r_delta
-            self.ratings_hist[name].append(self.team_ratings[name])
-
-    def persist(self, archive: bool = False) -> None:
-        """Merges current Elo ratings with the existing database; the previous
-        version may be archived, if requested.  See CAVEAT in `load()` regarding
-        database integrity--note that there is an additional race condition here
-        in the archiving of the database file.
-        """
-        ratings_db = self.load()
-        ratings_db.update(self.team_ratings)
-        if archive:
-            ArchiveDataFile(DataFile(self.elo_db))
-        with shelve.open(DataFile(self.elo_db), flag='c') as db:
-            for key, rating in ratings_db.items():
-                db[key] = rating
-
-    def print(self, file: TextIO = sys.stdout, verbose: int = 0) -> None:
-        """Print Elo history, if `verbose` specified
-        """
-        verbose = max(verbose, DEBUG)
-
-        print("Elo Ratings:", file=file)
-        for name, cur_rating in self.team_ratings.items():
-            if verbose > 1:
-                hist = self.ratings_hist[name]
-                hist_str = " [" + ', '.join([f"{rating:.1f}" for rating in hist]) + "]"
-            else:
-                hist_str = ""
-            print(f"  {name}: {cur_rating:6.1f}{hist_str}", file=file)
-
-    def elo_header(self) -> list[str]:
-        """Header fields corresponding to the keys for `iter_elo()` yield
-        """
-        TEAM_COL = 'Team'
-        arb_name = next(iter(self.ratings_hist))
-        arb_hist = self.ratings_hist[arb_name]
-        fields = [TEAM_COL] + [f"Elo {i}" for i in range(len(arb_hist))]
-        return fields
-
-    def iter_elo(self) -> dict[str, Number]:
-        """Ratings history data corresponding to the fields returned by `elo_header()`
-        """
-        TEAM_COL = 'Team'
-        for name, ratings in self.ratings_hist.items():
-            team_hist = {f"Elo {i}": val for i, val in enumerate(ratings)}
-            hist_row = {TEAM_COL: name} | team_hist
-            yield hist_row
-
 ##############
 # Tournament #
 ##############
@@ -297,13 +147,15 @@ class Tournament:
     pos_comp_stats: set[CompStat]
 
     # state
-    matches:        list[Match]                      # sequential,
+    # NOTE: matches are appended by `play_match()`, but the parent class has
+    # no additional interest in this list; it is up to subclasses to figure
+    # out how/whether they want to use it for reporting, analysis, etc.
+    matches:        list[Match]
     team_score:     dict[str, list[Number]]          # [matches, elo_points], indexed as `teams`
     team_score_opp: dict[str, dict[str, list[Number]]]  # same as previous, per opponent team
     team_stats:     dict[str, dict[TournStat, int]]  # indexed as `teams`
     team_pos_stats: dict[str, dict[TournStat, list[int]]]  # tabulate stats by call_pos
     winner:         Optional[tuple[Team, ...]]
-    elo_rating:     EloRating
 
     @classmethod
     def new(cls, tourn_name: str, **kwargs) -> 'Tournament':
@@ -360,20 +212,10 @@ class Tournament:
         self.team_pos_stats = {name: {stat: [0] * 8 for stat in self.pos_stats} for name in teams}
         self.winner         = None
 
-        # TODO: move all of this Elo stuff to the subclass (including the
-        # instance variable)!!!
-        reset_elo = kwargs.get('reset_elo') or False
-        elo_params = kwargs.get('elo_params') or {}
-        elo_params['reset_ratings'] = reset_elo
-        self.elo_rating = EloRating(self.teams.values(), elo_params)
-
-    def tabulate(self, match: Match, update_elo: bool = True) -> None:
+    def tabulate(self, match: Match) -> None:
         """Tabulate the result of a single match.  Subclasses may choose to implement and
         invoke additional methods for tabulating after completing rounds, stages, or any
         other subdivision for the specific format.
-
-        Note that `update_elo` may be specified as False so that "collective" Elo ratings
-        may be computed (must be managed by the subclass, for now)
         """
         for i, team in enumerate(match.teams):
             opp = match.teams[i ^ 0x01]
@@ -393,9 +235,6 @@ class Tournament:
                     for j in range(8):
                         my_stat_list[j] += match_stat_list[j]
 
-        if update_elo:
-            self.elo_rating.update([match])
-
     def set_winner(self) -> None:
         thresh = 0.1  # for floating point comparison
         # determine winner by number of matches won (element score_item[1][0])
@@ -408,19 +247,14 @@ class Tournament:
             winners.append(self.teams[score_item[0]])
 
         self.winner = tuple(winners)
-        self.elo_rating.persist(archive=True)
 
-    def play_match(self, matchup: Iterable[Team], update_elo: bool = True) -> None:
+    def play_match(self, matchup: Iterable[Team]) -> None:
         """Uniform/common method for conducting a match within the tournament
-
-        REVISIT: it's kind of ugly to take `update_elo` as an arg and just
-        pass it along, but `tabulate()` needs it (see above) and really does
-        belong with in this sequence [or not???]
         """
         match = Match(matchup, match_games=self.match_games)
         self.matches.append(match)
         match.play()
-        self.tabulate(match, update_elo=update_elo)
+        self.tabulate(match)
 
     def play(self, **kwargs) -> None:
         """Abstract method to be implemented by all subclasses, who should
@@ -430,6 +264,9 @@ class Tournament:
         raise NotImplementedError("Can't call abstract method")
 
     def print(self, file: TextIO = sys.stdout, verbose: int = 0) -> None:
+        """This method can be overridden by subclasses to add additional information,
+        but parent function should be invoked at the top
+        """
         verbose = max(verbose, DEBUG)
 
         if verbose:
@@ -439,20 +276,16 @@ class Tournament:
                 for j, player in enumerate(team.players):
                     print(f"    {player}", file=file)
 
-            for i, match in enumerate(self.matches):
-                print(f"Match #{i + 1}:", file=file)
-                match.print_score(file=file)
-
-        self.print_score(file=file, vs_opp=True)
+        self.print_score(file=file, vs_opp=(verbose > 0))
         if verbose:
             self.print_stats(file=file, by_pos=(verbose > 1))
-            self.elo_rating.print(file=file, verbose=verbose)
 
     def print_score(self, file: TextIO = sys.stdout, vs_opp: bool = False) -> None:
+        """Include record against all other teams, if `vs_opp` is specified
+        """
         print("Tournament Score:", file=file)
-        for name in self.teams:
-            print(f"  {name}: {self.team_score[name][0]} "
-                  f"({self.team_score[name][1]:.2f})", file=file)
+        for name, score in self.team_score.items():
+            print(f"  {name}: {score[0]} ({score[1]:.2f})", file=file)
             if vs_opp:
                 for opp_name, score in self.team_score_opp[name].items():
                     opp_score = self.team_score_opp[opp_name][name]
@@ -556,6 +389,7 @@ TO = Optional[T]
 
 class RoundRobin(Tournament):
     passes:     int
+    elo_rating: EloRating
     elo_update: TournUnit
 
     @staticmethod
@@ -589,32 +423,43 @@ class RoundRobin(Tournament):
         self.passes = kwargs.get('passes') or DFLT_PASSES
 
         reset_elo = kwargs.get('reset_elo') or False
+        elo_params = kwargs.get('elo_params') or {}
+        elo_params['reset_ratings'] = reset_elo
+        self.elo_rating = EloRating(self.teams.values(), elo_params)
         elo_update = kwargs.get('elo_update') or DFLT_ELO_UPDATE
         self.elo_update = TournUnit[elo_update.upper()]
+
+    def tabulate(self, match: Match) -> None:
+        super().tabulate(match)
+        if self.elo_update == TournUnit.MATCH:
+            self.elo_rating.update([match])
 
     def tabulate_round(self, matches: list[Match], update_elo: bool = False) -> None:
         """For now, we don't do anything here--since every teams plays at most
         once per round, this is the same as per-match tabulation
         """
-        if update_elo:
+        if self.elo_update == TournUnit.ROUND:
             self.elo_rating.update(matches, collective=True)
-        # CONSIDER: is there any analysis or reporting we want to do for the round???
 
     def tabulate_pass(self, matches: list[Match], update_elo: bool = False) -> None:
         """Do collective Elo ratings updates, if requested (otherwise nothing else to
         do, currently)
         """
-        if update_elo:
+        if self.elo_update == TournUnit.PASS:
             self.elo_rating.update(matches, collective=True)
-        # TODO:
-        #   - emit results and stats for the pass
-        #   - truncate self.matches
+
+        self.print_leaderboard()
+        self.matches.clear()
+
+    def set_winner(self) -> None:
+        super().set_winner()
+        self.elo_rating.persist(archive=True)
 
     def play(self, **kwargs) -> None:
-        upd_match = self.elo_update == TournUnit.MATCH
-        upd_round = self.elo_update == TournUnit.ROUND
-        upd_pass  = self.elo_update == TournUnit.PASS
-
+        """Perform configured number of passes for the tournament, where a pass is
+        a single round robin.  We do pass-level progress reporting before truncating
+        `self.matches` to avoid infinite memory consumption.
+        """
         for pass_num in range(self.passes):
             pass_start = len(self.matches)
             for round_num, matchups in enumerate(self.get_matchups(self.teams.values())):
@@ -622,11 +467,21 @@ class RoundRobin(Tournament):
                 for matchup in matchups:
                     if None in matchup:
                         continue
-                    self.play_match(matchup, update_elo=upd_match)
-                self.tabulate_round(self.matches[round_start:], update_elo=upd_round)
-            self.tabulate_pass(self.matches[pass_start:], update_elo=upd_pass)
-
+                    self.play_match(matchup)  # note this invokes `tabulate()`
+                self.tabulate_round(self.matches[round_start:])
+            self.tabulate_pass(self.matches[pass_start:])
         self.set_winner()
+
+    def print(self, file: TextIO = sys.stdout, verbose: int = 0) -> None:
+        super().print(file, verbose)
+        self.elo_rating.print(file=file, verbose=verbose)
+
+    def print_leaderboard(self, file: TextIO = sys.stdout) -> None:
+        print("Leaderboard:")
+        leaders = sorted(self.team_score.items(), key=lambda s: s[1][0], reverse=True)
+        for name, score in leaders:
+            cur_elo = self.elo_rating.team_ratings[name]
+            print(f"  {name}\t{score[0]}\t{score[1]:.2f}\t{cur_elo:.1f}", file=file)
 
 ##############
 # HeadToHead #

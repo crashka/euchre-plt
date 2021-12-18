@@ -3,19 +3,15 @@
 _[In roughly in priority order, within each section...]_
 
 #### Smaller Stuff ####
-- Memory management for long-running tounaments; i.e. process/document, and
-  then release, completed matches, base on an interval, with appropriate
-  notifications to subclass implementaions
-- Move Elo stuff to its own module; allow strategy subclasses to control
-  Elo computation
-- Print incremental results, stats (e.g. round robin pass)
-- Report rank information for stats
-- Dump config parameters for tournament runs
 - Modified round robin format, where lower teams drop out in stages
 - Performance tuning for 'effevel', 'effcard', and 'trump_suit'
+- Report rank information for stats
+- Dump config parameters for tournament runs
 - Push 'pos_stats' settings down to match and game
 - Refactor polymorphic modules into subpackages (specifically, 'strategy'
   and 'hand_analysis')
+
+#### Bigger/Feature-Level Stuff ####
 - Strategy tracker, for manual analysis of problem stats
     - Bidding optimization
         - NL Euchre Pct (too aggressive?)
@@ -26,8 +22,6 @@ _[In roughly in priority order, within each section...]_
         - Call Make Pct
         - NL Call Pct
 - Optimize base params for 'HandAnalysisSmart' and 'StrategySmart'
-
-#### Bigger/Feature-Level Stuff ####
 - ML learning frameworks
     - Bidding models
     - Playing models
