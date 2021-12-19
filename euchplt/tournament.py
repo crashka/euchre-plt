@@ -131,6 +131,9 @@ POS_COMP_STATS = set(stat for stat, opnds in CompStatFormulas.items() if POS_STA
 # Tournament #
 ##############
 
+TeamScores = dict[str, list[Number]]   # [matches, elo_points]
+ScoreItem  = tuple[str, list[Number]]  # TeamScores.items()
+
 # superset of tournament subdivisions that subclasses may coopt for
 # their own usage/interpretation (other than `MATCH`, of course)
 TournUnit = Enum('TournUnit', 'MATCH ROUND PASS')
@@ -139,20 +142,20 @@ class Tournament:
     # params/config
     name:           str
     teams:          dict[str, Team]  # indexed by team name
-    match_games:    Optional[int]
+    match_games:    Optional[int]    # num games needed to win match
     # NOTE the different naming convention for position-related stats
     # stuff here, compared to Game and Match classes (should probably
     # make it all consistent at some point)!!!
     pos_stats:      set[GameStat]
     pos_comp_stats: set[CompStat]
 
-    # state
+    # state, etc.
     # NOTE: matches are appended by `play_match()`, but the parent class has
     # no additional interest in this list; it is up to subclasses to figure
     # out how/whether they want to use it for reporting, analysis, etc.
     matches:        list[Match]
-    team_score:     dict[str, list[Number]]          # [matches, elo_points], indexed as `teams`
-    team_score_opp: dict[str, dict[str, list[Number]]]  # same as previous, per opponent team
+    team_score:     TeamScores             # indexed as `teams`
+    team_score_opp: dict[str, TeamScores]  # same as previous, per opponent team
     team_stats:     dict[str, dict[TournStat, int]]  # indexed as `teams`
     team_pos_stats: dict[str, dict[TournStat, list[int]]]  # tabulate stats by call_pos
     winner:         Optional[tuple[Team, ...]]
@@ -194,12 +197,17 @@ class Tournament:
             raise RuntimeError("At least two teams must be specified")
         if len(self.teams) < idx + 1:
             raise RuntimeError("Team names must be unique")
-        self.match_games = kwargs.get('match_games')  # if empty, let `Match` determine
 
-        pos_stats           = kwargs.get('pos_stats') or []
-        pos_comp_stats      = kwargs.get('pos_comp_stats') or []
-        self.pos_stats      = set(GameStat[s.upper()] for s in pos_stats)
-        self.pos_comp_stats = set(CompStat[s.upper()] for s in pos_comp_stats)
+        class_name = type(self).__name__
+        base_params = cfg.config('base_tourn_params')
+        if class_name not in base_params:
+            raise ConfigError(f"Tournament class '{class_name}' does not exist")
+        for key, base_value in base_params[class_name].items():
+            # note that empty values in kwargs should override base values
+            setattr(self, key, kwargs[key] if key in kwargs else base_value)
+
+        self.pos_stats      = set(GameStat[s.upper()] for s in self.pos_stats or [])
+        self.pos_comp_stats = set(CompStat[s.upper()] for s in self.pos_comp_stats or [])
         for stat in self.pos_comp_stats:
             if missing := set(CompStatFormulas[stat]) - self.pos_stats:
                 raise ConfigError(f"Missing dependency {', '.join(missing)} for stat '{stat.name}'")
@@ -219,11 +227,11 @@ class Tournament:
         """
         for i, team in enumerate(match.teams):
             opp = match.teams[i ^ 0x01]
-            self.team_stats[team.name][TournStatXtra.MATCHES_PLAYED] += 1
+            self.team_stats[team.name][TS.MATCHES_PLAYED] += 1
             self.team_score[team.name][1] += match.score[i] / sum(match.score)
             self.team_score_opp[team.name][opp.name][1] += match.score[i] / sum(match.score)
             if team == match.winner[1]:
-                self.team_stats[team.name][TournStatXtra.MATCHES_WON] += 1
+                self.team_stats[team.name][TS.MATCHES_WON] += 1
                 self.team_score[team.name][0] += 1
                 self.team_score_opp[team.name][opp.name][0] += 1
 
@@ -388,9 +396,25 @@ T = TypeVar('T')
 TO = Optional[T]
 
 class RoundRobin(Tournament):
-    passes:     int
-    elo_rating: EloRating
-    elo_update: TournUnit
+    """This is a modified round robin format wherein multiple passes through the
+    field is supported.  In addition, the lowest ranked teams may be eliminated
+    after each `elim_passes` cycle, if specified.  Note that `elim_pct` is
+    computed relative to the original field size, so the number of teams
+    eliminated each cycle is always the same.
+    """
+    # params
+    passes:       int
+    elim_passes:  int
+    elim_pct:     int
+    reset_elo:    bool
+    elo_update:   TournUnit
+    elo_params:   dict[str, Union[str, Number]]
+    elo_rating:   EloRating
+
+    # state, etc.
+    elim_num:     int        # number to eliminate per cycle
+    eliminated:   set[Team]  # set of team names
+    leaderboards: list[list[ScoreItem]]  # for each pass, sorted by descending score
 
     @staticmethod
     def get_matchups(teams: Iterable[T]) -> Iterator[list[tuple[TO, TO]]]:
@@ -420,35 +444,50 @@ class RoundRobin(Tournament):
 
     def __init__(self, name: str, teams: Union[Iterable[str], Iterable[Team]], **kwargs):
         super().__init__(name, teams, **kwargs)
-        self.passes = kwargs.get('passes') or DFLT_PASSES
-
-        reset_elo = kwargs.get('reset_elo') or False
-        elo_params = kwargs.get('elo_params') or {}
-        elo_params['reset_ratings'] = reset_elo
-        self.elo_rating = EloRating(self.teams.values(), elo_params)
-        elo_update = kwargs.get('elo_update') or DFLT_ELO_UPDATE
+        # REVISIT: there _shouldn't_ be any empty values here, but apply defaults
+        # just in case (or should we actually just let things blow up???)
+        self.passes = self.passes or DFLT_PASSES
+        self.reset_elo = self.reset_elo or False
+        self.elo_params = self.elo_params or {}
+        self.elo_params['reset_ratings'] = self.reset_elo
+        self.elo_rating = EloRating(self.teams.values(), self.elo_params)
+        elo_update = self.elo_update or DFLT_ELO_UPDATE
         self.elo_update = TournUnit[elo_update.upper()]
+        if self.elim_passes:
+            self.elim_num = round(len(self.teams) * self.elim_pct / 100.0)
+        self.eliminated = set()
+        self.leaderboards = []
 
     def tabulate(self, match: Match) -> None:
         super().tabulate(match)
         if self.elo_update == TournUnit.MATCH:
             self.elo_rating.update([match])
 
-    def tabulate_round(self, matches: list[Match], update_elo: bool = False) -> None:
+    def tabulate_round(self, round_num: int, matches: list[Match]) -> None:
         """For now, we don't do anything here--since every teams plays at most
         once per round, this is the same as per-match tabulation
         """
         if self.elo_update == TournUnit.ROUND:
             self.elo_rating.update(matches, collective=True)
 
-    def tabulate_pass(self, matches: list[Match], update_elo: bool = False) -> None:
+    def tabulate_pass(self, pass_num: int, matches: list[Match]) -> None:
         """Do collective Elo ratings updates, if requested (otherwise nothing else to
         do, currently)
         """
         if self.elo_update == TournUnit.PASS:
             self.elo_rating.update(matches, collective=True)
 
-        self.print_leaderboard()
+        num_passes = pass_num + 1
+        leaderboard = sorted(self.team_score.items(), key=lambda s: s[1][0], reverse=True)
+        self.leaderboards.append(leaderboard)
+        self.print_leaderboard(f"pass {pass_num}")
+
+        if self.elim_passes and num_passes % self.elim_passes == 0:
+            # don't go below `elim_pct` teams remaining
+            if len(self.teams) - len(self.eliminated) >= self.elim_num * 2:
+                leader_teams = [self.teams[s[0]] for s in leaderboard
+                                if self.teams[s[0]] not in self.eliminated]
+                self.eliminated.update(leader_teams[-self.elim_num:])
         self.matches.clear()
 
     def set_winner(self) -> None:
@@ -462,26 +501,29 @@ class RoundRobin(Tournament):
         """
         for pass_num in range(self.passes):
             pass_start = len(self.matches)
-            for round_num, matchups in enumerate(self.get_matchups(self.teams.values())):
+            active_teams = set(self.teams.values()) - self.eliminated
+            for round_num, matchups in enumerate(self.get_matchups(active_teams)):
                 round_start = len(self.matches)
                 for matchup in matchups:
                     if None in matchup:
                         continue
                     self.play_match(matchup)  # note this invokes `tabulate()`
-                self.tabulate_round(self.matches[round_start:])
-            self.tabulate_pass(self.matches[pass_start:])
+                self.tabulate_round(round_num, self.matches[round_start:])
+            self.tabulate_pass(pass_num, self.matches[pass_start:])
         self.set_winner()
 
     def print(self, file: TextIO = sys.stdout, verbose: int = 0) -> None:
         super().print(file, verbose)
         self.elo_rating.print(file=file, verbose=verbose)
 
-    def print_leaderboard(self, file: TextIO = sys.stdout) -> None:
-        print("Leaderboard:")
-        leaders = sorted(self.team_score.items(), key=lambda s: s[1][0], reverse=True)
-        for name, score in leaders:
+    def print_leaderboard(self, label: str = None, file: TextIO = sys.stdout):
+        label_str = f" ({label})" if label else ""
+        print(f"Leaderboard{label_str}:")
+        for name, score in self.leaderboards[-1]:
+            active  = '' if self.teams[name] in self.eliminated else '*'
+            losses  = self.team_stats[name][TS.MATCHES_PLAYED] - score[0]
             cur_elo = self.elo_rating.team_ratings[name]
-            print(f"  {name}\t{score[0]}\t{score[1]:.2f}\t{cur_elo:.1f}", file=file)
+            print(f"  {name}{active}\t{score[0]}-{losses}\t{score[1]:.2f}\t{cur_elo:.1f}", file=file)
 
 ##############
 # HeadToHead #

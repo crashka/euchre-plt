@@ -4,39 +4,16 @@ default:
     Tourney A:
       tourn_class:     RoundRobin
       tourn_params:
-        # subclass params
-        passes:          1
+        match_games:     5
+        passes:          24
+        elim_passes:     8
+        elim_pct:        33
         reset_elo:       true
-        elo_update:      pass
         elo_params:
           elo_db:          elo_rating.db
+          use_margin:      false
           d_value:         400
-          k_factor:        10
-        # base class params
-        match_games:     10
-        pos_stats:
-          - calls
-          - calls_made
-          - calls_euchred
-          - loners_called
-          - loners_made
-          - loners_failed
-          - loners_euchred
-          - nl_calls
-          - nl_calls_made
-          - nl_calls_all_5
-          - nl_calls_euchred
-        pos_comp_stats:
-          - call_make_pct
-          - call_euch_pct
-          - loner_call_pct
-          - loner_make_pct
-          - loner_fail_pct
-          - loner_euch_pct
-          - nl_call_pct
-          - nl_make_pct
-          - nl_all_5_pct
-          - nl_euch_pct
+          k_factor:        8
       teams:
         - Team 02
         - Team 03
@@ -50,10 +27,23 @@ default:
         - Team 11
         - Team 12
         - Team 13
-    Tourney B:
+    test:
       tourn_class:     RoundRobin
       tourn_params:
-        passes:          5
+        match_games:     2
+        passes:          8
+        elim_passes:     2
+        elim_pct:        25
       teams:
         - Team 02
+        - Team 03
+        - Team 04
+        - Team 05
         - Team 06
+        - Team 07
+        - Team 08
+        - Team 09
+        - Team 10
+        - Team 11
+        - Team 12
+        - Team 13

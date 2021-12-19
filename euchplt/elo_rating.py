@@ -22,17 +22,20 @@ DFLT_K_FACTOR    = 24
 class EloRating:
     """Elo ratings are currently persisted using `shelve`, see caveats below.
     """
-    elo_db:       str
-    init_rating:  float
-    d_value:      int
-    k_factor:     int
-    team_ratings: dict[str, float]        # indexed by team name
-    ratings_hist: dict[str, list[float]]  # list of updates, indexed by team name
+    elo_db:        str
+    reset_ratings: bool
+    use_margin:    bool
+    init_rating:   float
+    d_value:       int
+    k_factor:      int
+    team_ratings:  dict[str, float]        # indexed by team name
+    ratings_hist:  dict[str, list[float]]  # list of updates, indexed by team name
 
     def __init__(self, teams: Iterable[Team], params: dict = None):
         params = params or {}
         self.elo_db        = params.get('elo_db')        or DFLT_ELO_DB
         self.reset_ratings = params.get('reset_ratings') or False
+        self.use_margin    = params.get('use_margin')    or False
         self.init_rating   = params.get('init_rating')   or DFLT_INIT_RATING
         self.d_value       = params.get('d_value')       or DFLT_D_VALUE
         self.k_factor      = params.get('k_factor')      or DFLT_K_FACTOR
@@ -87,7 +90,10 @@ class EloRating:
             # loop again, since we need complete `q`
             for i, team in enumerate(match.teams):
                 e.append(q[i] / sum(q))
-                s.append(match.score[i] / sum(match.score))
+                if self.use_margin:
+                    s.append(match.score[i] / sum(match.score))
+                else:
+                    s.append(int(match.winner[0] == i))
                 r_delta = self.k_factor * (s[i] - e[i])
                 self.team_ratings[team.name] += r_delta
                 self.ratings_hist[team.name].append(self.team_ratings[team.name])
@@ -101,23 +107,31 @@ class EloRating:
         actually just always use this if sequential bahavior isn't explicitly
         needed (for less repeated code, at a very slight performance penalty)
         """
+        active_teams = set()  # by team name
         e = {name: 0.0 for name in self.team_ratings}  # sum of expected scores
         s = {name: 0.0 for name in self.team_ratings}  # sum of actual scores
         for match in matches:
             r = []  # inbound rating
             q = []
             for i, team in enumerate(match.teams):
+                active_teams.add(team.name)
                 r.append(self.team_ratings[team.name])
                 q.append(pow(10.0, r[i] / self.d_value))
             # loop again, since we need complete `q`
             for i, team in enumerate(match.teams):
                 e[team.name] += q[i] / sum(q)
-                s[team.name] += match.score[i] / sum(match.score)
+                if self.use_margin:
+                    s[team.name] += match.score[i] / sum(match.score)
+                else:
+                    s[team.name] += int(match.winner[0] == i)
 
         for name in self.team_ratings:
-            r_delta = self.k_factor * (s[name] - e[name])
-            self.team_ratings[name] += r_delta
-            self.ratings_hist[name].append(self.team_ratings[name])
+            if name in active_teams:
+                r_delta = self.k_factor * (s[name] - e[name])
+                self.team_ratings[name] += r_delta
+                self.ratings_hist[name].append(self.team_ratings[name])
+            else:
+                self.ratings_hist[name].append(None)
 
     def persist(self, archive: bool = False) -> None:
         """Merges current Elo ratings with the existing database; the previous
