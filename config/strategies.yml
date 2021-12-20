@@ -2,25 +2,25 @@
 default:
   strategies:
     Alfa 1:
+      comments:         "base StrategyRandom configuration"
       module_path:      euchplt.strategy
       base_class:       StrategyRandom
-    Alfa 2:
-      module_path:      euchplt.strategy
-      base_class:       StrategyRandom
-      strategy_params:
-        seed:             99999
     Bravo 1:
+      comments:         "base StrategySimple configuration"
       module_path:      euchplt.strategy
       base_class:       StrategySimple
     Bravo 2:
+      comments:         "aggressive play for StrategySimple"
       module_path:      euchplt.strategy
       base_class:       StrategySimple
       strategy_params:
         aggressive:       true
     Charlie 1:
+      comments:         "base StrategySmart configuration"
       module_path:      euchplt.strategy
       base_class:       StrategySmart
     Charlie 2:
+      comments:         "up the threshold for dealer position and def_alone bidding"
       module_path:      euchplt.strategy
       base_class:       StrategySmart
       strategy_params:
@@ -29,6 +29,7 @@ default:
         bid_thresh:       [35, 35, 35, 35, 35, 35, 35, 35]
         def_alone_thresh: [35, 35, 35, 35, 35, 35, 35, 35]
     Charlie 3:
+      comments:         "adjust hand_analysis: decrease num_trump, increase void_score"
       module_path:      euchplt.strategy
       base_class:       StrategySmart
       strategy_params:
@@ -41,6 +42,7 @@ default:
             off_aces_score:   25
             voids_score:      25
     Charlie 4:
+      comments:         "combine Charlie 2/3: dealer/def_alone thresh and num_trump->void_score"
       module_path:      euchplt.strategy
       base_class:       StrategySmart
       strategy_params:
@@ -54,3 +56,37 @@ default:
             voids_score:      25
         bid_thresh:       [35, 35, 35, 35, 35, 35, 35, 35]
         def_alone_thresh: [35, 35, 35, 35, 35, 35, 35, 35]
+    Charlie 5:
+      comments:         "base config with play adjustment"
+      module_path:      euchplt.strategy
+      base_class:       StrategySmart
+      strategy_params:
+        subseq_lead:
+          - lead_last_card
+          - draw_trump
+          # swapped the next two...
+          - lead_off_ace
+          - lead_to_partner_call
+          - lead_suit_winner
+          - lead_to_create_void
+          - lead_low_non_trump
+          - lead_low_from_long_suit
+    Charlie 6:
+      comments:         "Charlie 2 with play adjustment"
+      module_path:      euchplt.strategy
+      base_class:       StrategySmart
+      strategy_params:
+        hand_analysis:
+          # overrides for HandAnalysisSmart base params
+        bid_thresh:       [35, 35, 35, 35, 35, 35, 35, 35]
+        def_alone_thresh: [35, 35, 35, 35, 35, 35, 35, 35]
+        subseq_lead:
+          - lead_last_card
+          - draw_trump
+          # swapped the next two...
+          - lead_off_ace
+          - lead_to_partner_call
+          - lead_suit_winner
+          - lead_to_create_void
+          - lead_low_non_trump
+          - lead_low_from_long_suit

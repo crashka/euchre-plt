@@ -3,9 +3,7 @@
 _[In roughly in priority order, within each section...]_
 
 #### Smaller Stuff ####
-- Modified round robin format, where lower teams drop out in stages
 - Performance tuning for 'effevel', 'effcard', and 'trump_suit'
-- Report rank information for stats
 - Dump config parameters for tournament runs
 - Push 'pos_stats' settings down to match and game
 - Refactor polymorphic modules into subpackages (specifically, 'strategy'

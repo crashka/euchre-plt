@@ -51,3 +51,11 @@ default:
       strategy:        Charlie 4
     Team 13:
       strategy:        Charlie 4
+    Team 14:
+      strategy:        Charlie 5
+    Team 15:
+      strategy:        Charlie 5
+    Team 16:
+      strategy:        Charlie 6
+    Team 17:
+      strategy:        Charlie 6

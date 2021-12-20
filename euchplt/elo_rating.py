@@ -153,7 +153,8 @@ class EloRating:
         verbose = max(verbose, DEBUG)
 
         print("Elo Ratings:", file=file)
-        for name, cur_rating in self.team_ratings.items():
+        sorted_by_rating = sorted(self.team_ratings.items(), key=lambda s: s[1], reverse=True)
+        for name, cur_rating in sorted_by_rating:
             if verbose > 1:
                 hist = self.ratings_hist[name]
                 hist_str = " [" + ', '.join([f"{rating:.1f}" for rating in hist]) + "]"

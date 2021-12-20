@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from typing import Union, Optional
+from numbers import Number
 import os.path
 import logging
 import json
@@ -36,7 +37,7 @@ class Config:
     profile_data: dict[str, dict]  # config indexed by profile (including 'default')
 
     def __init__(self, files: Union[str, Iterable[str]], config_dir: str = None):
-        """Note that `files` can be specified as an interable, or a comma-separated
+        """Note that `files` can be specified as an iterable, or a comma-separated
         list of file names (no spaces)
         """
         if isinstance(files, str):
@@ -130,6 +131,40 @@ logging.setLoggerClass(MyLogger)
 ########
 # Misc #
 ########
+
+def rankdata(a: Sequence[Number], method: str ='average', reverse: bool = True) -> list[Number]:
+    """Standalone implementation of scipy.stats.rankdata, adapted from
+    https://stackoverflow.com/a/3071441, with the following added:
+      - `method` arg, with support for 'average' (default) and 'min'
+      - `reverse` flag, with `True` (default) signifying descending sort order
+        (i.e. the highest value in `a` has a rank of 1, as opposed to `len(a)`)
+
+    Note that return rankings with be type `float` for method='average'
+    and `int` for method='min'.
+    """
+    def rank_simple(vector):
+        return sorted(range(len(vector)), key=vector.__getitem__, reverse=reverse)
+
+    use_min  = method == 'min'
+    n        = len(a)
+    ivec     = rank_simple(a)
+    svec     = [a[rank] for rank in ivec]
+    sumranks = 0
+    dupcount = 0
+    minrank  = 0
+    newarray = [0] * n
+    for i in range(n):
+        sumranks += i
+        dupcount += 1
+        minrank = minrank or i + 1
+        if i == n - 1 or svec[i] != svec[i + 1]:
+            averank = sumranks / float(dupcount) + 1
+            for j in range(i - dupcount + 1, i + 1):
+                newarray[ivec[j]] = minrank if use_min else averank
+            sumranks = 0
+            dupcount = 0
+            minrank  = 0
+    return newarray
 
 def prettyprint(data, indent: int = 4, sort_keys: bool = True, noprint: bool = False) -> str:
     """Nicer version of pprint (which is actually kind of ugly)
