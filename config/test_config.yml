@@ -32,6 +32,37 @@ default:
       bid_thresh:       [35, 35, 35, 30, 35, 35, 35, 30]
       alone_margin:     [10, 10, 10, 10, 10, 10, 10, 10]
       def_alone_thresh: [30, 30, 30, 30, 30, 30, 30, 30]
+      init_lead:
+        - next_call_lead
+        - draw_trump
+        - lead_off_ace
+        - lead_to_partner_call
+        - lead_to_create_void
+        - lead_low_from_long_suit
+      subseq_lead:
+        - lead_last_card
+        - draw_trump
+        # maybe swap the next two...
+        - lead_to_partner_call
+        - lead_off_ace
+        - lead_suit_winner
+        - lead_to_create_void
+        - lead_low_non_trump
+        - lead_low_from_long_suit
+      part_winning:
+        - play_last_card
+        - follow_suit_low
+        - throw_off_to_create_void
+        - throw_off_low
+        - play_low_trump
+        - play_random_card
+      opp_winning:
+        - play_last_card
+        - follow_suit_high
+        - trump_low
+        - throw_off_to_create_void
+        - throw_off_low
+        - play_random_card
   strategies:
     Alfa 1:
       module_path:      euchplt.strategy

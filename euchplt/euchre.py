@@ -14,29 +14,26 @@ from .card import find_card, find_bower
 ################
 
 class GameCtxMixin:
-    """We use private instance variables here to make the setter methods
-    more explicit and differentiated from subclass variables
+    """Performance note: we tried this before with private instance variables
+    but the getter properties were actually adding sufficient overhead, since
+    this context stuff is (currently) referred to WAY too much
     """
-    _trump_suit: Suit = None
-    _lead_card:  Card = None
+    trump_suit: Suit = None
+    next_suit:  Suit = None
+    lead_card:  Card = None
+    lead_suit:  Suit = None
 
     def set_trump_suit(self, trump_suit: Suit) -> None:
-        if self._trump_suit:
+        if self.trump_suit:
             raise LogicError(f"Cannot change trump_suit for {type(self).__name__}")
-        self._trump_suit = trump_suit
+        self.trump_suit = trump_suit
+        self.next_suit = trump_suit.next_suit()
 
     def set_lead_card(self, lead_card: Card) -> None:
-        if self._lead_card:
+        if self.lead_card:
             raise LogicError(f"Cannot change lead_card for {type(self).__name__}")
-        self._lead_card = lead_card
-
-    @property
-    def trump_suit(self) -> Suit:
-        return self._trump_suit
-
-    @property
-    def lead_card(self) -> Card:
-        return self._lead_card
+        self.lead_card = lead_card
+        self.lead_suit = lead_card.effsuit(self)
 
 ################
 # augment Suit #
@@ -53,7 +50,7 @@ def green_suits(self) -> tuple[Suit, Suit]:
     return SUITS[self.idx ^ 0x1], SUITS[self.idx ^ 0x2]
 
 setattr(Suit, 'next_suit', next_suit)
-setattr(Suit, 'green_suits', next_suit)
+setattr(Suit, 'green_suits', green_suits)
 
 ################
 # augment Card #
@@ -68,7 +65,7 @@ def efflevel(self, ctx: GameCtxMixin, offset_trump: bool = False) -> int:
         raise LogicError("Trump suit not set")
     is_jack  = self.rank == jack
     is_trump = self.suit == ctx.trump_suit
-    is_next  = self.suit == ctx.trump_suit.next_suit()
+    is_next  = self.suit == ctx.next_suit
     if is_jack:
         if is_trump:
             level = right.level
@@ -90,7 +87,7 @@ def effsuit(self, ctx: GameCtxMixin) -> Suit:
     if ctx.trump_suit is None:
         raise LogicError("Trump suit not set")
     is_jack = self.rank == jack
-    is_next = self.suit == ctx.trump_suit.next_suit()
+    is_next = self.suit == ctx.next_suit
     if is_jack and is_next:
         return ctx.trump_suit
     return self.suit
@@ -104,7 +101,7 @@ def effcard(self, ctx: GameCtxMixin) -> Card:
     if self.rank == jack:
         if self.suit == ctx.trump_suit:
             bower = find_bower(right, ctx.trump_suit)
-        elif self.suit == ctx.trump_suit.next_suit():
+        elif self.suit == ctx.next_suit:
             bower = find_bower(left, ctx.trump_suit)
     return bower or self
 
@@ -120,7 +117,7 @@ def realcard(self, ctx: GameCtxMixin) -> Card:
     if self.rank == right:
         return find_card(jack, ctx.trump_suit)
     elif self.rank == left:
-        return find_card(jack, ctx.trump_suit.next_suit())
+        return find_card(jack, ctx.next_suit)
 
     raise LogicError(f"Don't know how to get realcard for {self}")
 
@@ -130,13 +127,12 @@ def same_as(self, other: Card, ctx: GameCtxMixin) -> bool:
 def beats(self, other: Card, ctx: GameCtxMixin) -> bool:
     if ctx.lead_card is None:
         raise LogicError("Lead card not set")
-    lead_suit = ctx.lead_card.effsuit(ctx)
 
     ret = None
     # REVISIT: this is not very efficient or pretty, can probably do better by handling bower
     # suit and rank externally (e.g. replacing `Card`s in `Hand`s, once trump is declared)!!!
-    self_follow  = self.effsuit(ctx) == lead_suit
-    other_follow = other.effsuit(ctx) == lead_suit
+    self_follow  = self.effsuit(ctx) == ctx.lead_suit
+    other_follow = other.effsuit(ctx) == ctx.lead_suit
     self_trump   = self.effsuit(ctx) == ctx.trump_suit
     other_trump  = other.effsuit(ctx) == ctx.trump_suit
     same_suit    = other.effsuit(ctx) == self.effsuit(ctx)
@@ -216,9 +212,8 @@ class Hand:
         if ctx.lead_card is None:
             raise LogicError("Lead card not set")
         by_suit = self.cards_by_suit(ctx)
-        lead_suit = ctx.lead_card.effsuit(ctx)
-        can_follow = bool(by_suit[lead_suit])
-        if can_follow and card.effsuit(ctx) != lead_suit:
+        can_follow = bool(by_suit[ctx.lead_suit])
+        if can_follow and card.effsuit(ctx) != ctx.lead_suit:
             return False
         return True
 
@@ -334,6 +329,10 @@ class DealState(NamedTuple):
 
     @property
     def bid_round(self) -> int:
+        """Note, this should only be used during actual bidding (may be
+        inaccurate during defensive bidding or playing rounds, if loner
+        was called)
+        """
         return 1 if len(self.bids) < 4 else 2
 
     @property
@@ -357,6 +356,7 @@ class DealState(NamedTuple):
         if not self.contract:
             raise LogicError("Cannot call before playing phase")
         next_suit = self.turn_card.suit.next_suit()
+        # FIX: this is not correct for loner calls!!!
         return self.contract.suit == next_suit and len(self.bids) == 5
 
     @property
@@ -364,6 +364,7 @@ class DealState(NamedTuple):
         if not self.contract:
             raise LogicError("Cannot call before playing phase")
         green_suits = self.turn_card.suit.green_suits()
+        # FIX: this is not correct for loner calls!!!
         return self.contract.suit in green_suits and len(self.bids) == 6
 
     @property

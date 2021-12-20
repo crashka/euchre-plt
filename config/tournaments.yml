@@ -62,3 +62,30 @@ default:
       teams:
         - Team 06
         - Team 08
+    prof_random:
+      comments:        "Using the base config for StrategyRandom"
+      tourn_class:     RoundRobin
+      tourn_params:
+        match_games:     10
+        passes:          20
+      teams:
+        - Team 00
+        - Team 01
+    prof_simple:
+      comments:        "Using the base config for StrategySimple"
+      tourn_class:     RoundRobin
+      tourn_params:
+        match_games:     10
+        passes:          10
+      teams:
+        - Team 02
+        - Team 03
+    prof_smart:
+      comments:        "Using the base config for StrategySmart"
+      tourn_class:     RoundRobin
+      tourn_params:
+        match_games:     10
+        passes:          5
+      teams:
+        - Team 06
+        - Team 07

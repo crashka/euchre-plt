@@ -529,7 +529,7 @@ class RoundRobin(Tournament):
 
     def set_winner(self) -> None:
         super().set_winner()
-        self.elo_rating.persist(archive=True)
+        self.elo_rating.persist()
 
     def set_lb_base(self, lb_current: Leaderboard) -> None:
         self.lb_base = {}
@@ -672,6 +672,15 @@ class ChallengeLadder(Tournament):
 # main #
 ########
 
+from os import environ
+
+PROFILER = environ.get('EUCH_PROFILER')
+if PROFILER and PROFILER == 'pyinstrument':
+    from pyinstrument import Profiler
+    profiler = Profiler(interval=0.001)
+else:
+    profiler = None
+
 def round_robin_bracket(*args, **kwargs) -> int:
     """Print out brackets for round robin matches for tournament of size
     `n` and `n+1`, to test both even and odd cases
@@ -714,8 +723,14 @@ def run_tournament(*args, **kwargs) -> int:
 
     if seed:
         random.seed(seed)
+    if profiler:
+        profiler.start()
     tourney = Tournament.new(tourn_name, **tourn_args)
     tourney.play()
+    if profiler:
+        profiler.stop()
+        profiler.print()
+        #profiler.open_in_browser()
     tourney.print(verbose=verbose)
     if stats_file:
         with open(stats_file, 'w', newline='') as file:
