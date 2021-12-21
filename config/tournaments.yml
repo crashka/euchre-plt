@@ -76,7 +76,7 @@ default:
       tourn_class:     RoundRobin
       tourn_params:
         match_games:     10
-        passes:          10
+        passes:          20
       teams:
         - Team 02
         - Team 03
@@ -85,7 +85,7 @@ default:
       tourn_class:     RoundRobin
       tourn_params:
         match_games:     10
-        passes:          5
+        passes:          10
       teams:
         - Team 06
         - Team 07

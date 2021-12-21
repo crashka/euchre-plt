@@ -523,14 +523,8 @@ class StrategySmart(Strategy):
         play_plan = persist['play_plan']
 
         analysis        = PlayAnalysis(deal)
-        # in current hand
         trump_cards     = analysis.trump_cards()
-        off_aces        = analysis.off_aces()
         singleton_cards = analysis.singleton_cards()
-        my_winners      = analysis.my_winners()
-        # across all hands
-        trumps_played   = analysis.trumps_played()
-        trumps_missing  = analysis.trumps_missing()  # not in current hand or played
 
         ###################
         # lead card plays #
@@ -577,7 +571,8 @@ class StrategySmart(Strategy):
         def draw_trump() -> Optional[Card]:
             """Draw trump if caller (strong hand), or flush out bower
             """
-            if deal.is_caller and trumps_missing:
+            # perf note: defer call to `trumps_missing()`
+            if deal.is_caller and analysis.trumps_missing():
                 if PlayPlan.DRAW_TRUMP in play_plan:
                     if len(trump_cards) > 2:
                         log.debug("Continue drawing trump")
@@ -594,7 +589,7 @@ class StrategySmart(Strategy):
         def lead_off_ace() -> Optional[Card]:
             """Off-ace (short suit, or green if defending?)
             """
-            if off_aces:
+            if off_aces := analysis.off_aces():
                 # TODO: choose more wisely if more than one, or possibly preserve ace to
                 # avoid being trumped!!!
                 if len(off_aces) == 1:
@@ -608,7 +603,7 @@ class StrategySmart(Strategy):
             """No trump seen with partner as caller
             """
             if deal.is_partner_caller:
-                if trump_cards and not trumps_played:
+                if trump_cards and not analysis.trumps_played():
                     if analysis.bowers():
                         log.debug("Lead bower to partner's call")
                         return trump_cards[0]
@@ -641,7 +636,7 @@ class StrategySmart(Strategy):
         def lead_suit_winner() -> Optional[Card]:
             """Try to lead winner (non-trump)
             """
-            if my_winners:
+            if my_winners := analysis.my_winners():
                 log.debug("Try and lead suit winner")
                 # REVISIT: is this the right logic (perhaps makes no sense if preceded by
                 # off-ace rule)???  Should also examine remaining cards in suit!!!

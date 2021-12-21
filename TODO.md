@@ -3,11 +3,11 @@
 _[In roughly in priority order, within each section...]_
 
 #### Smaller Stuff ####
-- Performance tuning for 'effevel', 'effcard', and 'trump_suit'
+- Performance tuning for `cards_by_suit`, `effsuit`, `efflevel`
 - Dump config parameters for tournament runs
-- Push 'pos_stats' settings down to match and game
-- Refactor polymorphic modules into subpackages (specifically, 'strategy'
-  and 'hand_analysis')
+- Push `pos_stats` settings down to match and game
+- Refactor polymorphic modules into subpackages (specifically, `strategy`
+  and `hand_analysis`)
 
 #### Bigger/Feature-Level Stuff ####
 - Strategy tracker, for manual analysis of problem stats
