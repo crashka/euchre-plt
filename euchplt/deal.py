@@ -236,12 +236,13 @@ class Deal(GameCtxMixin):
             self.contract   = bid
             self.caller_pos = pos
             self.go_alone   = bid.alone
+            self.set_trump_suit(self.contract.suit)
 
-            self.hands[DEALER_POS].append_card(self.turn_card)
+            self.hands[DEALER_POS].append_card(self.turn_card, self)
             discard = self.players[DEALER_POS].discard(self.deal_state(DEALER_POS))
             if discard not in self.hands[DEALER_POS]:
                 raise ImplementationError(f"Bad discard from {self.players[pos]}")
-            self.hands[DEALER_POS].remove_card(discard)
+            self.hands[DEALER_POS].remove_card(discard, self)
             assert not self.discard
             self.discard = discard
             # note that we don't erase `self.turn_card` even though it is actually now in the
@@ -260,13 +261,13 @@ class Deal(GameCtxMixin):
                 self.contract   = bid
                 self.caller_pos = pos
                 self.go_alone   = bid.alone
+                self.set_trump_suit(self.contract.suit)
                 break
 
         # check if deal is passed
         if not self.contract:
             self.contract = PASS_BID
             return self.contract
-        self.set_trump_suit(self.contract.suit)
         assert isinstance(self.caller_pos, int)
 
         if self.go_alone:
@@ -318,7 +319,7 @@ class Deal(GameCtxMixin):
                 if card not in valid_plays:
                     raise ImplementationError(f"Invalid play ({card}) from {self.players[pos]}")
                 trick.play_card(pos, card)
-                self.hands[pos].remove_card(card)
+                self.hands[pos].remove_card(card, self)
                 self.played_by_pos[pos].append_card(card)
                 self.played_by_suit[card.effsuit(self)].append_card(card)
                 self.unplayed_by_suit[card.effsuit(self)].remove(card)

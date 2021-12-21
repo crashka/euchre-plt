@@ -165,10 +165,14 @@ SuitCards = dict[Suit, list[Card]]
 class Hand:
     """Behaves as list[Card] in iterable contexts
     """
-    cards: list[Card]
+    cards:   list[Card]
+    # index for list is `use_bowers` flag (0 or 1), outer dict key is
+    # trump suit, inner dict represents cards by suit
+    by_suit: list[dict[Suit, dict[Suit, list[Card]]]]
 
     def __init__(self, cards: list[Card]):
         self.cards = cards
+        self.by_suit = [{suit: None for suit in SUITS} for _ in range(2)]
 
     def __getitem__(self, index):
         return self.cards[index]
@@ -188,10 +192,24 @@ class Hand:
     def copy_cards(self) -> list[Card]:
         return self.cards.copy()
 
-    def append_card(self, card: Card) -> None:
+    def append_card(self, card: Card, ctx: GameCtxMixin = None) -> None:
+        if ctx:
+            if ctx.trump_suit is None:
+                raise LogicError("Trump suit not set")
+            if by_suit := self.by_suit[0][ctx.trump_suit]:
+                by_suit[card.effsuit(ctx)].append(card.realcard(ctx))
+            if by_suit := self.by_suit[1][ctx.trump_suit]:
+                by_suit[card.effsuit(ctx)].append(card.effcard(ctx))
         return self.cards.append(card)
 
-    def remove_card(self, card: Card) -> None:
+    def remove_card(self, card: Card, ctx: GameCtxMixin = None) -> None:
+        if ctx:
+            if ctx.trump_suit is None:
+                raise LogicError("Trump suit not set")
+            if by_suit := self.by_suit[0][ctx.trump_suit]:
+                by_suit[card.effsuit(ctx)].remove(card.realcard(ctx))
+            if by_suit := self.by_suit[1][ctx.trump_suit]:
+                by_suit[card.effsuit(ctx)].remove(card.effcard(ctx))
         return self.cards.remove(card)
 
     def cards_by_suit(self, ctx: GameCtxMixin, use_bowers: bool = False) -> SuitCards:
@@ -199,9 +217,14 @@ class Hand:
         jacks to the equivalent `Bower` representation (may be used for analysis, but
         not playing, since not recognized by the `deal` module)
         """
-        by_suit = {suit: [] for suit in SUITS}
-        for card in self.cards:
-            by_suit[card.effsuit(ctx)].append(card.effcard(ctx) if use_bowers else card)
+        if not self.by_suit[use_bowers][ctx.trump_suit]:
+            self.by_suit[use_bowers][ctx.trump_suit] = {suit: [] for suit in SUITS}
+            by_suit = self.by_suit[use_bowers][ctx.trump_suit]
+            for card in self.cards:
+                by_suit[card.effsuit(ctx)].append(card.effcard(ctx) if use_bowers else card)
+        else:
+            by_suit = self.by_suit[use_bowers][ctx.trump_suit]
+
         return by_suit
 
     def can_play(self, card: Card, ctx: GameCtxMixin) -> bool:
