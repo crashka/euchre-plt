@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from euchplt.strategy import cfg
+from euchplt.core import cfg
 from euchplt.strategy import Strategy
 from euchplt.strategy import StrategyRandom, StrategySimple, StrategySmart
 

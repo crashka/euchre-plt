@@ -8,7 +8,8 @@ import pytest
 from euchplt.card import ace, king, queen, jack, ten, nine
 from euchplt.card import clubs, diamonds, hearts, spades, find_card
 from euchplt.euchre import Hand
-from euchplt.strategy import HandAnalysisSmart, StrategySmart
+from euchplt.analysis import HandAnalysisSmart
+from euchplt.strategy import StrategySmart
 
 def test_strategy_smart():
     strat = StrategySmart()
