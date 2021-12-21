@@ -17,7 +17,7 @@ setup(
             'deal = euchplt.deal:main',
             'game = euchplt.game:main',
             'match = euchplt.match:main',
-            'strategy = euchplt.strategy:main',
+            'strategy = euchplt.strategy.__main__:main',
             'tournament = euchplt.tournament:main'
         ],
     }

@@ -2,8 +2,8 @@
 
 from typing import Optional
 
-from .card import Suit, SUITS, Card, ace, Bower
-from .euchre import GameCtxMixin, SuitCards, Hand, DealState
+from ..card import Suit, SUITS, Card, ace, Bower
+from ..euchre import GameCtxMixin, SuitCards, Hand, DealState
 
 ###########
 # SuitCtx #
