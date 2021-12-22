@@ -12,9 +12,10 @@ from .base import Strategy
 
 class StrategySimple(Strategy):
     """Represents minimum logic for passable play, very basic strategy, fairly
-    conservative (though we add an `aggressive` option)
+    conservative (though we add several `aggressive` flag options)
     """
-    aggressive: bool = False
+    # this is actually a bitfield, see individual switches below
+    aggressive: int = 0x0
 
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """See base class
@@ -100,7 +101,7 @@ class StrategySimple(Strategy):
 
         # partner is winning, try and duck (unless `aggressive` third hand)
         if trick.winning_pos == deal.pos ^ 0x02:
-            take_order = 1 if (self.aggressive and deal.play_seq == 2) else -1
+            take_order = 1 if (self.aggressive & 0x01 and deal.play_seq == 2) else -1
             cards = follow_cards if follow_cards else by_level
             for card in cards[::take_order]:
                 if card in valid_plays:
@@ -111,7 +112,7 @@ class StrategySimple(Strategy):
         cards = follow_cards if follow_cards else by_level
         # second/third hand take low unless `aggressive` specified (fourth
         # hand always take low)
-        take_order = 1 if (self.aggressive and deal.play_seq < 3) else -1
+        take_order = 1 if (self.aggressive & 0x02 and deal.play_seq < 3) else -1
         for card in cards[::take_order]:
             if card in valid_plays and card.beats(trick.winning_card, trick):
                 return card

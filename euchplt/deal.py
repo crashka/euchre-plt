@@ -8,7 +8,7 @@ from typing import Optional, TextIO
 from .core import DEBUG, LogicError, ImplementationError
 from .card import Suit, SUITS, Card, Deck, get_deck
 from .euchre import GameCtxMixin, Hand, Trick, Bid, PASS_BID, NULL_BID, DealState
-from .player import Player
+from .player import Player, PlayerNotice
 
 ###########
 # `Enum`s #
@@ -236,7 +236,7 @@ class Deal(GameCtxMixin):
             self.contract   = bid
             self.caller_pos = pos
             self.go_alone   = bid.alone
-            self.set_trump_suit(self.contract.suit)
+            self.set_trump_suit(bid.suit)
 
             self.hands[DEALER_POS].append_card(self.turn_card, self)
             discard = self.players[DEALER_POS].discard(self.deal_state(DEALER_POS))
@@ -261,7 +261,7 @@ class Deal(GameCtxMixin):
                 self.contract   = bid
                 self.caller_pos = pos
                 self.go_alone   = bid.alone
-                self.set_trump_suit(self.contract.suit)
+                self.set_trump_suit(bid.suit)
                 break
 
         # check if deal is passed
@@ -327,6 +327,8 @@ class Deal(GameCtxMixin):
             lead_pos = trick.winning_pos
 
         self.compute_score()
+        for pos, player in enumerate(self.players):
+            player.notify(self.deal_state(pos), PlayerNotice.DEAL_COMPLETE)
 
     def print(self, file: TextIO = sys.stdout, verbose: int = 0) -> None:
         """Setting the `verbose` flag (or DEBUG mode) will print out details

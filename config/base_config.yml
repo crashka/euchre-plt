@@ -26,7 +26,7 @@ default:
     StrategyRandom:
       seed:             null
     StrategySimple:
-      aggressive:       false
+      aggressive:       0x0
     StrategySmart:
       hand_analysis:    # keep this empty here, but may be overridden by
                         # individual strategies

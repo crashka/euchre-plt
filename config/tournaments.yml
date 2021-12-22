@@ -35,8 +35,8 @@ default:
       tourn_class:     RoundRobin
       tourn_params:
         match_games:     8
-        passes:          100
-        elim_passes:     25
+        passes:          60
+        elim_passes:     15
         elim_pct:        25
         reset_elo:       true
         elo_params:

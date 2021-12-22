@@ -1,10 +1,18 @@
 # -*- coding: utf-8 -*-
 
+from enum import Enum
 from importlib import import_module
 
 from ..core import ConfigError, cfg
 from ..card import Card
 from ..euchre import Bid, Trick, DealState
+
+#################
+# Notifications #
+#################
+
+class StrategyNotice(Enum):
+    DEAL_COMPLETE = "Deal Complete"
 
 ############
 # Strategy #
@@ -74,3 +82,11 @@ class Strategy:
         bowers are used as part of the analysis)
         """
         raise NotImplementedError("Can't call abstract method")
+
+    def notify(self, deal: DealState, notice_type: StrategyNotice) -> None:
+        """Subclasses do not have to implement this.  We are currently only expecting
+        `DEAL_COMPLETE` notifications (to support "traversal" strategies for ML data
+        generation).
+        """
+        # do nothing
+        return

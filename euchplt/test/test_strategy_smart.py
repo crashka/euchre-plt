@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from os import environ
-environ['EUCHPLT_CONFIG_FILE'] = 'test_config.yml'
-
-import pytest
-
+from euchplt.core import cfg
 from euchplt.card import ace, king, queen, jack, ten, nine
 from euchplt.card import clubs, diamonds, hearts, spades, find_card
 from euchplt.euchre import Hand
 from euchplt.analysis import HandAnalysisSmart
 from euchplt.strategy import StrategySmart
+
+cfg.load('test_config.yml')
 
 def test_strategy_smart():
     strat = StrategySmart()

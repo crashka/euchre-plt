@@ -14,7 +14,19 @@ default:
       module_path:      euchplt.strategy
       base_class:       StrategySimple
       strategy_params:
-        aggressive:       true
+        aggressive:       0x01
+    Bravo 3:
+      comments:         "aggressive play for StrategySimple"
+      module_path:      euchplt.strategy
+      base_class:       StrategySimple
+      strategy_params:
+        aggressive:       0x02
+    Bravo 4:
+      comments:         "aggressive play for StrategySimple"
+      module_path:      euchplt.strategy
+      base_class:       StrategySimple
+      strategy_params:
+        aggressive:       0x03
     Charlie 1:
       comments:         "base StrategySmart configuration"
       module_path:      euchplt.strategy
