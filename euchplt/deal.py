@@ -7,21 +7,9 @@ from typing import Optional, TextIO
 
 from .core import DEBUG, LogicError, ImplementationError
 from .card import Suit, SUITS, Card, Deck, get_deck
-from .euchre import GameCtxMixin, Hand, Trick, Bid, PASS_BID, NULL_BID, DealState
+from .euchre import GameCtxMixin, Hand, Trick, Bid, PASS_BID, NULL_BID
+from .euchre import DealAttr, DealState
 from .player import Player, PlayerNotice
-
-###########
-# `Enum`s #
-###########
-
-DealPhase = Enum('DealPhase', 'NEW DEALT BIDDING PASSED CONTRACT PLAYING COMPLETE SCORED')
-
-class DealAttr(Enum):
-    MAKE      = "Make"
-    ALL_5     = "All_5"
-    GO_ALONE  = "Go_Alone"
-    EUCHRE    = "Euchre"
-    DEF_ALONE = "Defend_Alone"
 
 ########
 # Deal #
@@ -31,6 +19,8 @@ HAND_CARDS  = 5
 NUM_PLAYERS = 4
 BIDDER_POS  = 0   # meaning, initial bidder
 DEALER_POS  = -1
+
+DealPhase = Enum('DealPhase', 'NEW DEALT BIDDING PASSED CONTRACT PLAYING COMPLETE SCORED')
 
 class Deal(GameCtxMixin):
     """Represents the lifecycle of a deal, from the dealing of hands to bidding to
@@ -55,8 +45,8 @@ class Deal(GameCtxMixin):
     played_by_suit:   dict[Suit, Hand]  # by order of play within a suit
     unplayed_by_suit: dict[Suit, set[Card]]  # using sets within a suit
     tricks_won:       list[int]       # by position, same for both partners
-    points:           list[int]       # same as for `tricks_won`
     result:           set[DealAttr]
+    points:           list[int]       # same as for `tricks_won`
     player_state:     list[dict]
 
     def __init__(self, players: list[Player], deck: Deck):
@@ -82,8 +72,8 @@ class Deal(GameCtxMixin):
         self.played_by_suit   = {}
         self.unplayed_by_suit = {}
         self.tricks_won       = []
-        self.points           = []
         self.result           = set()
+        self.points           = []
         self.player_state     = [{} for _ in range(NUM_PLAYERS)]
 
     def deal_state(self, pos: int) -> DealState:
@@ -95,7 +85,7 @@ class Deal(GameCtxMixin):
         return DealState(pos, self.hands[pos], self.turn_card, self.bids, self.tricks,
                          self.contract, self.caller_pos, self.go_alone, self.def_alone,
                          self.def_pos, self.played_by_suit, self.unplayed_by_suit,
-                         self.player_state[pos])
+                         self.player_state[pos], self.result, self.points)
 
     @property
     def deal_phase(self) -> DealPhase:
@@ -404,6 +394,7 @@ class Deal(GameCtxMixin):
 ########
 
 from .strategy import StrategyRandom, StrategySimple, StrategySmart
+from .strategy.bid_traverse import StrategyBidTraverse
 
 def main() -> int:
     """Built-in driver to run through a simple/sample deal
@@ -412,10 +403,11 @@ def main() -> int:
     if len(sys.argv) > 1:
         ndeals = int(sys.argv[1])
 
-    players = [Player("Player 0", StrategyRandom(seed=12345)),
-               Player("Player 1", StrategySmart()),
-               Player("Player 2", StrategyRandom(seed=98765)),
-               Player("Player 3", StrategySmart())]
+    play_strat = [StrategySmart() for _ in range(4)]
+    players = [Player("Player 0", StrategyBidTraverse(play_strat=play_strat[0])),
+               Player("Player 1", StrategyBidTraverse(play_strat=play_strat[1])),
+               Player("Player 2", StrategyBidTraverse(play_strat=play_strat[2])),
+               Player("Player 3", StrategyBidTraverse(play_strat=play_strat[3]))]
 
     for _ in range(ndeals):
         deck = get_deck()

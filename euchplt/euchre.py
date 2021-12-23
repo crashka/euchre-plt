@@ -3,6 +3,7 @@
 blocks (e.g. cards), and can be imported by either the player or game-playing modules
 """
 
+from enum import Enum
 from typing import Optional, NamedTuple
 
 from .core import LogicError
@@ -331,6 +332,13 @@ DEFEND_ALONE = Bid(defend_suit, True)
 # DealState #
 #############
 
+class DealAttr(Enum):
+    MAKE      = "Make"
+    ALL_5     = "All_5"
+    GO_ALONE  = "Go_Alone"
+    EUCHRE    = "Euchre"
+    DEF_ALONE = "Defend_Alone"
+
 class DealState(NamedTuple):
     pos:              int
     hand:             Hand
@@ -345,6 +353,8 @@ class DealState(NamedTuple):
     played_by_suit:   dict[Suit, Hand]
     unplayed_by_suit: dict[Suit, set[Card]]
     player_state:     dict
+    result:           Optional[set[DealAttr]]
+    points:           Optional[list[int]]
 
     @property
     def cur_trick(self) -> Trick:
