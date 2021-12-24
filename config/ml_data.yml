@@ -1,0 +1,7 @@
+---
+default:
+  base_strategy_params:
+    StrategyBidTraverse:
+      play_strat:        Charlie 1
+      discard_strat:
+      prune_bid_strat:

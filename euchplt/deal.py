@@ -394,7 +394,6 @@ class Deal(GameCtxMixin):
 ########
 
 from .strategy import StrategyRandom, StrategySimple, StrategySmart
-from .strategy.bid_traverse import StrategyBidTraverse
 
 def main() -> int:
     """Built-in driver to run through a simple/sample deal
@@ -403,11 +402,10 @@ def main() -> int:
     if len(sys.argv) > 1:
         ndeals = int(sys.argv[1])
 
-    play_strat = [StrategySmart() for _ in range(4)]
-    players = [Player("Player 0", StrategyBidTraverse(play_strat=play_strat[0])),
-               Player("Player 1", StrategyBidTraverse(play_strat=play_strat[1])),
-               Player("Player 2", StrategyBidTraverse(play_strat=play_strat[2])),
-               Player("Player 3", StrategyBidTraverse(play_strat=play_strat[3]))]
+    players = [Player("Player 0", StrategyRandom(seed=12345)),
+               Player("Player 1", StrategySmart()),
+               Player("Player 2", StrategyRandom(seed=98765)),
+               Player("Player 3", StrategySmart())]
 
     for _ in range(ndeals):
         deck = get_deck()

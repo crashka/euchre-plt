@@ -54,7 +54,7 @@ def ArchiveDataFile(file_name: str) -> None:
 ###########
 
 # create logger (TODO: logging parameters belong in config file as well!!!)
-LOGGER_NAME  = 'euchplt'
+LOGGER_NAME  = environ.get('EUCH_LOG_NAME') or 'euchplt'
 LOG_DIR      = 'log'
 LOG_FILE     = LOGGER_NAME + '.log'
 LOG_PATH     = os.path.join(BASE_DIR, LOG_DIR, LOG_FILE)

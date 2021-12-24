@@ -66,8 +66,6 @@ default:
         - throw_off_to_create_void
         - throw_off_low
         - play_random_card
-    StrategyBidTraverse:
-      play_strat:
 
   base_tourn_params:
     RoundRobin:

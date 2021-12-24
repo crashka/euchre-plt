@@ -1,17 +1,34 @@
 # -*- coding: utf-8 -*-
 
 import os
-from typing import ClassVar
+from typing import ClassVar, Optional
 from time import sleep
 
-from ..core import log
-from ..card import SUITS, Card
-from ..euchre import Bid, PASS_BID, defend_suit, Trick, DealState
-from .base import Strategy, StrategyNotice
+from euchplt.core import log
+from euchplt.card import SUITS, Card
+from euchplt.euchre import Bid, PASS_BID, defend_suit, Trick, DealState
+from euchplt.analysis import HandAnalysis
+from euchplt.strategy import Strategy, StrategyNotice
 
-##################
-# StrategyRandom #
-##################
+###################
+# BidDataAnalysis #
+###################
+
+class BidDataAnalysis(HandAnalysis):
+    """
+    """
+    turn_card: Card
+
+    def __init__(self, deal: DealState, params: dict = None):
+        super().__init__(deal.hand.copy())
+        self.turn_card = deal.turn_card
+
+    def get_features(self) -> dict:
+        return {}
+
+#######################
+# StrategyBidTraverse #
+#######################
 
 NUM_PLAYERS   = 4
 BID_POSITIONS = 8
@@ -21,14 +38,58 @@ class StrategyBidTraverse(Strategy):
     using the specified strategy.  Append results (bid features and deal
     outcome) to training data set.
     """
-    play_strat: Strategy
-    child_pids: list[int]     = None
-    my_bid:     Bid           = None
-    bid_pos:    ClassVar[int] = None
+    play_strat:      Strategy
+    discard_strat:   Optional[Strategy]
+    prune_bid_strat: Optional[Strategy]
+    child_pids:      list[int]         = None
+    analysis:        BidDataAnalysis
+    my_bid:          Bid               = None
+
+    bid_pos:         ClassVar[int]     = None
 
     def __init__(self, **kwargs):
+        """This class recognizes the following parameters (passed in directly as
+        as kwargs, or specified in the config file, if using `Strategy.new()`):
+
+          - `play_strat` (passed in as either an instantiated `Strategy` object or
+            a named configuration) is used to play out deals for each bid traversal
+            selection.
+
+          - `discard_stat` (again, object or config name) is used to determine the
+            discard for each bid selection (considered part of the "play" process,
+            for purposes of bid model training, even in the case of the first round
+            dealer bid).  If not specified, the `play_strat` instance will be used.
+
+          - `prune_bid_strat` (object or config name) is used to determine whether
+            a preemptive bid would issued (rather than dutifully passing) prior to
+            reaching the target bid position.  If so, then this bid traversal
+            instance is eliminated, which will prevent a errant/misleading playing
+            out of a target bid, since it would be facing an unrealistically strong
+            opposition.  If this parameter is not specified, then no pruning occurs,
+            and the target bid is always played out and recorded.  Note that pruning
+            using a fairly aggressive bidding strategy has the unfortunate side
+            effect of requiring many more cycles to generate sufficient data for
+            later (especially second round) bidding positions.
+        """
         super().__init__(**kwargs)
-        pass
+        if not self.play_strat:
+            raise ConfigError("'play_strat' must be specified")
+        if isinstance(self.play_strat, str):
+            self.play_strat = Strategy.new(self.play_strat)
+        if not isinstance(self.play_strat, Strategy):
+            raise ConfigError("'play_strat' must resolve to a Strategy subclass")
+
+        if self.discard_strat:
+            if isinstance(self.discard_strat, str):
+                self.discard_strat = Strategy.new(self.discard_strat)
+            if not isinstance(self.discard_strat, Strategy):
+                raise ConfigError("'discard_strat' must resolve to a Strategy subclass")
+
+        if self.prune_bid_strat:
+            if isinstance(self.prune_bid_strat, str):
+                self.prune_bid_strat = Strategy.new(self.prune_bid_strat)
+            if not isinstance(self.prune_bid__strat, Strategy):
+                raise ConfigError("'prune_bid__strat' must resolve to a Strategy subclass")
 
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """See base class
@@ -61,12 +122,16 @@ class StrategyBidTraverse(Strategy):
 
         cur_bid_pos = deal.pos + (deal.bid_round - 1) * 4
         if cur_bid_pos != self.bid_pos:
+            # TODO: terminate this bidding line if `prune_bid_strat` returns a
+            # bid (create a new pseudo-suit for aborting a deal???)
             return PASS_BID
 
         if deal.bid_round == 1:
+            self.analysis = BidDataAnalysis(deal)
             self.my_bid = Bid(deal.turn_card.suit, alone)
             return self.my_bid
         else:
+            assert deal.bid_round == 2
             # Spawn subprocesses to handle the first two of the three non-
             # turn suits for this round, we will fallthrough the loop and
             # handle the remaining suit ourselves
@@ -82,13 +147,16 @@ class StrategyBidTraverse(Strategy):
                 assert self.child_pids is None
                 self.child_pids = child_pids
 
+            self.analysis = BidDataAnalysis(deal)
             self.my_bid = Bid(bid_suit, alone)
             return self.my_bid
 
     def discard(self, deal: DealState) -> Card:
         """See base class
         """
-        return self.play_strat.discard(deal)
+        if not self.discard_strat:
+            return self.play_strat.discard(deal)
+        return self.discard_strat.discard(deal)
 
     def play_card(self, deal: DealState, trick: Trick, valid_plays: list[Card]) -> Card:
         """See base class
