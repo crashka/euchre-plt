@@ -133,7 +133,7 @@ class StrategyBidTraverse(Strategy):
     """
     play_strat:      Strategy
     discard_strat:   Optional[Strategy]
-    prune_bid_strat: Optional[Strategy]
+    bid_prune_strat: Optional[Strategy]
     hand_analysis:   dict
     child_pids:      list[int]         = None
     bid_context:     BidContext
@@ -156,7 +156,7 @@ class StrategyBidTraverse(Strategy):
             for purposes of bid model training, even in the case of the first round
             dealer bid).  If not specified, the `play_strat` instance will be used.
 
-          - `prune_bid_strat` (object or config name) is used to determine whether
+          - `bid_prune_strat` (object or config name) is used to determine whether
             a preemptive bid would issued (rather than dutifully passing) prior to
             reaching the target bid position.  If so, then this bid traversal
             instance is eliminated, which will prevent a errant/misleading playing
@@ -181,11 +181,11 @@ class StrategyBidTraverse(Strategy):
             if not isinstance(self.discard_strat, Strategy):
                 raise ConfigError("'discard_strat' must resolve to a Strategy subclass")
 
-        if self.prune_bid_strat:
-            if isinstance(self.prune_bid_strat, str):
-                self.prune_bid_strat = Strategy.new(self.prune_bid_strat)
-            if not isinstance(self.prune_bid__strat, Strategy):
-                raise ConfigError("'prune_bid__strat' must resolve to a Strategy subclass")
+        if self.bid_prune_strat:
+            if isinstance(self.bid_prune_strat, str):
+                self.bid_prune_strat = Strategy.new(self.bid_prune_strat)
+            if not isinstance(self.bid_prune_strat, Strategy):
+                raise ConfigError("'bid_prune_strat' must resolve to a Strategy subclass")
 
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """See base class
@@ -217,8 +217,12 @@ class StrategyBidTraverse(Strategy):
                 self.child_pids = child_pids
 
         if deal.bid_pos != self.bid_pos:
-            # TODO: terminate this bidding line if `prune_bid_strat` returns a
-            # bid (create a new pseudo-suit for aborting a deal???)
+            if self.bid_prune_strat:
+                bid = self.bid_prune_strat.bid(deal)
+                if not bid.is_pass():
+                    log.debug(f"Aborting traverse for bid_pos {self.bid_pos}, "
+                              f"preemptive bid ({bid}) from bid_pos {deal.bid_pos}")
+                    exit(0)
             return PASS_BID
 
         if deal.bid_round == 1:

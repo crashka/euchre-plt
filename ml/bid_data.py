@@ -23,7 +23,7 @@ cfg.load('ml_data.yml')
 FILE_TYPE = '.dat'
 
 def get_file_name(model_name: str) -> str:
-    return re.sub(r'\W+', '_', name).lower() + FILE_TYPE
+    return re.sub(r'\W+', '_', model_name).lower() + FILE_TYPE
 
 def main() -> int:
     """Generate data for bid model
