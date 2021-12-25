@@ -2,6 +2,26 @@
 default:
   base_strategy_params:
     StrategyBidTraverse:
-      play_strat:        Charlie 1
+      play_strat:
       discard_strat:
       prune_bid_strat:
+      hand_analysis:
+        trump_values:    [0, 0, 0, 1, 2, 4, 7, 10]
+
+  strategies:
+    Bid Strategy 1:
+      module_path:       ml.strategy.bid_traverse
+      base_class:        StrategyBidTraverse
+      strategy_params:
+        play_strat:      Charlie 1
+        discard_strat:
+        prune_bid_strat:
+        hand_analysis:
+
+  players:
+    Bid Player 1:
+      strategy:          Bid Strategy 1
+
+  bid_models:
+    Bid Model 1:
+      data_player:       Bid Player 1

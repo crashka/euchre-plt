@@ -1,14 +1,45 @@
 # -*- coding: utf-8 -*-
 
 import os
-from typing import ClassVar, Optional
+import sys
+from typing import ClassVar, Optional, NamedTuple
 from time import sleep
 
-from euchplt.core import log
+from euchplt.core import log, DEBUG
 from euchplt.card import SUITS, Card
-from euchplt.euchre import Bid, PASS_BID, defend_suit, Trick, DealState
-from euchplt.analysis import HandAnalysis
+from euchplt.euchre import Bid, PASS_BID, defend_suit, Hand, Trick, DealState
+from euchplt.analysis import SUIT_CTX, HandAnalysis
 from euchplt.strategy import Strategy, StrategyNotice
+
+#######################
+# BidContext/Features #
+#######################
+
+class BidContext(NamedTuple):
+    bid_pos:          int
+    hand:             Hand
+    turn_card:        Card
+    bid:              Bid
+
+class BidFeatures(NamedTuple):
+    bid_pos:          int
+    go_alone:         int
+    turn_card_level:  int
+    bid_turn_suit:    int
+    bid_next_suit:    int
+    bid_green_suit:   int
+    top_trump_strg:   int
+    top_2_trump_strg: int
+    top_3_trump_strg: int
+    num_trump:        int
+    num_next:         int
+    num_voids:        int
+    num_singletons:   int
+    num_off_aces:     int
+
+class BidOutcome(NamedTuple):
+    num_tricks:       int
+    points:           int
 
 ###################
 # BidDataAnalysis #
@@ -17,14 +48,76 @@ from euchplt.strategy import Strategy, StrategyNotice
 class BidDataAnalysis(HandAnalysis):
     """
     """
-    turn_card: Card
+    trump_values: list[int]
+    deal:         DealState
 
     def __init__(self, deal: DealState, params: dict = None):
         super().__init__(deal.hand.copy())
-        self.turn_card = deal.turn_card
+        self.trump_values = params.get('trump_values')
+        self.deal = deal
 
-    def get_features(self) -> dict:
-        return {}
+    def get_context(self, bid:Bid) -> BidContext:
+        context = {
+            'bid_pos':   self.deal.bid_pos,
+            'hand':      self.hand,
+            'turn_card': self.deal.turn_card,
+            'bid':       bid
+        }
+        return BidContext._make(context.values())
+
+    def get_features(self, bid: Bid) -> BidFeatures:
+        """Comments from `ml-euchre` (need to be rethought and adapted!!!):
+        Input features:
+          - Bid position (0-7)
+          - Loner called
+          - Level of turncard (1-8)
+          - Relative suit of turncard (in relation to trump)
+              - One-hot encoding for next, green, or purple (all zeros if turncard
+                picked up)
+          - Trump (turncard or called) suit strength (various measures, start with
+            sum of levels 1-8)
+              - Top 1, 2, and 3 trump cards (three aggregate values)
+              - Note: include turncard and exclude discard, if dealer (which implies
+                that model will be tied to discard algorithm)
+          - Trump/next/green/purple suit scores (instead of just trump strength?)
+          - Number of trump (with turncard/discard, if dealer)
+          - Number of voids (or suits)
+          - Number of off-aces
+        Output feature(s):
+          - Number of tricks taken
+        """
+        turn_card   = self.deal.turn_card
+        turn_suit   = turn_card.suit
+        next_suit   = turn_suit.next_suit()
+        green_suits = turn_suit.green_suits()
+
+        trump_cards = self.trump_cards(bid.suit)
+        trump_strgs = [0] * 5
+        for i, card in enumerate(trump_cards):
+            card_value = self.trump_values[card.rank.idx]
+            for j in range(i, 5):
+                trump_strgs[j] += card_value
+
+        # CONSIDER: should we also compute top 1-2 values for next and green
+        # suits as well???
+
+        features = {
+            'bid_pos':          self.deal.bid_pos,
+            'go_alone':         int(bid.alone),
+            'turn_card_level':  turn_card.efflevel(SUIT_CTX[turn_suit]),
+            'bid_turn_suit':    int(bid.suit == turn_suit),
+            'bid_next_suit':    int(bid.suit == next_suit),
+            'bid_green_suit':   int(bid.suit in green_suits),
+            'top_trump_strg':   trump_strgs[0],
+            'top_2_trump_strg': trump_strgs[1],
+            'top_3_trump_strg': trump_strgs[2],
+            'num_trump':        len(trump_cards),
+            'num_next':         len(self.next_suit_cards(bid.suit)),
+            'num_voids':        len(self.voids(bid.suit)),
+            'num_singletons':   len(self.singleton_cards(bid.suit)),
+            'num_off_aces':     len(self.off_aces(bid.suit))
+        }
+        return BidFeatures._make(features.values())
 
 #######################
 # StrategyBidTraverse #
@@ -41,8 +134,11 @@ class StrategyBidTraverse(Strategy):
     play_strat:      Strategy
     discard_strat:   Optional[Strategy]
     prune_bid_strat: Optional[Strategy]
+    hand_analysis:   dict
     child_pids:      list[int]         = None
-    analysis:        BidDataAnalysis
+    bid_context:     BidContext
+    bid_features:    BidFeatures
+    bid_outcome:     BidOutcome
     my_bid:          Bid               = None
 
     bid_pos:         ClassVar[int]     = None
@@ -120,15 +216,16 @@ class StrategyBidTraverse(Strategy):
                 assert self.child_pids is None
                 self.child_pids = child_pids
 
-        cur_bid_pos = deal.pos + (deal.bid_round - 1) * 4
-        if cur_bid_pos != self.bid_pos:
+        if deal.bid_pos != self.bid_pos:
             # TODO: terminate this bidding line if `prune_bid_strat` returns a
             # bid (create a new pseudo-suit for aborting a deal???)
             return PASS_BID
 
         if deal.bid_round == 1:
-            self.analysis = BidDataAnalysis(deal)
             self.my_bid = Bid(deal.turn_card.suit, alone)
+            analysis = BidDataAnalysis(deal, self.hand_analysis)
+            self.bid_context = analysis.get_context(self.my_bid)
+            self.bid_features = analysis.get_features(self.my_bid)
             return self.my_bid
         else:
             assert deal.bid_round == 2
@@ -147,8 +244,10 @@ class StrategyBidTraverse(Strategy):
                 assert self.child_pids is None
                 self.child_pids = child_pids
 
-            self.analysis = BidDataAnalysis(deal)
             self.my_bid = Bid(bid_suit, alone)
+            analysis = BidDataAnalysis(deal, self.hand_analysis)
+            self.bid_context = analysis.get_context(self.my_bid)
+            self.bid_features = analysis.get_features(self.my_bid)
             return self.my_bid
 
     def discard(self, deal: DealState) -> Card:
@@ -186,4 +285,26 @@ class StrategyBidTraverse(Strategy):
             if child_errs:
                 raise RuntimeError(f"{hdr} error(s) in child processes: {child_errs}")
 
-        # TODO: write deal features here!!!
+        self.bid_outcome = BidOutcome(deal.my_tricks_won, deal.my_points)
+        self.bid_context.hand.cards.sort(key=lambda c: c.sortkey)
+
+        log.debug(', '.join(f"{k}: {v}" for k, v in self.bid_context._asdict().items()))
+        log.debug(list(self.bid_features) + list(self.bid_outcome))
+        all_features = list(self.bid_features) + list(self.bid_outcome)
+        features_str = '\t'.join(str(x) for x in all_features)
+        # HACK: see comments in bid_data.py!
+        if data_file := os.environ.get('BID_DATA_FILE'):
+            with open(data_file, 'a') as f:
+                print(features_str, file=f)
+        else:
+            print(features_str)
+
+        if self.bid_pos == 0:
+            # need to reset the class, so this works for the next deal
+            StrategyBidTraverse.bid_pos = None
+            self.child_pids             = None
+            self.my_bid                 = None
+        else:
+            # if we spawned the process, we need to terminate it, so it doesn't continue
+            # processing downstream outside of our purview
+            sys.exit(0)

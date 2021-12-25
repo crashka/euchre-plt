@@ -3,10 +3,11 @@
 
 from os import environ
 import sys
+import re
 
 environ['EUCH_LOG_NAME'] = 'ml_data'
 
-from euchplt.core import cfg
+from euchplt.core import cfg, DataFile, DEBUG
 from euchplt.card import get_deck
 from euchplt.player import Player
 from euchplt.deal import Deal, NUM_PLAYERS
@@ -19,14 +20,38 @@ cfg.load('ml_data.yml')
 # main #
 ########
 
+FILE_TYPE = '.dat'
+
+def get_file_name(model_name: str) -> str:
+    return re.sub(r'\W+', '_', name).lower() + FILE_TYPE
+
 def main() -> int:
-    """Built-in driver to run through a simple/sample deal
+    """Generate data for bid model
+
+    Usage: bid_data.py <bid_model> [<ndeals>]
     """
     ndeals = 1
-    if len(sys.argv) > 1:
-        ndeals = int(sys.argv[1])
 
-    players = [Player(f"Player {i+1}", StrategyBidTraverse()) for i in range(NUM_PLAYERS)]
+    if len(sys.argv) < 2:
+        raise RuntimeError("<bid_model> not specified")
+    name = sys.argv[1]
+    if len(sys.argv) > 2:
+        ndeals = int(sys.argv[2])
+
+    bid_models = cfg.config('bid_models')
+    if name not in bid_models:
+        raise RuntimeError(f"Bid model '{name}' is not known")
+    file_name = get_file_name(name)
+    # REVISIT: this is pretty hacky, but no good way to pass this information
+    # down to the strategy class right now (see the other end of the hack in
+    # bid_traverse.py)--should really make this prettier at some point!!!
+    environ['BID_DATA_FILE'] = DataFile(file_name)
+
+    player_name = bid_models[name].get('data_player')
+    if not player_name:
+        raise ConfigError(f"'data_player' not specified for bid model '{name}'")
+
+    players = [Player(player_name) for _ in range(NUM_PLAYERS)]
 
     for _ in range(ndeals):
         deck = get_deck()
@@ -35,10 +60,8 @@ def main() -> int:
         deal.deal_cards()
         deal.do_bidding()
         if deal.is_passed():
-            deal.print()
             continue
         deal.play_cards()
-        deal.print(verbose=1)
 
     return 0
 

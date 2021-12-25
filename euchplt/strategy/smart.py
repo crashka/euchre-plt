@@ -75,7 +75,7 @@ class StrategySmart(Strategy):
           - defend alone if strength (for contract suit) > def_alone_thresh
         """
         persist       = deal.player_state
-        bid_pos       = deal.pos + (deal.bid_round - 1) * 4
+        bid_pos       = deal.bid_pos
         turn_suit     = deal.turn_card.suit
         bid_suit      = None
         strength      = None

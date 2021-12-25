@@ -323,6 +323,10 @@ class Bid(NamedTuple):
     def is_defend(self) -> bool:
         return self.suit == defend_suit
 
+    def __str__(self) -> str:
+        alone_str = " alone" if self.alone else ""
+        return self.suit.tag + alone_str
+
 # convenience singletons
 PASS_BID     = Bid(pass_suit)
 NULL_BID     = Bid(null_suit)
@@ -352,9 +356,9 @@ class DealState(NamedTuple):
     def_pos:          Optional[int]
     played_by_suit:   dict[Suit, Hand]
     unplayed_by_suit: dict[Suit, set[Card]]
+    tricks_won:       list[int]
+    points:           list[int]
     player_state:     dict
-    result:           Optional[set[DealAttr]]
-    points:           Optional[list[int]]
 
     @property
     def cur_trick(self) -> Trick:
@@ -367,6 +371,13 @@ class DealState(NamedTuple):
         was called)
         """
         return 1 if len(self.bids) < 4 else 2
+
+    @property
+    def bid_pos(self) -> int:
+        """Return value 0-7, where 0-3 is first round bidding, and 4-7
+        is second round (3 and 7 are the dealer bid positions)
+        """
+        return self.pos + (self.bid_round - 1) * 4
 
     @property
     def is_dealer(self) -> bool:
@@ -430,6 +441,26 @@ class DealState(NamedTuple):
     @property
     def lead_trumped(self) -> bool:
         """Only valid if lead card has been played for current trick; note, always
-        returns False if trump is led
+        returns False if trump is led.
         """
         return self.cur_trick.lead_trumped()
+
+    @property
+    def my_tricks_won(self) -> Optional[int]:
+        """Only valid after deal is complete and score has been tabulated.
+        """
+        if not self.tricks_won:
+            return None
+        return self.tricks_won[self.pos]
+
+    @property
+    def my_points(self) -> Optional[int]:
+        """Only valid after deal is complete and score has been tabulated.  In case
+        of losing the deal (i.e. zero points), return negative of opponent points.
+        """
+        if not self.points:
+            return None
+        if self.points[self.pos]:
+            return self.points[self.pos]
+        else:
+            return -self.points[self.pos ^ 0x01]

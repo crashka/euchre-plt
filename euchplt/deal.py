@@ -85,7 +85,7 @@ class Deal(GameCtxMixin):
         return DealState(pos, self.hands[pos], self.turn_card, self.bids, self.tricks,
                          self.contract, self.caller_pos, self.go_alone, self.def_alone,
                          self.def_pos, self.played_by_suit, self.unplayed_by_suit,
-                         self.player_state[pos], self.result, self.points)
+                         self.tricks_won, self.points, self.player_state[pos])
 
     @property
     def deal_phase(self) -> DealPhase:

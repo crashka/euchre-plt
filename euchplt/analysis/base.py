@@ -50,6 +50,9 @@ class HandAnalysis:
     def trump_cards(self, trump_suit: Suit) -> list[Card]:
         return self.get_suit_cards(trump_suit)[trump_suit]
 
+    def next_suit_cards(self, trump_suit: Suit) -> list[Card]:
+        return self.get_suit_cards(trump_suit)[trump_suit.next_suit()]
+
     def green_suit_cards(self, trump_suit: Suit) -> tuple[list[Card], ...]:
         """Returns tuple of Card lists, ordered by decreasing length
         """
@@ -108,6 +111,9 @@ class PlayAnalysis:
 
     def trump_cards(self) -> list[Card]:
         return self.hand_analysis.trump_cards(self.ctx.suit)
+
+    def next_suit_cards(self) -> list[Card]:
+        return self.hand_analysis.next_suit_cards(self.ctx.suit)
 
     def green_suit_cards(self) -> tuple[list[Card], ...]:
         return self.hand_analysis.green_suit_cards(self.ctx.suit)
