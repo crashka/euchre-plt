@@ -32,10 +32,11 @@ DEBUG        = int(environ.get('EUCH_DEBUG') or 0)
 DATA_DIR    = 'data'
 ARCH_DT_FMT = '%Y%m%d_%H%M%S'
 
-def DataFile(file_name: str) -> str:
-    """Return full path name (in DATA_DIR), given name of file
+def DataFile(file_name: str, dir: str = DATA_DIR) -> str:
+    """Given name of file, return full path name (in DATA_DIR, or specified
+    directory)
     """
-    return os.path.join(BASE_DIR, DATA_DIR, file_name)
+    return os.path.join(BASE_DIR, dir, file_name)
 
 def ArchiveDataFile(file_name: str) -> None:
     """Rename data file to "archived" version (current datetime appended),

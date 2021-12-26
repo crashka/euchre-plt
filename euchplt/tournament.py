@@ -11,7 +11,7 @@ import random
 import csv
 
 from .utils import rankdata
-from .core import DEBUG, cfg, ConfigError
+from .core import DEBUG, cfg, DataFile, ConfigError
 from .team import Team
 from .game import GameStat, POS_STATS
 from .match import MatchStatXtra, MatchStatIter, Match
@@ -21,9 +21,9 @@ from .elo_rating import EloRating
 Formats:
   - Head-to-head
   - Round robin
+  - Challenge ladder
   - Single elimination
   - Double elimination
-  - Challenge ladder
 
 Notes:
   - Each entrant is a strategy (class + params); players will be generated
@@ -162,9 +162,6 @@ Leaderboard = dict[str, dict[LBStat, [Number]]]  # indexed by team name
 # Tournament #
 ##############
 
-TeamScores = dict[str, list[Number]]   # [matches, elo_points]
-ScoreItem  = tuple[str, list[Number]]  # TeamScores.items()
-
 # superset of tournament subdivisions that subclasses may coopt for
 # their own usage/interpretation (other than `MATCH`, of course)
 TournUnit = Enum('TournUnit', 'MATCH ROUND PASS')
@@ -185,11 +182,12 @@ class Tournament:
     # no additional interest in this list; it is up to subclasses to figure
     # out how/whether they want to use it for reporting, analysis, etc.
     matches:        list[Match]
-    team_score:     TeamScores             # indexed as `teams`
-    team_score_opp: dict[str, TeamScores]  # same as previous, per opponent team
-    team_stats:     dict[str, dict[TournStat, int]]  # indexed as `teams`
+    team_score:     dict[str, list[Number]]  # [matches, elo_points], indexed as `teams`
+    team_score_opp: dict[str, dict[str, list[Number]]]  # same as previous, per opponent team
+    team_stats:     dict[str, dict[TournStat, int]]     # indexed as `teams`
     team_pos_stats: dict[str, dict[TournStat, list[int]]]  # tabulate stats by call_pos
-    winner:         Optional[tuple[Team, ...]]
+    winner:         Optional[tuple[str, ...]]
+    results:        Optional[list[str]]
 
     @classmethod
     def new(cls, tourn_name: str, **kwargs) -> 'Tournament':
@@ -244,12 +242,15 @@ class Tournament:
                 raise ConfigError(f"Missing dependency {', '.join(missing)} for stat '{stat.name}'")
 
         self.matches        = []
-        self.team_score     = {name: [0, 0.0] for name in teams}
-        self.team_score_opp = {name: {opp: [0, 0.0] for opp in teams if opp is not name}
-                               for name in teams}
-        self.team_stats     = {name: {stat: 0 for stat in TournStatIter()} for name in teams}
-        self.team_pos_stats = {name: {stat: [0] * 8 for stat in self.pos_stats} for name in teams}
+        self.team_score     = {name: [0, 0.0] for name in self.teams}
+        self.team_score_opp = {name: {opp: [0, 0.0] for opp in self.teams if opp is not name}
+                               for name in self.teams}
+        self.team_stats     = {name: {stat: 0 for stat in TournStatIter()}
+                               for name in self.teams}
+        self.team_pos_stats = {name: {stat: [0] * 8 for stat in self.pos_stats}
+                               for name in self.teams}
         self.winner         = None
+        self.results        = None
 
     def tabulate(self, match: Match) -> None:
         """Tabulate the result of a single match.  Subclasses may choose to implement and
@@ -257,40 +258,46 @@ class Tournament:
         other subdivision for the specific format.
         """
         for i, team in enumerate(match.teams):
-            opp = match.teams[i ^ 0x01]
-            self.team_stats[team.name][TS.MATCHES_PLAYED] += 1
-            self.team_score[team.name][1] += match.score[i] / sum(match.score)
-            self.team_score_opp[team.name][opp.name][1] += match.score[i] / sum(match.score)
+            name = team.name
+            opp = match.teams[i ^ 0x01].name
+            self.team_stats[name][TS.MATCHES_PLAYED] += 1
+            self.team_score[name][1] += match.score[i] / sum(match.score)
+            self.team_score_opp[name][opp][1] += match.score[i] / sum(match.score)
             if team == match.winner[1]:
-                self.team_stats[team.name][TS.MATCHES_WON] += 1
-                self.team_score[team.name][0] += 1
-                self.team_score_opp[team.name][opp.name][0] += 1
+                self.team_stats[name][TS.MATCHES_WON] += 1
+                self.team_score[name][0] += 1
+                self.team_score_opp[name][opp][0] += 1
 
             for stat in MatchStatIter():
-                self.team_stats[team.name][stat] += match.stats[i][stat]
+                self.team_stats[name][stat] += match.stats[i][stat]
                 if stat in self.pos_stats:
-                    my_stat_list = self.team_pos_stats[team.name][stat]
+                    my_stat_list = self.team_pos_stats[name][stat]
                     match_stat_list = match.pos_stats[i][stat]
                     for j in range(8):
                         my_stat_list[j] += match_stat_list[j]
 
     def set_winner(self) -> None:
+        """This method is overrideable for tournament formats where the
+        results/winner(s) are determined in a way other than match wins
+        """
         thresh = 0.1  # for floating point comparison
         # determine winner by number of matches won (element score_item[1][0])
         scores = sorted(self.team_score.items(), key=lambda s: s[1][0], reverse=True)
         top_score_item = scores[0]
-        winners: list[Team] = [self.teams[top_score_item[0]]]
+        winners: list[str] = [top_score_item[0]]
         for score_item in scores[1:]:
             if top_score_item[1][0] - score_item[1][0] > thresh:
                 break
-            winners.append(self.teams[score_item[0]])
+            winners.append(score_item[0])
 
         self.winner = tuple(winners)
+        self.results = [s[0] for s in scores]
 
-    def play_match(self, matchup: Iterable[Team]) -> None:
+    def play_match(self, matchup: Iterable[str]) -> None:
         """Uniform/common method for conducting a match within the tournament
         """
-        match = Match(matchup, match_games=self.match_games)
+        teams = (self.teams[t] for t in matchup)
+        match = Match(teams, match_games=self.match_games)
         self.matches.append(match)
         match.play()
         self.tabulate(match)
@@ -323,8 +330,8 @@ class Tournament:
         """Include record against all other teams, if `vs_opp` is specified
         """
         print("Tournament Score:", file=file)
-        results = sorted(self.team_score.items(), key=lambda s: s[1][0], reverse=True)
-        for name, score in results:
+        for name in self.results:
+            score = self.team_score[name]
             print(f"  {name}: {score[0]} ({score[1]:.2f})", file=file)
             if vs_opp:
                 for opp_name, score in self.team_score_opp[name].items():
@@ -336,8 +343,7 @@ class Tournament:
             return
 
         plural = "s" if len(self.winner) > 1 else ""
-        winner_names = (t.name for t in self.winner)
-        print(f"Tournament Winner{plural}:\n  {', '.join(winner_names)}")
+        print(f"Tournament Winner{plural}:\n  {', '.join(self.winner)}")
 
     def print_stats(self, file: TextIO = sys.stdout, by_pos: bool = False) -> None:
         CSF = CompStatFormulas
@@ -418,6 +424,13 @@ class Tournament:
             yield stats_row
 
 ##############
+# HeadToHead #
+##############
+
+class HeadToHead(Tournament):
+    pass
+
+##############
 # RoundRobin #
 ##############
 
@@ -441,13 +454,14 @@ class RoundRobin(Tournament):
     reset_elo:     bool
     elo_update:    TournUnit
     elo_params:    dict[str, Union[str, Number]]
-    elo_rating:    EloRating
 
     # state, etc.
     elim_num:      int        # number to eliminate per cycle
-    eliminated:    set[Team]
+    elim_order:    list[str]  # team names
+    eliminated:    set[str]   # same
     leaderboards:  list[Leaderboard]
     lb_base:       Leaderboard
+    elo_rating:    EloRating
 
     @staticmethod
     def get_matchups(teams: Iterable[T]) -> Iterator[list[tuple[TO, TO]]]:
@@ -488,6 +502,7 @@ class RoundRobin(Tournament):
         self.elo_update = TournUnit[elo_update.upper()]
         if self.elim_passes:
             self.elim_num = round(len(self.teams) * self.elim_pct / 100.0)
+        self.elim_order = []
         self.eliminated = set()
         self.leaderboards = []
         self.lb_base = None
@@ -521,14 +536,25 @@ class RoundRobin(Tournament):
             if len(self.teams) - len(self.eliminated) >= self.elim_num * 2:
                 lb_iter = leaderboard.items()
                 lb_sorted = sorted(lb_iter, key=lambda s: s[1][LBStat.WINS], reverse=True)
-                leader_teams = [self.teams[s[0]] for s in lb_sorted
-                                if self.teams[s[0]] not in self.eliminated]
-                self.eliminated.update(leader_teams[-self.elim_num:])
+                leader_teams = [s[0] for s in lb_sorted if s[0] not in self.eliminated]
+                eliminate = list(reversed(leader_teams[-self.elim_num:]))
+                self.elim_order.extend(eliminate)
+                self.eliminated.update(eliminate)
                 self.set_lb_base(leaderboard)
         self.matches.clear()
 
     def set_winner(self) -> None:
-        super().set_winner()
+        lb_iter = self.leaderboards[-1].items()
+        lb_sorted = sorted(lb_iter, key=lambda s: s[1][LBStat.WINS], reverse=True)
+        top_lb_item = lb_sorted[0]
+        winners: list[str] = [top_lb_item[0]]
+        for lb_item in lb_sorted[1:]:
+            if lb_item[1][LBStat.WINS] < top_lb_item[1][LBStat.WINS]:
+                break
+            winners.append(lb_item[0])
+
+        self.winner = tuple(winners)
+        self.results = [t[0] for t in lb_sorted] + list(reversed(self.elim_order))
         self.elo_rating.persist()
 
     def set_lb_base(self, lb_current: Leaderboard) -> None:
@@ -555,7 +581,7 @@ class RoundRobin(Tournament):
         cur_elo_vec = []
         idx         = 0
         for name, team in self.teams.items():
-            if team in self.eliminated:
+            if name in self.eliminated:
                 continue
             if self.lb_base:
                 base_stats = self.lb_base[name]
@@ -601,7 +627,7 @@ class RoundRobin(Tournament):
         """
         for pass_num in range(self.passes):
             pass_start = len(self.matches)
-            active_teams = set(self.teams.values()) - self.eliminated
+            active_teams = set(self.teams.keys()) - self.eliminated
             for round_num, matchups in enumerate(self.get_matchups(active_teams)):
                 round_start = len(self.matches)
                 for matchup in matchups:
@@ -640,12 +666,140 @@ class RoundRobin(Tournament):
             stats_str = '\t'.join(stat_vals)
             print(f"  {name:10}\t{stats_str}", file=file)
 
-##############
-# HeadToHead #
-##############
+###################
+# ChallengeLadder #
+###################
 
-class HeadToHead(Tournament):
-    pass
+DFLT_ROUND_MATCHES = 1
+
+class ChallengeLadder(Tournament):
+    # params
+    passes:        int
+    round_matches: int
+    reset_elo:     bool
+    elo_update:    TournUnit
+    elo_params:    dict[str, Union[str, Number]]
+
+    # state, etc.
+    ladder:        list[str]
+    ladder_hist:   list[dict[str, int]]  # pos, indexed by round, team name
+    round_score:   dict[str, int]        # matches, indexed by team name
+    round_winners: list[str]
+    leaderboards:  list[Leaderboard]
+    lb_base:       Leaderboard
+    elo_rating:    EloRating
+
+    def __init__(self, name: str, teams: Union[Iterable[str], Iterable[Team]], **kwargs):
+        super().__init__(name, teams, **kwargs)
+        # REVISIT: there _shouldn't_ be any empty values here, but apply defaults
+        # just in case (or should we actually just let things blow up???)
+        self.passes = self.passes or DFLT_PASSES
+        self.round_matches = self.round_matches or DFLT_ROUND_MATCHES
+        self.reset_elo = self.reset_elo or False
+        self.elo_params = self.elo_params or {}
+        self.elo_params['reset_ratings'] = self.reset_elo
+        self.elo_rating = EloRating(self.teams.values(), self.elo_params)
+        elo_update = self.elo_update or DFLT_ELO_UPDATE
+        self.elo_update = TournUnit[elo_update.upper()]
+        self.round_score = {}
+        self.leaderboards = []
+        self.lb_base = None
+        # start ladder with current Elo ratings
+        if not self.reset_elo:
+            self.ladder = [t for t, _ in self.elo_rating.get_sorted()]
+        else:
+            self.ladder = list(self.teams.keys())
+        self.ladder_hist = [{t: pos for pos, t in enumerate(self.ladder)}]
+
+    def get_matchup(self, round_num: int) -> tuple[Team, Team]:
+        # last team for round_num = 0, going up the ladder each round
+        chal = len(self.teams) - round_num - 1
+        matchup = (self.ladder[chal], self.ladder[chal-1])
+
+        assert not self.round_score
+        self.round_score = {t: 0 for t in matchup}
+        return matchup
+
+    def tabulate(self, match: Match) -> None:
+        super().tabulate(match)
+        if self.elo_update == TournUnit.MATCH:
+            self.elo_rating.update([match])
+
+        team = match.winner[1]
+        self.round_score[team.name] += 1
+
+    def tabulate_round(self, round_num: int, matches: list[Match]) -> None:
+        """This is the level we update Elo ratings for this tournament format
+        """
+        if self.elo_update == TournUnit.ROUND:
+            self.elo_rating.update(matches, collective=True)
+
+        score_items = sorted(self.round_score.items(), key=lambda s: s[1], reverse=True)
+        winner = score_items[0][0]
+        loser  = score_items[1][0]
+        # swap ladder positions if challenger wins
+        chal = len(self.teams) - round_num - 1
+        if winner == self.ladder[chal]:
+            self.ladder[chal-1:chal+1] = self.ladder[chal::-1][:2]
+            winner += " (c)"
+            loser  += "    "
+        else:
+            winner += "    "
+            loser  += " (c)"
+
+        scores = [s[1] for s in score_items]
+        print(f"Round {round_num+1}: {winner} def. {loser}\t{scores[0]} - {scores[1]}")
+
+        self.round_score = {}
+
+    def tabulate_pass(self, pass_num: int, matches: list[Match]) -> None:
+        """Recompute leaderboard stats and report standings after each pass
+        """
+        if self.elo_update == TournUnit.PASS:
+            self.elo_rating.update(matches, collective=True)
+
+        self.ladder_hist.append({t: pos for pos, t in enumerate(self.ladder)})
+        print(f"Pass {pass_num+1} Results:")
+        prev_ladder = self.ladder_hist[-2]
+        for pos, team in enumerate(self.ladder):
+            move = prev_ladder[team] - pos
+            print(f"  {team} ({move:+d})")
+        self.matches.clear()
+
+    def set_winner(self) -> None:
+        self.winner = tuple((self.ladder[0],))
+        self.results = self.ladder
+        self.elo_rating.persist()
+
+    def play(self, **kwargs) -> None:
+        """Perform configured number of passes for the tournament, where a pass is
+        a single runthrough of the challenge ladder, starting from the last position.
+        As with RoundRobin, we do pass-level progress reporting before truncating
+        `self.matches` to avoid infinite memory consumption.  Elo updates are hard-
+        wired to happen after each round of head-to-head challenge matches.
+        """
+        num_teams = len(self.teams)
+
+        for pass_num in range(self.passes):
+            pass_start = len(self.matches)
+            for round_num in range(num_teams - 1):
+                round_start = len(self.matches)
+                matchup = self.get_matchup(round_num)
+                while max(self.round_score.values()) < self.round_matches:
+                    self.play_match(matchup)  # note this invokes `tabulate()`
+                self.tabulate_round(round_num, self.matches[round_start:])
+            self.tabulate_pass(pass_num, self.matches[pass_start:])
+        self.set_winner()
+
+    def print(self, file: TextIO = sys.stdout, verbose: int = 0) -> None:
+        super().print(file, verbose)
+
+        print(f"Tournament Moves:")
+        init_ladder = self.ladder_hist[0]
+        for pos, team in enumerate(self.ladder):
+            move = init_ladder[team] - pos
+            print(f"  {team} ({move:+d})")
+        self.elo_rating.print(file=file, verbose=verbose)
 
 #####################
 # SingleElimination #
@@ -659,13 +813,6 @@ class SingleElimination(Tournament):
 #####################
 
 class DoubleElimination(Tournament):
-    pass
-
-###################
-# ChallengeLadder #
-###################
-
-class ChallengeLadder(Tournament):
     pass
 
 ########
@@ -733,14 +880,14 @@ def run_tournament(*args, **kwargs) -> int:
         #profiler.open_in_browser()
     tourney.print(verbose=verbose)
     if stats_file:
-        with open(stats_file, 'w', newline='') as file:
+        with open(DataFile(stats_file), 'w', newline='') as file:
             header = tourney.stats_header()
             writer = csv.DictWriter(file, fieldnames=header, dialect='excel-tab')
             writer.writeheader()
             for row in tourney.iter_stats():
                 writer.writerow(row)
     if elo_file:
-        with open(elo_file, 'w', newline='') as file:
+        with open(DataFile(elo_file), 'w', newline='') as file:
             header = tourney.elo_rating.elo_header()
             writer = csv.DictWriter(file, fieldnames=header, dialect='excel-tab')
             writer.writeheader()

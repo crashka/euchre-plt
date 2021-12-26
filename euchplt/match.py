@@ -58,8 +58,8 @@ class Match(object):
 
         self.games     = []
         self.score     = [0] * NUM_TEAMS
-        self.stats     = [{stat: 0 for stat in MatchStatIter()} for _ in teams]
-        self.pos_stats = [{stat: [0] * 8 for stat in POS_STATS} for _ in teams]
+        self.stats     = [{stat: 0 for stat in MatchStatIter()} for _ in self.teams]
+        self.pos_stats = [{stat: [0] * 8 for stat in POS_STATS} for _ in self.teams]
         self.winner    = None
 
     def tabulate(self, game: Game) -> None:

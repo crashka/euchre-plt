@@ -68,6 +68,11 @@ class EloRating:
         """
         return self.team_ratings[team.name], self.ratings_hist[team.name]
 
+    def get_sorted(self) -> tuple[str, float]:
+        by_rating = sorted(self.team_ratings.items(), key=lambda s: s[1], reverse=True)
+        for item in by_rating:
+            yield item
+
     def update(self, matches: Iterable[Match], collective: bool = False) -> None:
         """Recomputes Elo ratings for teams participating in `matches`; does not
         affect the rating for any teams not specified.  Note that these updates
@@ -153,8 +158,7 @@ class EloRating:
         verbose = max(verbose, DEBUG)
 
         print("Elo Ratings:", file=file)
-        sorted_by_rating = sorted(self.team_ratings.items(), key=lambda s: s[1], reverse=True)
-        for name, cur_rating in sorted_by_rating:
+        for name, cur_rating in self.get_sorted():
             if verbose > 1:
                 hist = self.ratings_hist[name]
                 hist_str = " [" + ', '.join([f"{rating:.1f}" for rating in hist]) + "]"

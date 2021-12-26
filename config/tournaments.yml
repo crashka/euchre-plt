@@ -53,12 +53,35 @@ default:
         - Team 12
         - Team 14
         - Team 16
+    Tourney C:
+      tourn_class:     ChallengeLadder
+      tourn_params:
+        match_games:     8
+        passes:          5
+        round_matches:   10
+        reset_elo:       false
+        elo_params:
+          elo_db:          elo_rating.db
+          use_margin:      false
+          d_value:         600
+          k_factor:        8
+      teams:
+        - Team 02
+        - Team 04
+        - Team 06
+        - Team 08
+        - Team 10
+        - Team 12
+        - Team 14
+        - Team 16
     test:
       comments:        "Short quick profile, doesn't exercise elim_passes"
       tourn_class:     RoundRobin
       tourn_params:
         match_games:     5
         passes:          2
+        elim_passes:     1
+        elim_pct:        50
       teams:
         - Team 06
         - Team 08
