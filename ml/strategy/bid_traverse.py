@@ -290,10 +290,12 @@ class StrategyBidTraverse(Strategy):
                 raise RuntimeError(f"{hdr} error(s) in child processes: {child_errs}")
 
         self.bid_outcome = BidOutcome(deal.my_tricks_won, deal.my_points)
-        self.bid_context.hand.cards.sort(key=lambda c: c.sortkey)
 
-        log.debug(', '.join(f"{k}: {v}" for k, v in self.bid_context._asdict().items()))
-        log.debug(list(self.bid_features) + list(self.bid_outcome))
+        if DEBUG:
+            self.bid_context.hand.cards.sort(key=lambda c: c.sortkey)
+            log.debug(', '.join(f"{k}: {v}" for k, v in self.bid_context._asdict().items()))
+            log.debug(list(self.bid_features) + list(self.bid_outcome))
+
         all_features = list(self.bid_features) + list(self.bid_outcome)
         features_str = '\t'.join(str(x) for x in all_features)
         # HACK: see comments in bid_data.py!

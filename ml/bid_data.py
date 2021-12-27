@@ -20,7 +20,8 @@ cfg.load('ml_data.yml')
 # main #
 ########
 
-FILE_TYPE = '.dat'
+FILE_TYPE    = '.dat'
+UPD_INTERVAL = 10
 
 def get_file_name(model_name: str) -> str:
     return re.sub(r'\W+', '_', model_name).lower() + FILE_TYPE
@@ -52,8 +53,9 @@ def main() -> int:
         raise ConfigError(f"'data_player' not specified for bid model '{name}'")
 
     players = [Player(player_name) for _ in range(NUM_PLAYERS)]
+    print(f"\rIterations: {0:2d}", end='')
 
-    for _ in range(ndeals):
+    for i in range(1, ndeals + 1):
         deck = get_deck()
         deal = Deal(players, deck)
 
@@ -62,7 +64,10 @@ def main() -> int:
         if deal.is_passed():
             continue
         deal.play_cards()
+        if i % UPD_INTERVAL == 0:
+            print(f"\rIterations: {i:2d}", end='')
 
+    print(f"\rIterations: {i:2d}")
     return 0
 
 if __name__ == '__main__':

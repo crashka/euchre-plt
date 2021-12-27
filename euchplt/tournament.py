@@ -184,15 +184,16 @@ class Tournament:
     # out how/whether they want to use it for reporting, analysis, etc.
     matches:        list[Match]
     team_score:     dict[str, list[Number]]  # [matches, elo_points], indexed as `teams`
-    team_score_opp: dict[str, dict[str, list[Number]]]  # same as previous, per opponent team
-    team_stats:     dict[str, dict[TournStat, int]]     # indexed as `teams`
+    team_score_opp: dict[str, dict[str, list[Number]]]     # same as previous, per opponent team
+    team_stats:     dict[str, dict[TournStat, int]]        # indexed as `teams`
     team_pos_stats: dict[str, dict[TournStat, list[int]]]  # tabulate stats by call_pos
-    eliminated:     set[str]   # same
+    winner:         Optional[tuple[str, ...]]
+    results:        Optional[list[str]]
+    # elimination, leaderboard, and elo stuff managed by subclasses
+    eliminated:     set[str]                 # team names
     leaderboards:   list[Leaderboard]
     lb_base:        Optional[Leaderboard]
     elo_rating:     Optional[EloRating]
-    winner:         Optional[tuple[str, ...]]
-    results:        Optional[list[str]]
 
     @classmethod
     def new(cls, tourn_name: str, **kwargs) -> 'Tournament':
@@ -254,12 +255,12 @@ class Tournament:
                                for name in self.teams}
         self.team_pos_stats = {name: {stat: [0] * 8 for stat in self.pos_stats}
                                for name in self.teams}
+        self.winner         = None
+        self.results        = None
         self.eliminated     = set()
         self.leaderboards   = []
         self.lb_base        = None
         self.elo_rating     = None
-        self.winner         = None
-        self.results        = None
 
     def tabulate(self, match: Match) -> None:
         """Tabulate the result of a single match.  Subclasses may choose to implement and
