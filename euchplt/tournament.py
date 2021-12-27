@@ -4,7 +4,7 @@
 import sys
 from enum import Enum
 from itertools import chain
-from collections.abc import Mapping, Iterator, Iterable
+from collections.abc import Mapping, Iterator, Iterable, Callable
 from typing import Optional, Union, TypeVar, TextIO
 from numbers import Number
 import random
@@ -153,10 +153,11 @@ LB_PRINT_STATS = {LBStat.WINS,
                   LBStat.WIN_PCT,
                   LBStat.ELO_PTS,
                   LBStat.CUR_ELO,
-                  LBStat.WINS_RANK,
+                  LBStat.WIN_PCT_RANK,
                   LBStat.CUR_ELO_RANK}
 
-Leaderboard = dict[str, dict[LBStat, [Number]]]  # indexed by team name
+LBStats     = dict[LBStat, list[Number]]  # LB stats for a team
+Leaderboard = dict[str, LBStats]          # indexed by team name
 
 ##############
 # Tournament #
@@ -186,6 +187,10 @@ class Tournament:
     team_score_opp: dict[str, dict[str, list[Number]]]  # same as previous, per opponent team
     team_stats:     dict[str, dict[TournStat, int]]     # indexed as `teams`
     team_pos_stats: dict[str, dict[TournStat, list[int]]]  # tabulate stats by call_pos
+    eliminated:     set[str]   # same
+    leaderboards:   list[Leaderboard]
+    lb_base:        Optional[Leaderboard]
+    elo_rating:     Optional[EloRating]
     winner:         Optional[tuple[str, ...]]
     results:        Optional[list[str]]
 
@@ -249,6 +254,10 @@ class Tournament:
                                for name in self.teams}
         self.team_pos_stats = {name: {stat: [0] * 8 for stat in self.pos_stats}
                                for name in self.teams}
+        self.eliminated     = set()
+        self.leaderboards   = []
+        self.lb_base        = None
+        self.elo_rating     = None
         self.winner         = None
         self.results        = None
 
@@ -293,6 +302,73 @@ class Tournament:
         self.winner = tuple(winners)
         self.results = [s[0] for s in scores]
 
+    def set_lb_base(self, lb_current: Leaderboard) -> None:
+        self.lb_base = {}
+        for name in lb_current:
+            stats = self.team_stats[name]
+            score = self.team_score[name]
+            base_stats = {}
+            base_stats[LBStat.MATCHES] = stats[TS.MATCHES_PLAYED]
+            base_stats[LBStat.WINS]    = score[0]
+            base_stats[LBStat.ELO_PTS] = score[1]
+            self.lb_base[name] = base_stats
+
+    def get_leaderboard(self, teams: Iterable[Team] = None, key: Callable = None,
+                        reverse: bool = True) -> Leaderboard:
+        """Return list of leaderboard stats for each team, indexed by name, and sorted
+        as specified by `key` and `reverse`.  Stats list is indexed as the enumeration
+        of `LBStat` members.
+        """
+        teams = teams or self.teams
+        key = key or (lambda s: s[1][LBStat.WINS])
+
+        team_idx    = {}  # name -> idx
+        lb_stats    = {}  # name -> list[stat_val]
+        lb_out      = {}  # name -> dict[LBStat, stat_val]
+        wins_vec    = []
+        win_pct_vec = []
+        elo_pts_vec = []
+        cur_elo_vec = []
+        idx         = 0
+        for name in teams:
+            if self.lb_base:
+                base_stats = self.lb_base[name]
+                match_off  = base_stats[LBStat.MATCHES]
+                wins_off   = base_stats[LBStat.WINS]
+                pts_off    = base_stats[LBStat.ELO_PTS]
+            else:
+                match_off  = 0
+                wins_off   = 0
+                pts_off    = 0
+
+            team_idx[name] = idx
+            stats          = self.team_stats[name]
+            score          = self.team_score[name]
+            matches        = stats[TS.MATCHES_PLAYED] - match_off
+            wins           = score[0] - wins_off
+            losses         = matches - wins
+            win_pct        = wins / matches * 100.0
+            elo_pts        = score[1] - pts_off
+            cur_elo        = self.elo_rating.team_ratings[name] if self.elo_rating else -1
+            lb_stats[name] = [matches, wins, losses, win_pct, elo_pts, cur_elo]
+            wins_vec.append(wins)
+            win_pct_vec.append(win_pct)
+            elo_pts_vec.append(elo_pts)
+            cur_elo_vec.append(cur_elo)
+            idx += 1
+
+        wins_rank    = rankdata(wins_vec, method='min')
+        win_pct_rank = rankdata(win_pct_vec, method='min')
+        elo_pts_rank = rankdata(elo_pts_vec, method='min')
+        cur_elo_rank = rankdata(cur_elo_vec, method='min')
+        for name, idx in team_idx.items():
+            ranks = [wins_rank[idx], win_pct_rank[idx], elo_pts_rank[idx], cur_elo_rank[idx]]
+            lb_stats[name].extend(ranks)
+            lb_out[name] = dict(zip(LBStat, lb_stats[name]))
+
+        lb_sorted = sorted(lb_out.items(), key=key, reverse=reverse)
+        return dict(lb_sorted)
+
     def play_match(self, matchup: Iterable[str]) -> None:
         """Uniform/common method for conducting a match within the tournament
         """
@@ -325,6 +401,8 @@ class Tournament:
         self.print_score(file=file, vs_opp=(verbose > 0))
         if verbose:
             self.print_stats(file=file, by_pos=(verbose > 1))
+        if self.elo_rating:
+            self.elo_rating.print(file=file, verbose=verbose)
 
     def print_score(self, file: TextIO = sys.stdout, vs_opp: bool = False) -> None:
         """Include record against all other teams, if `vs_opp` is specified
@@ -376,6 +454,26 @@ class Tournament:
                             continue
                         pos_str = f"Pos {i}:"
                         print(f"      {pos_str:22} {nums[i] / dens[i] * 100.0:7.2f}%", file=file)
+
+    def print_lb(self, label: str = None, file: TextIO = sys.stdout) -> None:
+        """Prints the current leaderboard (assumed to be previously sorted)
+        """
+        label_str = f"{label} " if label else ""
+        print(f"{label_str}Leaderboard:")
+        stats_header = '\t'.join([f"{s.value:10}" for s in LBStat if s in LB_PRINT_STATS])
+        print(f"  {'Team':10}\t{stats_header}")
+
+        for name, lb_stats in self.leaderboards[-1].items():
+            stat_vals = []
+            for i, stat in enumerate(LBStat):
+                if stat not in LB_PRINT_STATS:
+                    continue
+                if isinstance(lb_stats[stat], float):
+                    stat_vals.append(f"{lb_stats[stat]:<10.1f}")
+                else:
+                    stat_vals.append(f"{str(lb_stats[stat]):10}")
+            stats_str = '\t'.join(stat_vals)
+            print(f"  {name:10}\t{stats_str}", file=file)
 
     def stats_header(self) -> list[str]:
         """Header fields must correspond to the keys for `iter_stats()` yield
@@ -458,10 +556,6 @@ class RoundRobin(Tournament):
     # state, etc.
     elim_num:      int        # number to eliminate per cycle
     elim_order:    list[str]  # team names
-    eliminated:    set[str]   # same
-    leaderboards:  list[Leaderboard]
-    lb_base:       Leaderboard
-    elo_rating:    EloRating
 
     @staticmethod
     def get_matchups(teams: Iterable[T]) -> Iterator[list[tuple[TO, TO]]]:
@@ -503,9 +597,6 @@ class RoundRobin(Tournament):
         if self.elim_passes:
             self.elim_num = round(len(self.teams) * self.elim_pct / 100.0)
         self.elim_order = []
-        self.eliminated = set()
-        self.leaderboards = []
-        self.lb_base = None
 
     def tabulate(self, match: Match) -> None:
         super().tabulate(match)
@@ -527,9 +618,9 @@ class RoundRobin(Tournament):
             self.elo_rating.update(matches, collective=True)
 
         num_passes = pass_num + 1
-        leaderboard = self.get_leaderboard()
+        leaderboard = self.get_leaderboard(set(self.teams.keys()) - self.eliminated)
         self.leaderboards.append(leaderboard)
-        self.print_lb(f"pass {pass_num}")
+        self.print_lb(f"Pass {pass_num}")
 
         if self.elim_passes and num_passes % self.elim_passes == 0:
             # don't go below `elim_pct` teams remaining
@@ -557,69 +648,6 @@ class RoundRobin(Tournament):
         self.results = [t[0] for t in lb_sorted] + list(reversed(self.elim_order))
         self.elo_rating.persist()
 
-    def set_lb_base(self, lb_current: Leaderboard) -> None:
-        self.lb_base = {}
-        for name in lb_current:
-            stats = self.team_stats[name]
-            score = self.team_score[name]
-            base_stats = {}
-            base_stats[LBStat.MATCHES] = stats[TS.MATCHES_PLAYED]
-            base_stats[LBStat.WINS]    = score[0]
-            base_stats[LBStat.ELO_PTS] = score[1]
-            self.lb_base[name] = base_stats
-
-    def get_leaderboard(self) -> dict[str, list[Number]]:
-        """Return list of leaderboard stats for each team, indexed by name.  The
-        stats list is indexed as the enumeration of `LBStat` members.
-        """
-        team_idx    = {}  # name -> idx
-        lb_stats    = {}  # name -> list[stat_val]
-        lb_out      = {}  # name -> dict[LBStat, stat_val]
-        wins_vec    = []
-        win_pct_vec = []
-        elo_pts_vec = []
-        cur_elo_vec = []
-        idx         = 0
-        for name, team in self.teams.items():
-            if name in self.eliminated:
-                continue
-            if self.lb_base:
-                base_stats = self.lb_base[name]
-                match_off  = base_stats[LBStat.MATCHES]
-                wins_off   = base_stats[LBStat.WINS]
-                pts_off    = base_stats[LBStat.ELO_PTS]
-            else:
-                match_off  = 0
-                wins_off   = 0
-                pts_off    = 0
-
-            team_idx[name] = idx
-            stats          = self.team_stats[name]
-            score          = self.team_score[name]
-            matches        = stats[TS.MATCHES_PLAYED] - match_off
-            wins           = score[0] - wins_off
-            losses         = matches - wins
-            win_pct        = wins / matches * 100.0
-            elo_pts        = score[1] - pts_off
-            cur_elo        = self.elo_rating.team_ratings[name]
-            lb_stats[name] = [matches, wins, losses, win_pct, elo_pts, cur_elo]
-            wins_vec.append(wins)
-            win_pct_vec.append(win_pct)
-            elo_pts_vec.append(elo_pts)
-            cur_elo_vec.append(cur_elo)
-            idx += 1
-
-        wins_rank    = rankdata(wins_vec, method='min')
-        win_pct_rank = rankdata(win_pct_vec, method='min')
-        elo_pts_rank = rankdata(elo_pts_vec, method='min')
-        cur_elo_rank = rankdata(cur_elo_vec, method='min')
-        for name, idx in team_idx.items():
-            ranks = [wins_rank[idx], win_pct_rank[idx], elo_pts_rank[idx], cur_elo_rank[idx]]
-            lb_stats[name].extend(ranks)
-            lb_out[name] = dict(zip(LBStat, lb_stats[name]))
-
-        return lb_out
-
     def play(self, **kwargs) -> None:
         """Perform configured number of passes for the tournament, where a pass is
         a single round robin.  We do pass-level progress reporting before truncating
@@ -637,34 +665,6 @@ class RoundRobin(Tournament):
                 self.tabulate_round(round_num, self.matches[round_start:])
             self.tabulate_pass(pass_num, self.matches[pass_start:])
         self.set_winner()
-
-    def print(self, file: TextIO = sys.stdout, verbose: int = 0) -> None:
-        super().print(file, verbose)
-        self.elo_rating.print(file=file, verbose=verbose)
-
-    def print_lb(self, label: str = None, sort_by: LBStat = LBStat.WINS,
-                 reverse: bool = True, file: TextIO = sys.stdout) -> None:
-        """Prints the current leaderboard, sorted by the specified stat (`reverse=True`
-        indicates sorting by descending value)
-        """
-        label_str = f" ({label})" if label else ""
-        print(f"Leaderboard{label_str}:")
-        stats_header = '\t'.join([f"{s.value:10}" for s in LBStat if s in LB_PRINT_STATS])
-        print(f"  {'Team':10}\t{stats_header}")
-
-        lb_iter = self.leaderboards[-1].items()
-        lb_sorted = sorted(lb_iter, key=lambda s: s[1][sort_by], reverse=reverse)
-        for name, lb_stats in lb_sorted:
-            stat_vals = []
-            for i, stat in enumerate(LBStat):
-                if stat not in LB_PRINT_STATS:
-                    continue
-                if isinstance(lb_stats[stat], float):
-                    stat_vals.append(f"{lb_stats[stat]:<10.1f}")
-                else:
-                    stat_vals.append(f"{str(lb_stats[stat]):10}")
-            stats_str = '\t'.join(stat_vals)
-            print(f"  {name:10}\t{stats_str}", file=file)
 
 ###################
 # ChallengeLadder #
@@ -685,9 +685,6 @@ class ChallengeLadder(Tournament):
     ladder_hist:   list[dict[str, int]]  # pos, indexed by round, team name
     round_score:   dict[str, int]        # matches, indexed by team name
     round_winners: list[str]
-    leaderboards:  list[Leaderboard]
-    lb_base:       Leaderboard
-    elo_rating:    EloRating
 
     def __init__(self, name: str, teams: Union[Iterable[str], Iterable[Team]], **kwargs):
         super().__init__(name, teams, **kwargs)
@@ -748,7 +745,7 @@ class ChallengeLadder(Tournament):
             loser  += " (c)"
 
         scores = [s[1] for s in score_items]
-        print(f"Round {round_num+1}: {winner} def. {loser}\t{scores[0]} - {scores[1]}")
+        print(f"Round {round_num}: {winner} def. {loser}\t{scores[0]} - {scores[1]}")
 
         self.round_score = {}
 
@@ -758,12 +755,17 @@ class ChallengeLadder(Tournament):
         if self.elo_update == TournUnit.PASS:
             self.elo_rating.update(matches, collective=True)
 
-        self.ladder_hist.append({t: pos for pos, t in enumerate(self.ladder)})
-        print(f"Pass {pass_num+1} Results:")
-        prev_ladder = self.ladder_hist[-2]
+        team_pos = {t: pos for pos, t in enumerate(self.ladder)}
+        self.ladder_hist.append(team_pos)
+        print(f"Pass {pass_num} Results:")
+        prev_pos = self.ladder_hist[-2]
         for pos, team in enumerate(self.ladder):
-            move = prev_ladder[team] - pos
+            move = prev_pos[team] - pos
             print(f"  {team} ({move:+d})")
+
+        lb = self.get_leaderboard(self.teams, key=lambda s: team_pos[s[0]], reverse=False)
+        self.leaderboards.append(lb)
+        self.print_lb(f"Pass {pass_num}")
         self.matches.clear()
 
     def set_winner(self) -> None:
@@ -792,14 +794,12 @@ class ChallengeLadder(Tournament):
         self.set_winner()
 
     def print(self, file: TextIO = sys.stdout, verbose: int = 0) -> None:
-        super().print(file, verbose)
-
-        print(f"Tournament Moves:")
+        print(f"Tournament Results:")
         init_ladder = self.ladder_hist[0]
         for pos, team in enumerate(self.ladder):
             move = init_ladder[team] - pos
             print(f"  {team} ({move:+d})")
-        self.elo_rating.print(file=file, verbose=verbose)
+        super().print(file, verbose)
 
 #####################
 # SingleElimination #
