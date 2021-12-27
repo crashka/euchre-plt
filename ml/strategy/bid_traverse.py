@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import os
+import os.path
 import sys
-from typing import ClassVar, Optional, NamedTuple
+import queue
+from typing import ClassVar, Optional, NamedTuple, TextIO
+from multiprocessing import Queue
 from time import sleep
 
 from euchplt.core import log, DEBUG
@@ -142,6 +145,7 @@ class StrategyBidTraverse(Strategy):
     my_bid:          Bid               = None
 
     bid_pos:         ClassVar[int]     = None
+    queue:           ClassVar[Queue]   = None
 
     def __init__(self, **kwargs):
         """This class recognizes the following parameters (passed in directly as
@@ -199,6 +203,8 @@ class StrategyBidTraverse(Strategy):
             assert False
 
         if self.bid_pos is None:
+            # see PERF NOTE in `notify()` below
+            StrategyBidTraverse.queue = Queue()
             # Spawn subprocesses to handle positions 1-7, we will fallthrough
             # the loop and handle the 0th position ourselves (take that end of
             # the sequence to avoid spawning both here and in the second round
@@ -290,27 +296,55 @@ class StrategyBidTraverse(Strategy):
                 raise RuntimeError(f"{hdr} error(s) in child processes: {child_errs}")
 
         self.bid_outcome = BidOutcome(deal.my_tricks_won, deal.my_points)
+        my_features = list(self.bid_features) + list(self.bid_outcome)
 
         if DEBUG:
             self.bid_context.hand.cards.sort(key=lambda c: c.sortkey)
             log.debug(', '.join(f"{k}: {v}" for k, v in self.bid_context._asdict().items()))
             log.debug(list(self.bid_features) + list(self.bid_outcome))
 
-        all_features = list(self.bid_features) + list(self.bid_outcome)
-        features_str = '\t'.join(str(x) for x in all_features)
-        # HACK: see comments in bid_data.py!
-        if data_file := os.environ.get('BID_DATA_FILE'):
-            with open(data_file, 'a') as f:
-                print(features_str, file=f)
-        else:
-            print(features_str)
+        # PERF NOTE: it is actually ~9% slower to funnel bid data to the master
+        # process (`self.bid_pos = 0`), rather than let all bidders just append
+        # to the data file themselves (due to the additional synchronization),
+        # but we do it this way for the better integrity
+        def dequeue_print(file: TextIO = sys.stdout) -> None:
+            try:
+                while True:
+                    features = self.queue.get_nowait()
+                    features_str = '\t'.join(str(x) for x in features)
+                    print(features_str, file=file)
+            except queue.Empty:
+                pass
 
         if self.bid_pos == 0:
+            # HACK: see comments in bid_data.py!
+            if data_file := os.environ.get('BID_DATA_FILE'):
+                if not os.path.exists(data_file):
+                    header = BidFeatures._fields + BidOutcome._fields
+                    header_str = '\t'.join(header)
+                else:
+                    header_str = None
+                my_features_str = '\t'.join(str(x) for x in my_features)
+                with open(data_file, 'a') as f:
+                    if header_str:
+                        print(header_str, file=f)
+                    print(my_features_str, file=f)
+                    dequeue_print(f)
+            else:
+                header = BidFeatures._fields + BidOutcome._fields
+                header_str = '\t'.join(header)
+                my_features_str = '\t'.join(str(x) for x in my_features)
+                print(header_str)
+                print(my_features_str)
+                dequeue_print()
+
             # need to reset the class, so this works for the next deal
             StrategyBidTraverse.bid_pos = None
             self.child_pids             = None
             self.my_bid                 = None
         else:
+            self.queue.put(my_features)
+            self.queue.close()
             # if we spawned the process, we need to terminate it, so it doesn't continue
             # processing downstream outside of our purview
             sys.exit(0)

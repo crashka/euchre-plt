@@ -26,7 +26,7 @@ default:
         bid_prune_strat: Prune Model 2
         hand_analysis:
     Prune Model 2:
-      notes:             "yields ~11% bids for pos 7"
+      notes:             "yields ~30% bids for pos 7"
       module_path:       euchplt.strategy
       base_class:        StrategySmart
       strategy_params:
