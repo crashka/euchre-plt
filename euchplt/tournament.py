@@ -10,7 +10,7 @@ from numbers import Number
 import random
 import csv
 
-from .utils import rankdata
+from .utils import rankdata, parse_argv
 from .core import DEBUG, cfg, DataFile, ConfigError
 from .team import Team
 from .game import GameStat, POS_STATS
@@ -914,33 +914,9 @@ def main() -> int:
     elif sys.argv[1] not in globals():
         print(f"Unknown utility function '{sys.argv[1]}'", file=sys.stderr)
         return -1
+
     util_func = globals()[sys.argv[1]]
-
-    def typecast(val: str) -> Union[str, Number, bool]:
-        if val.isdecimal():
-            return int(val)
-        if val.isnumeric():
-            return float(val)
-        if val.lower() in ['false', 'f', 'no', 'n']:
-            return False
-        if val.lower() in ['true', 't', 'yes', 'y']:
-            return True
-        if val.lower() in ['null', 'none', 'nil']:
-            return None
-        return val if len(val) > 0 else None
-
-    args = []
-    kwargs = {}
-    args_done = False
-    for arg in sys.argv[2:]:
-        if not args_done:
-            if '=' not in arg:
-                args.append(typecast(arg))
-                continue
-            else:
-                args_done = True
-        kw, val = arg.split('=', 1)
-        kwargs[kw] = typecast(val)
+    args, kwargs = parse_argv(sys.argv[2:])
 
     return util_func(*args, **kwargs)
 

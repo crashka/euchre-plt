@@ -370,14 +370,14 @@ class DealState(NamedTuple):
         inaccurate during defensive bidding or playing rounds, if loner
         was called)
         """
-        return 1 if len(self.bids) < 4 else 2
+        return len(self.bids) // 4 + 1
 
     @property
     def bid_pos(self) -> int:
         """Return value 0-7, where 0-3 is first round bidding, and 4-7
         is second round (3 and 7 are the dealer bid positions)
         """
-        return self.pos + (self.bid_round - 1) * 4
+        return self.pos + len(self.bids) // 4 * 4
 
     @property
     def is_dealer(self) -> bool:

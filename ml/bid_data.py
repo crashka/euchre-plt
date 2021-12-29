@@ -8,6 +8,7 @@ import re
 environ['EUCH_LOG_NAME'] = 'ml_data'
 
 from euchplt.core import cfg, DataFile, DEBUG
+from euchplt.utils import parse_argv
 from euchplt.card import get_deck
 from euchplt.player import Player
 from euchplt.deal import Deal, NUM_PLAYERS
@@ -20,6 +21,7 @@ cfg.load('ml_data.yml')
 # main #
 ########
 
+DFLT_DEALS   = 1
 FILE_TYPE    = '.dat'
 UPD_INTERVAL = 10
 
@@ -29,15 +31,16 @@ def get_file_name(model_name: str) -> str:
 def main() -> int:
     """Generate data for bid model
 
-    Usage: bid_data.py <bid_model> [<ndeals>]
+    Usage: bid_data.py <bid_model> [deals=<ndeals>]
     """
-    ndeals = 1
-
-    if len(sys.argv) < 2:
+    args, kwargs = parse_argv(sys.argv[1:])
+    if not args:
         raise RuntimeError("<bid_model> not specified")
-    name = sys.argv[1]
-    if len(sys.argv) > 2:
-        ndeals = int(sys.argv[2])
+    name = args.pop(0)
+    if len(args) > 0:
+        args_str = ' '.join(str(a) for a in args)
+        raise RuntimeError(f"Unexpected argument(s): {args_str}")
+    ndeals = kwargs.get('deals') or DFLT_DEALS
 
     bid_models = cfg.config('bid_models')
     if name not in bid_models:

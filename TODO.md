@@ -3,8 +3,7 @@
 _[In roughly in priority order, within each section...]_
 
 #### Smaller Stuff ####
-- Dump config parameters, progress, results for tournament runs
-- Proper winner determination for RoundRobin
+- Dump config parameters for tournament runs
 - Push `pos_stats` settings down to match and game
 
 #### Bigger/Feature-Level Stuff ####

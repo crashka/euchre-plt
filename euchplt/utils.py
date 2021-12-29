@@ -166,6 +166,40 @@ def rankdata(a: Sequence[Number], method: str ='average', reverse: bool = True) 
             minrank  = 0
     return newarray
 
+def parse_argv(argv: list[str]) -> tuple[list, dict]:
+    """Takes a list of arguments (typically a slice of sys.argv), which may be a
+    combination of bare agruments or kwargs-style constructions (e.g. "key=value")
+    and returns a tuple of `args` and `kwargs`.  For both `args` and `kwargs`, we
+    attempt to cast the value to the proper type (e.g. int, float, bool, or None).
+    """
+    def typecast(val: str) -> Union[str, Number, bool]:
+        if val.isdecimal():
+            return int(val)
+        if val.isnumeric():
+            return float(val)
+        if val.lower() in ['false', 'f', 'no', 'n']:
+            return False
+        if val.lower() in ['true', 't', 'yes', 'y']:
+            return True
+        if val.lower() in ['null', 'none', 'nil']:
+            return None
+        return val if len(val) > 0 else None
+
+    args = []
+    kwargs = {}
+    args_done = False
+    for arg in argv:
+        if not args_done:
+            if '=' not in arg:
+                args.append(typecast(arg))
+                continue
+            else:
+                args_done = True
+        kw, val = arg.split('=', 1)
+        kwargs[kw] = typecast(val)
+
+    return args, kwargs
+
 def prettyprint(data, indent: int = 4, sort_keys: bool = True, noprint: bool = False) -> str:
     """Nicer version of pprint (which is actually kind of ugly)
 

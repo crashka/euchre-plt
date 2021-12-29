@@ -45,6 +45,7 @@ class StrategySmart(Strategy):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.hand_analysis = self.hand_analysis or {}
         # do a cursory validation of the method names within the rulesets
         # for `play_cards()`; don't think we can "compile" them into real
         # function objects from here, so we'll have to do that at runtime
@@ -86,7 +87,7 @@ class StrategySmart(Strategy):
             if deal.is_partner_caller:
                 # generally shouldn't get here, but just in case...
                 return NULL_BID
-            analysis = HandAnalysisSmart(deal.hand, self.hand_analysis)
+            analysis = HandAnalysisSmart(deal.hand, **self.hand_analysis)
             strength = analysis.hand_strength(deal.contract.suit)
             if strength > self.def_alone_thresh[bid_pos]:
                 alone = True
@@ -100,7 +101,7 @@ class StrategySmart(Strategy):
                     hand = deal.hand.copy()
                     hand.remove_card(card)
                     hand.append_card(deal.turn_card)
-                    analysis = HandAnalysisSmart(hand, self.hand_analysis)
+                    analysis = HandAnalysisSmart(hand, **self.hand_analysis)
                     strengths.append((card, analysis.hand_strength(turn_suit)))
                 strengths.sort(key=lambda t: t[1], reverse=True)
                 if strengths[0][1] > self.bid_thresh[bid_pos]:
@@ -110,7 +111,7 @@ class StrategySmart(Strategy):
                     persist['discard'] = discard
                     log.debug(f"Dealer bidding based on discard of {strengths[0][0]}")
             else:
-                analysis = HandAnalysisSmart(deal.hand, self.hand_analysis)
+                analysis = HandAnalysisSmart(deal.hand, **self.hand_analysis)
                 strength = analysis.hand_strength(turn_suit)
                 # make adjustment for turn card (up/down for partner/opp.)
                 turn_rank = analysis.turn_card_rank(deal.turn_card)
@@ -125,7 +126,7 @@ class StrategySmart(Strategy):
                     bid_suit = turn_suit
         else:
             assert deal.bid_round == 2
-            analysis = HandAnalysisSmart(deal.hand, self.hand_analysis)
+            analysis = HandAnalysisSmart(deal.hand, **self.hand_analysis)
             for suit in SUITS:
                 if suit == turn_suit:
                     continue
@@ -180,7 +181,7 @@ class StrategySmart(Strategy):
             for card in deal.hand:
                 hand = deal.hand.copy()
                 hand.remove_card(card)
-                analysis = HandAnalysisSmart(hand, self.hand_analysis)
+                analysis = HandAnalysisSmart(hand, **self.hand_analysis)
                 strengths.append((card, analysis.hand_strength(turn_suit)))
             strengths.sort(key=lambda t: t[1], reverse=True)
             discard, strength = strengths[0]
@@ -191,7 +192,8 @@ class StrategySmart(Strategy):
         return discard
 
     def play_card(self, deal: DealState, trick: Trick, valid_plays: list[Card]) -> Card:
-        """
+        """REVISIT: think about additional logic needed for going (or defending) alone,
+        either in dynamic adjustment of rule traversal, or specifying new rulesets!!!
         """
         persist = deal.player_state
         if 'play_plan' not in persist:

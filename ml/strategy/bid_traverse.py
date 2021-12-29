@@ -5,12 +5,12 @@ import os.path
 import sys
 import queue
 from typing import ClassVar, Optional, NamedTuple, TextIO
-from multiprocessing import Queue
-from time import sleep
+from multiprocessing.queues import Queue
+import multiprocessing as mp
 
-from euchplt.core import log, DEBUG
+from euchplt.core import log, DEBUG, ConfigError
 from euchplt.card import SUITS, Card
-from euchplt.euchre import Bid, PASS_BID, defend_suit, Hand, Trick, DealState
+from euchplt.euchre import Bid, PASS_BID, Hand, Trick, DealState
 from euchplt.analysis import SUIT_CTX, HandAnalysis
 from euchplt.strategy import Strategy, StrategyNotice
 
@@ -54,17 +54,17 @@ class BidDataAnalysis(HandAnalysis):
     trump_values: list[int]
     deal:         DealState
 
-    def __init__(self, deal: DealState, params: dict = None):
+    def __init__(self, deal: DealState, **kwargs):
         super().__init__(deal.hand.copy())
-        self.trump_values = params.get('trump_values')
+        self.trump_values = kwargs.get('trump_values')
         self.deal = deal
 
-    def get_context(self, bid:Bid) -> BidContext:
+    def get_context(self, bid: Bid) -> BidContext:
         context = {
-            'bid_pos':   self.deal.bid_pos,
-            'hand':      self.hand,
+            'bid_pos'  : self.deal.bid_pos,
+            'hand'     : self.hand,
             'turn_card': self.deal.turn_card,
-            'bid':       bid
+            'bid'      : bid
         }
         return BidContext._make(context.values())
 
@@ -105,20 +105,20 @@ class BidDataAnalysis(HandAnalysis):
         # suits as well???
 
         features = {
-            'bid_pos':          self.deal.bid_pos,
-            'go_alone':         int(bid.alone),
-            'turn_card_level':  turn_card.efflevel(SUIT_CTX[turn_suit]),
-            'bid_turn_suit':    int(bid.suit == turn_suit),
-            'bid_next_suit':    int(bid.suit == next_suit),
-            'bid_green_suit':   int(bid.suit in green_suits),
-            'top_trump_strg':   trump_strgs[0],
+            'bid_pos'         : self.deal.bid_pos,
+            'go_alone'        : int(bid.alone),
+            'turn_card_level' : turn_card.efflevel(SUIT_CTX[turn_suit]),
+            'bid_turn_suit'   : int(bid.suit == turn_suit),
+            'bid_next_suit'   : int(bid.suit == next_suit),
+            'bid_green_suit'  : int(bid.suit in green_suits),
+            'top_trump_strg'  : trump_strgs[0],
             'top_2_trump_strg': trump_strgs[1],
             'top_3_trump_strg': trump_strgs[2],
-            'num_trump':        len(trump_cards),
-            'num_next':         len(self.next_suit_cards(bid.suit)),
-            'num_voids':        len(self.voids(bid.suit)),
-            'num_singletons':   len(self.singleton_cards(bid.suit)),
-            'num_off_aces':     len(self.off_aces(bid.suit))
+            'num_trump'       : len(trump_cards),
+            'num_next'        : len(self.next_suit_cards(bid.suit)),
+            'num_voids'       : len(self.voids(bid.suit)),
+            'num_singletons'  : len(self.singleton_cards(bid.suit)),
+            'num_off_aces'    : len(self.off_aces(bid.suit))
         }
         return BidFeatures._make(features.values())
 
@@ -138,10 +138,11 @@ class StrategyBidTraverse(Strategy):
     discard_strat:   Optional[Strategy]
     bid_prune_strat: Optional[Strategy]
     hand_analysis:   dict
+
+    bid_context:     BidContext        = None
+    bid_features:    BidFeatures       = None
+    bid_outcome:     BidOutcome        = None
     child_pids:      list[int]         = None
-    bid_context:     BidContext
-    bid_features:    BidFeatures
-    bid_outcome:     BidOutcome
     my_bid:          Bid               = None
 
     bid_pos:         ClassVar[int]     = None
@@ -204,7 +205,7 @@ class StrategyBidTraverse(Strategy):
 
         if self.bid_pos is None:
             # see PERF NOTE in `notify()` below
-            StrategyBidTraverse.queue = Queue()
+            StrategyBidTraverse.queue = mp.Queue()
             # Spawn subprocesses to handle positions 1-7, we will fallthrough
             # the loop and handle the 0th position ourselves (take that end of
             # the sequence to avoid spawning both here and in the second round
@@ -233,7 +234,7 @@ class StrategyBidTraverse(Strategy):
 
         if deal.bid_round == 1:
             self.my_bid = Bid(deal.turn_card.suit, alone)
-            analysis = BidDataAnalysis(deal, self.hand_analysis)
+            analysis = BidDataAnalysis(deal, **self.hand_analysis)
             self.bid_context = analysis.get_context(self.my_bid)
             self.bid_features = analysis.get_features(self.my_bid)
             return self.my_bid
@@ -255,7 +256,7 @@ class StrategyBidTraverse(Strategy):
                 self.child_pids = child_pids
 
             self.my_bid = Bid(bid_suit, alone)
-            analysis = BidDataAnalysis(deal, self.hand_analysis)
+            analysis = BidDataAnalysis(deal, **self.hand_analysis)
             self.bid_context = analysis.get_context(self.my_bid)
             self.bid_features = analysis.get_features(self.my_bid)
             return self.my_bid
@@ -340,6 +341,10 @@ class StrategyBidTraverse(Strategy):
 
             # need to reset the class, so this works for the next deal
             StrategyBidTraverse.bid_pos = None
+            StrategyBidTraverse.queue   = None
+            self.bid_context            = None
+            self.bid_features           = None
+            self.bid_outcome            = None
             self.child_pids             = None
             self.my_bid                 = None
         else:

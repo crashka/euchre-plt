@@ -42,15 +42,14 @@ class HandAnalysisSmart(HandAnalysis):
     voids_values:     list[float]
     scoring_coeff:    dict[str, int]
 
-    def __init__(self, hand: Hand, params: dict = None):
+    def __init__(self, hand: Hand, **kwargs):
         super().__init__(hand)
-        params = params or {}
         class_name = type(self).__name__
         base_params = cfg.config('base_analysis_params')
         if class_name not in base_params:
             raise ConfigError(f"Analysis class '{class_name}' does not exist")
         for key, base_value in base_params[class_name].items():
-            setattr(self, key, params.get(key) or base_value)
+            setattr(self, key, kwargs.get(key) or base_value)
         pass  # TEMP: for debugging!!!
 
     def suit_strength(self, suit: Suit, trump_suit: Suit) -> float:

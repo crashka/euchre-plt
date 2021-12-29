@@ -19,7 +19,8 @@ setup(
             'match = euchplt.match:main',
             'strategy = euchplt.strategy.__main__:main',
             'tournament = euchplt.tournament:main',
-            'bid_data = ml.bid_data:main'
+            'bid_data = ml.bid_data:main',
+            'play_data = ml.play_data:main'
         ],
     }
 )

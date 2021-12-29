@@ -39,7 +39,7 @@ default:
         hand_analysis:
           # overrides for HandAnalysisSmart base params
         bid_thresh:       [35, 35, 35, 35, 35, 35, 35, 35]
-        def_alone_thresh: [35, 35, 35, 35, 35, 35, 35, 35]
+        def_alone_thresh: [35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35]
     Charlie 3:
       comments:         "adjust hand_analysis: decrease num_trump, increase void_score"
       module_path:      euchplt.strategy
@@ -67,7 +67,7 @@ default:
             off_aces_score:   25
             voids_score:      25
         bid_thresh:       [35, 35, 35, 35, 35, 35, 35, 35]
-        def_alone_thresh: [35, 35, 35, 35, 35, 35, 35, 35]
+        def_alone_thresh: [35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35]
     Charlie 5:
       comments:         "base config with play adjustment"
       module_path:      euchplt.strategy
@@ -91,7 +91,7 @@ default:
         hand_analysis:
           # overrides for HandAnalysisSmart base params
         bid_thresh:       [35, 35, 35, 35, 35, 35, 35, 35]
-        def_alone_thresh: [35, 35, 35, 35, 35, 35, 35, 35]
+        def_alone_thresh: [35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35]
         subseq_lead:
           - lead_last_card
           - draw_trump
