@@ -41,8 +41,8 @@ class BidFeatures(NamedTuple):
     num_off_aces:     int
 
 class BidOutcome(NamedTuple):
-    num_tricks:       int
-    points:           int
+    num_tricks:       float
+    points:           float
 
 ###################
 # BidDataAnalysis #
@@ -352,4 +352,4 @@ class StrategyBidTraverse(Strategy):
             self.queue.close()
             # if we spawned the process, we need to terminate it, so it doesn't continue
             # processing downstream outside of our purview
-            sys.exit(0)
+            os._exit(0)

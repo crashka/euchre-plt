@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from typing import ClassVar
 from enum import Enum
 
 from .core import ConfigError, cfg
@@ -24,8 +25,10 @@ class Player:
     need to rethink the design of this class (perhaps if/when we add human and/or
     network players)!!!
     """
-    name:     str
-    strategy: Strategy
+    name:       str
+    strategy:   Strategy
+
+    disamb:     ClassVar[list[str]] = [c for c in 'abcdefghijklmnop']
 
     def __init__(self, name: str, strategy: Strategy = None):
         """A player maybe be defined by an entry in the config file (identified
@@ -40,6 +43,8 @@ class Player:
             strategy_name = players[name].get('strategy')
             if not strategy_name:
                 raise ConfigError(f"'strategy' not specified for player '{name}'")
+            if name[-1].isdecimal():
+                name += self.disamb.pop(0)
             self.name = name
             self.strategy = Strategy.new(strategy_name)
         else:

@@ -3,11 +3,13 @@
 import os
 import sys
 import queue
-from typing import NamedTuple, Optional, TextIO
+from typing import NamedTuple, Optional
+from dataclasses import dataclass
 from multiprocessing.queues import Queue
 import multiprocessing as mp
+from time import sleep
 
-from euchplt.core import log, DEBUG, ConfigError
+from euchplt.core import log, DEBUG, ConfigError, LogicError
 from euchplt.card import Card, ace
 from euchplt.euchre import Hand, Bid, Trick, DealState
 from euchplt.analysis import SUIT_CTX, PlayAnalysis
@@ -29,6 +31,9 @@ class PlayContext(NamedTuple):
     play_card:        Card
 
 class PlayFeatures(NamedTuple):
+    # TEMP
+    pid:              int
+    key:              str
     # context features
     trick_num:        int
     play_seq:         int
@@ -84,8 +89,54 @@ class PlayFeatures(NamedTuple):
     throw_off_next:   int
 
 class PlayOutcome(NamedTuple):
-    num_tricks:       int
-    points:           int
+    tricks_min:       int
+    tricks_max:       int
+    tricks_avg:       float
+    points_min:       int
+    points_max:       int
+    points_avg:       float
+
+class Msg(NamedTuple):
+    pid:              int
+    key:              tuple[Card, ...]
+    context:          PlayContext
+    features:         PlayFeatures
+    outcome:          Optional[PlayOutcome]
+
+@dataclass
+class CompOutcome:
+    final:      bool  = False
+    count:      int   = 0
+    tricks_sum: int   = 0
+    tricks_min: int   = 99999
+    tricks_max: int   = -1
+    tricks_avg: float = 0.0
+    points_sum: int   = 0
+    points_min: int   = 99999
+    points_max: int   = -1
+    points_avg: float = 0.0
+
+    def add(self, outcome: PlayOutcome) -> None:
+        if self.final:
+            raise LogicException("Cannot add to finalized outcome")
+        self.count += 1
+        self.tricks_sum += outcome.tricks_avg
+        self.tricks_min = min(self.tricks_min, outcome.tricks_min)
+        self.tricks_max = max(self.tricks_max, outcome.tricks_max)
+        self.points_sum += outcome.points_avg
+        self.points_min = min(self.points_min, outcome.points_min)
+        self.points_max = max(self.points_max, outcome.points_max)
+
+    def finalize(self) -> PlayOutcome:
+        self.tricks_avg = self.tricks_sum / self.count
+        self.points_avg = self.points_sum / self.count
+        self.final = True
+        return PlayOutcome(self.tricks_min,
+                           self.tricks_max,
+                           self.tricks_avg,
+                           self.points_min,
+                           self.points_max,
+                           self.points_avg)
 
 ####################
 # PlayDataAnalysis #
@@ -97,7 +148,7 @@ class PlayDataAnalysis(PlayAnalysis):
     trump_values: list[int]
     valid_plays:  list[Card]
     bid_features: BidFeatures
-    
+
     def __init__(self, deal: DealState, **kwargs):
         super().__init__(deal)
         self.trump_values = kwargs.get('trump_values')
@@ -119,7 +170,7 @@ class PlayDataAnalysis(PlayAnalysis):
         }
         return PlayContext._make(context.values())
 
-    def get_features(self, card: Card) -> PlayFeatures:
+    def get_features(self, card: Card, key: tuple[Card, ...]) -> PlayFeatures:
         deal        = self.deal
         # context stuff
         trump_suit  = deal.contract.suit
@@ -166,6 +217,9 @@ class PlayDataAnalysis(PlayAnalysis):
         long_suit = suits[-1][0] if len(suits[-2][1]) != len(suits[-1][1]) else None
 
         features = {
+            # TEMP
+            'pid'             : os.getpid(),
+            'key'             : ' '.join(str(c) for c in key),
             # context features
             'trick_num'       : deal.trick_num,
             'play_seq'        : deal.play_seq,
@@ -240,9 +294,9 @@ class StrategyPlayTraverse(Strategy):
     play_analysis:   dict
 
     bid_features:    BidFeatures  = None
-    play_context:    PlayContext  = None
-    play_features:   PlayFeatures = None
-    play_outcome :   PlayOutcome  = None
+    context:         PlayContext  = None
+    features:        PlayFeatures = None
+    outcome :        PlayOutcome  = None
     main_proc:       bool         = False
     child_pids:      list[int]    = None
     my_plays:        list[Card]   = None
@@ -326,13 +380,14 @@ class StrategyPlayTraverse(Strategy):
                 child_pid = os.fork()
                 if child_pid == 0:
                     break
-                status = os.waitpid(-1, 0)
-                #child_pids.append(child_pid)
+                #status = os.waitpid(-1, 0)
+                child_pids.append(child_pid)
             else:
                 card = valid_plays[0]
                 self.main_proc = True
                 assert self.child_pids is None
                 self.child_pids = child_pids
+                print(f"pid {os.getpid()} main process")
             self.my_plays = [card]
         else:
             # now playing subsequent tricks, `self.main_proc` has already been
@@ -344,13 +399,16 @@ class StrategyPlayTraverse(Strategy):
             # spawn subprocesses if/as needed for the other plays
             child_pids = []
             #for i in range(1, len(valid_plays)):
-            for i in range(1, min(len(valid_plays), 1)):
+            for i in range(1, min(len(valid_plays), 10)):
                 card = valid_plays[i]
                 child_pid = os.fork()
                 if child_pid == 0:
+                    self.main_proc = False
+                    self.child_pids = None
                     break
-                status = os.waitpid(-1, 0)
-                #child_pids.append(child_pid)
+                self.dp(f"forked child pid {child_pid}")
+                #status = os.waitpid(-1, 0)
+                child_pids.append(child_pid)
             else:
                 card = valid_plays[0]
                 if self.child_pids is None:
@@ -363,9 +421,26 @@ class StrategyPlayTraverse(Strategy):
         analysis = PlayDataAnalysis(deal, **self.play_analysis,
                                     valid_plays=valid_plays,
                                     bid_features=self.bid_features)
-        self.play_context = analysis.get_context(card)
-        self.play_features = analysis.get_features(card)
+        # for trick_num 5, features are sent in `notify()` along with the
+        # outcome; NOTE, for trick_num 1, we DO send a features message to
+        # ourselves (to avoid some awkward caching)
+        if deal.trick_num < 5:
+            key = tuple(self.my_plays)
+            context = analysis.get_context(card)
+            features = analysis.get_features(card, key)
+            self.queue.put(Msg(os.getpid(), key, context, features, None))
+            key_str = ' '.join(str(c) for c in key)
+            self.dp("enqueuing context/features")
+        else:
+            key = tuple(self.my_plays)
+            self.context = analysis.get_context(card)
+            self.features = analysis.get_features(card, key)
+            self.dp("stowing context/features")
         return card
+
+    def dp(self, str_out: str) -> None:
+        hdr = f"pid {os.getpid()} ({' '.join(str(c) for c in self.my_plays)}):"
+        print(hdr, str_out)
 
     def notify(self, deal: DealState, notice_type: StrategyNotice) -> None:
         """Write feature set based on traversal on `DEAL_COMPLETE` notification,
@@ -373,41 +448,95 @@ class StrategyPlayTraverse(Strategy):
         """
         if not self.my_plays:
             return
+        assert len(self.my_plays) == 5
 
         if self.child_pids:
-            hdr = f"pid {os.getpid()} my_plays {' '.join(str(c) for c in self.my_plays)}:"
             child_errs = []
             try:
-                log.debug(f"{hdr} waiting on child pids: {self.child_pids}")
+                self.dp(f"waiting on child pids: {self.child_pids}")
                 while len(self.child_pids) > 0:
                     status = os.waitpid(-1, 0)
-                    log.debug(f"{hdr} reaped child pid {status[0]} status {status[1]}")
+                    self.dp(f"reaped child pid {status[0]} status {status[1]}")
                     self.child_pids.remove(status[0])
                     if status[1] != 0:
                         child_errs.append(status)
             except ChildProcessError as e:
-                log.debug(f"{hdr} caught ChildProcessError: {e}")
+                self.dp(f"caught ChildProcessError: {e}")
             if child_errs:
+                hdr = f"pid {os.getpid()} ({' '.join(str(c) for c in self.my_plays)}):"
                 raise RuntimeError(f"{hdr} error(s) in child processes: {child_errs}")
 
-        self.play_outcome = PlayOutcome(deal.my_tricks_won, deal.my_points)
-        my_features = list(self.play_features) + list(self.play_outcome)
+        tricks_won = [deal.my_tricks_won] * 3
+        points = [deal.my_points] * 3
+        self.outcome = PlayOutcome(*tricks_won, *points)
+        my_key = tuple(self.my_plays)
+        my_key_str = ' '.join(str(c) for c in my_key)
+        my_msg = Msg(os.getpid(), my_key, self.context, self.features, self.outcome)
 
-        if DEBUG:
-            self.play_context.cur_hand.cards.sort(key=lambda c: c.sortkey)
-            log.debug(', '.join(f"{k}: {v}" for k, v in self.play_context._asdict().items()))
-            log.debug(list(self.play_features) + list(self.play_outcome))
+        comp_features = {}
+        comp_outcome = {}
+        features_out = []
 
-        def dequeue_print(file: TextIO = sys.stdout) -> None:
-            try:
-                while True:
-                    features = self.queue.get_nowait()
-                    features_str = '\t'.join(str(x) for x in features)
-                    print(features_str, file=file)
-            except queue.Empty:
-                pass
+        #if DEBUG:
+        #    self.context.cur_hand.cards.sort(key=lambda c: c.sortkey)
+        #    log.debug(', '.join(f"{k}: {v}" for k, v in self.context._asdict().items()))
+        #    log.debug(list(self.features) + list(self.outcome))
+
+        def process_msg(msg: Msg) -> None:
+            if msg.outcome:
+                for i in range(1, len(msg.key)):
+                    key = msg.key[:i]
+                    key_str = ' '.join(str(c) for c in key)
+                    if key not in comp_outcome:
+                        raise LogicError(f"pid {os.getpid()} key {key_str} not in comp_outcome")
+                    comp_outcome[key].add(msg.outcome)
+                features = list(msg.features) + list(msg.outcome)
+                features_out.append(features)
+                key_str = ' '.join(str(c) for c in msg.key)
+                self.dp(f"appending key {key_str} to features_out")
+            else:
+                comp_features[msg.key] = msg.features
+                comp_outcome[msg.key] = CompOutcome()
+                key_str = ' '.join(str(c) for c in msg.key)
+                self.dp(f"creating key {key_str} for comp_outcome")
 
         if self.main_proc:
+            try:
+                while True:
+                    #msg = self.queue.get(True, 0.1)
+                    msg = self.queue.get_nowait()
+                    key_str = ' '.join(str(c) for c in msg.key)
+                    self.dp(f"dequeued msg pid {msg.pid} key {key_str}")
+                    process_msg(msg)
+            except queue.Empty:
+                self.dp(f"queue empty")
+                pass
+            # process our own outcome last, to ensure that the intermediary
+            # features have been added
+            self.dp("processing context/features/outcome")
+            process_msg(my_msg)
+            """
+            for _ in range(5):
+                try:
+                    while True:
+                        msg = self.queue.get(True, 0.1)
+                        #msg = self.queue.get_nowait()
+                        key_str = ' '.join(str(c) for c in msg.key)
+                        self.dp(f"dequeued msg pid {msg.pid} key {key_str}")
+                        process_msg(msg)
+                except queue.Empty:
+                    self.dp(f"queue empty")
+                    sleep(0)
+                    pass
+            """
+            # now finalize and compute averages
+            for key, comp in comp_outcome.items():
+                key_str = ' '.join(str(c) for c in key)
+                self.dp(f"finalizing key {key_str} for comp_outcome")
+                outcome = comp.finalize()
+                features = list(comp_features[key]) + list(outcome)
+                features_out.append(features)
+                self.dp(f"appending key {key_str} to features_out")
             # HACK: see comments in bid_data.py!
             if data_file := os.environ.get('PLAY_DATA_FILE'):
                 if not os.path.exists(data_file):
@@ -415,32 +544,30 @@ class StrategyPlayTraverse(Strategy):
                     header_str = '\t'.join(header)
                 else:
                     header_str = None
-                my_features_str = '\t'.join(str(x) for x in my_features)
                 with open(data_file, 'a') as f:
                     if header_str:
                         print(header_str, file=f)
-                    print(my_features_str, file=f)
-                    dequeue_print(f)
+                    for features in features_out:
+                        features_str = '\t'.join(str(x) for x in features)
+                        print(features_str, file=f)
+                self.dp(f"wrote {len(features_out)} features_out records")
             else:
-                header = PlayFeatures._fields + PlayOutcome._fields
-                header_str = '\t'.join(header)
-                my_features_str = '\t'.join(str(x) for x in my_features)
-                print(header_str)
-                print(my_features_str)
-                dequeue_print()
+                raise LogicError("Stdout not yet implemented")
 
             # need to reset the class, so this works for the next deal
             self.main_proc     = False
             self.queue         = None
             self.bid_features  = None
-            self.play_context  = None
-            self.play_features = None
-            self.play_outcome  = None
+            self.context       = None
+            self.features      = None
+            self.outcome       = None
             self.child_pids    = None
             self.my_plays      = None
         else:
-            self.queue.put(my_features)
+            self.dp("enqueuing context/features/outcome")
+            self.queue.put(my_msg)
             self.queue.close()
+            self.queue.join_thread()
             # if we spawned the process, we need to terminate it, so it doesn't continue
             # processing downstream outside of our purview
-            sys.exit(0)
+            os._exit(0)
