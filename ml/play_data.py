@@ -20,7 +20,7 @@ cfg.load('ml_data.yml')
 ########
 
 DFLT_DEALS   = 1
-FILE_TYPE    = '.dat'
+FILE_TYPE    = '.tsv'
 UPD_INTERVAL = 10
 
 def get_file_name(model_name: str) -> str:
@@ -64,7 +64,6 @@ def main() -> int:
         if deal.is_passed():
             continue
         deal.play_cards()
-        deal.print(verbose=1)
         if i % UPD_INTERVAL == 0:
             print(f"\rIterations: {i:2d}", end='')
 

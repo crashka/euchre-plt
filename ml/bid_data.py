@@ -22,7 +22,7 @@ cfg.load('ml_data.yml')
 ########
 
 DFLT_DEALS   = 1
-FILE_TYPE    = '.dat'
+FILE_TYPE    = '.tsv'
 UPD_INTERVAL = 10
 
 def get_file_name(model_name: str) -> str:
