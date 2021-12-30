@@ -20,6 +20,8 @@ from .bid_traverse import BidFeatures, BidDataAnalysis
 # PlayContext/Features #
 ########################
 
+TraverseKey = tuple[Card, ...]
+
 class PlayContext(NamedTuple):
     trick_num:        int
     play_seq:         int
@@ -96,13 +98,6 @@ class PlayOutcome(NamedTuple):
     points_max:       int
     points_avg:       float
 
-class Msg(NamedTuple):
-    pid:              int
-    key:              tuple[Card, ...]
-    context:          PlayContext
-    features:         PlayFeatures
-    outcome:          Optional[PlayOutcome]
-
 @dataclass
 class CompOutcome:
     final:      bool  = False
@@ -116,9 +111,12 @@ class CompOutcome:
     points_max: int   = -1
     points_avg: float = 0.0
 
+    def empty(self) -> bool:
+        return self.count == 0
+
     def add(self, outcome: PlayOutcome) -> None:
         if self.final:
-            raise LogicException("Cannot add to finalized outcome")
+            raise LogicError("Cannot add to finalized outcome")
         self.count += 1
         self.tricks_sum += outcome.tricks_avg
         self.tricks_min = min(self.tricks_min, outcome.tricks_min)
@@ -126,6 +124,17 @@ class CompOutcome:
         self.points_sum += outcome.points_avg
         self.points_min = min(self.points_min, outcome.points_min)
         self.points_max = max(self.points_max, outcome.points_max)
+
+    def combine(self, other: 'CompOutcome') -> None:
+        if self.final:
+            raise LogicError("Cannot combine to finalized outcome")
+        self.count += other.count
+        self.tricks_sum += other.tricks_avg
+        self.tricks_min = min(self.tricks_min, other.tricks_min)
+        self.tricks_max = max(self.tricks_max, other.tricks_max)
+        self.points_sum += other.points_avg
+        self.points_min = min(self.points_min, other.points_min)
+        self.points_max = max(self.points_max, other.points_max)
 
     def finalize(self) -> PlayOutcome:
         self.tricks_avg = self.tricks_sum / self.count
@@ -137,6 +146,13 @@ class CompOutcome:
                            self.points_min,
                            self.points_max,
                            self.points_avg)
+
+class Msg(NamedTuple):
+    pid:              int
+    key:              TraverseKey
+    context:          PlayContext
+    features:         PlayFeatures
+    outcome:          CompOutcome
 
 ####################
 # PlayDataAnalysis #
@@ -170,7 +186,7 @@ class PlayDataAnalysis(PlayAnalysis):
         }
         return PlayContext._make(context.values())
 
-    def get_features(self, card: Card, key: tuple[Card, ...]) -> PlayFeatures:
+    def get_features(self, card: Card, key: TraverseKey) -> PlayFeatures:
         deal        = self.deal
         # context stuff
         trump_suit  = deal.contract.suit
@@ -293,10 +309,10 @@ class StrategyPlayTraverse(Strategy):
     hand_analysis:   dict
     play_analysis:   dict
 
-    bid_features:    BidFeatures  = None
-    context:         PlayContext  = None
-    features:        PlayFeatures = None
-    outcome :        PlayOutcome  = None
+    bid_features:    BidFeatures                     = None
+    context:         dict[TraverseKey, PlayContext]  = None
+    features:        dict[TraverseKey, PlayFeatures] = None
+    outcome:         dict[TraverseKey, CompOutcome]  = None
     main_proc:       bool         = False
     child_pids:      list[int]    = None
     my_plays:        list[Card]   = None
@@ -343,6 +359,10 @@ class StrategyPlayTraverse(Strategy):
         self.play_analysis = self.play_analysis or {}
         if not self.hand_analysis:
             self.hand_analysis = self.play_analysis
+
+        self.context  = {}
+        self.features = {}
+        self.outcome  = {}
 
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """See base class
@@ -424,18 +444,11 @@ class StrategyPlayTraverse(Strategy):
         # for trick_num 5, features are sent in `notify()` along with the
         # outcome; NOTE, for trick_num 1, we DO send a features message to
         # ourselves (to avoid some awkward caching)
-        if deal.trick_num < 5:
-            key = tuple(self.my_plays)
-            context = analysis.get_context(card)
-            features = analysis.get_features(card, key)
-            self.queue.put(Msg(os.getpid(), key, context, features, None))
-            key_str = ' '.join(str(c) for c in key)
-            self.dp("enqueuing context/features")
-        else:
-            key = tuple(self.my_plays)
-            self.context = analysis.get_context(card)
-            self.features = analysis.get_features(card, key)
-            self.dp("stowing context/features")
+        key = tuple(self.my_plays)
+        self.context[key]  = analysis.get_context(card)
+        self.features[key] = analysis.get_features(card, key)
+        self.outcome[key]  = CompOutcome()
+        self.dp("adding context/features")
         return card
 
     def dp(self, str_out: str) -> None:
@@ -449,6 +462,33 @@ class StrategyPlayTraverse(Strategy):
         if not self.my_plays:
             return
         assert len(self.my_plays) == 5
+
+        #if DEBUG:
+        #    self.context.cur_hand.cards.sort(key=lambda c: c.sortkey)
+        #    log.debug(', '.join(f"{k}: {v}" for k, v in self.context._asdict().items()))
+        #    log.debug(list(self.features) + list(self.outcome))
+
+        def process_msg(msg: Msg) -> None:
+            self.context[msg.key]  = msg.context
+            self.features[msg.key] = msg.features
+            self.outcome[msg.key]  = msg.outcome
+            for i in range(1, len(msg.key)):
+                key = msg.key[:i]
+                key_str = ' '.join(str(c) for c in key)
+                if key not in self.outcome:
+                    raise LogicError(f"pid {os.getpid()} key {key_str} not in self.outcome")
+                self.outcome[key].combine(msg.outcome)
+            key_str = ' '.join(str(c) for c in msg.key)
+            self.dp(f"combining key {key_str} outcome (pid {msg.pid})")
+
+        tricks_won = [deal.my_tricks_won] * 3
+        points     = [deal.my_points] * 3
+        my_outcome = PlayOutcome(*tricks_won, *points)
+        my_key = tuple(self.my_plays)
+        self.outcome[my_key] = CompOutcome()
+        self.outcome[my_key].add(my_outcome)
+        my_msg = Msg(os.getpid(), my_key, self.context[my_key],
+                     self.features[my_key], self.outcome[my_key])
 
         if self.child_pids:
             child_errs = []
@@ -466,41 +506,6 @@ class StrategyPlayTraverse(Strategy):
                 hdr = f"pid {os.getpid()} ({' '.join(str(c) for c in self.my_plays)}):"
                 raise RuntimeError(f"{hdr} error(s) in child processes: {child_errs}")
 
-        tricks_won = [deal.my_tricks_won] * 3
-        points = [deal.my_points] * 3
-        self.outcome = PlayOutcome(*tricks_won, *points)
-        my_key = tuple(self.my_plays)
-        my_key_str = ' '.join(str(c) for c in my_key)
-        my_msg = Msg(os.getpid(), my_key, self.context, self.features, self.outcome)
-
-        comp_features = {}
-        comp_outcome = {}
-        features_out = []
-
-        #if DEBUG:
-        #    self.context.cur_hand.cards.sort(key=lambda c: c.sortkey)
-        #    log.debug(', '.join(f"{k}: {v}" for k, v in self.context._asdict().items()))
-        #    log.debug(list(self.features) + list(self.outcome))
-
-        def process_msg(msg: Msg) -> None:
-            if msg.outcome:
-                for i in range(1, len(msg.key)):
-                    key = msg.key[:i]
-                    key_str = ' '.join(str(c) for c in key)
-                    if key not in comp_outcome:
-                        raise LogicError(f"pid {os.getpid()} key {key_str} not in comp_outcome")
-                    comp_outcome[key].add(msg.outcome)
-                features = list(msg.features) + list(msg.outcome)
-                features_out.append(features)
-                key_str = ' '.join(str(c) for c in msg.key)
-                self.dp(f"appending key {key_str} to features_out")
-            else:
-                comp_features[msg.key] = msg.features
-                comp_outcome[msg.key] = CompOutcome()
-                key_str = ' '.join(str(c) for c in msg.key)
-                self.dp(f"creating key {key_str} for comp_outcome")
-
-        if self.main_proc:
             try:
                 while True:
                     #msg = self.queue.get(True, 0.1)
@@ -511,30 +516,17 @@ class StrategyPlayTraverse(Strategy):
             except queue.Empty:
                 self.dp(f"queue empty")
                 pass
-            # process our own outcome last, to ensure that the intermediary
-            # features have been added
-            self.dp("processing context/features/outcome")
+
+            self.dp("processing my outcome")
             process_msg(my_msg)
-            """
-            for _ in range(5):
-                try:
-                    while True:
-                        msg = self.queue.get(True, 0.1)
-                        #msg = self.queue.get_nowait()
-                        key_str = ' '.join(str(c) for c in msg.key)
-                        self.dp(f"dequeued msg pid {msg.pid} key {key_str}")
-                        process_msg(msg)
-                except queue.Empty:
-                    self.dp(f"queue empty")
-                    sleep(0)
-                    pass
-            """
+
+        if self.main_proc:
+            features_out = []
             # now finalize and compute averages
-            for key, comp in comp_outcome.items():
+            for key, comp in self.outcome.items():
                 key_str = ' '.join(str(c) for c in key)
-                self.dp(f"finalizing key {key_str} for comp_outcome")
                 outcome = comp.finalize()
-                features = list(comp_features[key]) + list(outcome)
+                features = list(self.features[key]) + list(outcome)
                 features_out.append(features)
                 self.dp(f"appending key {key_str} to features_out")
             # HACK: see comments in bid_data.py!
@@ -564,8 +556,12 @@ class StrategyPlayTraverse(Strategy):
             self.child_pids    = None
             self.my_plays      = None
         else:
-            self.dp("enqueuing context/features/outcome")
-            self.queue.put(my_msg)
+            for key, outcome in self.outcome.items():
+                key_str = ' '.join(str(c) for c in key)
+                self.dp(f"enqueuing outcome for key {key_str}")
+                msg = Msg(os.getpid(), key, self.context[key],
+                          self.features[key], self.outcome[key])
+                self.queue.put(msg)
             self.queue.close()
             self.queue.join_thread()
             # if we spawned the process, we need to terminate it, so it doesn't continue
