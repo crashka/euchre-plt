@@ -2,12 +2,13 @@
 
 import os
 import sys
-from typing import NamedTuple, Optional, Any
+from typing import ClassVar, Optional, NamedTuple
 from dataclasses import dataclass
 from multiprocessing.synchronize import Lock
 import multiprocessing as mp
 from numbers import Number
 from time import sleep
+import json
 
 from euchplt.core import log, DEBUG, ConfigError, LogicError
 from euchplt.card import Card, ace
@@ -20,8 +21,6 @@ from .bid_traverse import BidFeatures, BidDataAnalysis
 # PlayContext/Features #
 ########################
 
-TraverseKey = tuple[Card, ...]
-
 class PlayContext(NamedTuple):
     trick_num:        int
     play_seq:         int
@@ -33,10 +32,9 @@ class PlayContext(NamedTuple):
     play_card:        Card
 
 class PlayFeatures(NamedTuple):
-    # TEMP
-    pid:              int
-    key:              str
     # context features
+    run_id:           str
+    key:              str
     trick_num:        int
     play_seq:         int
     pos:              int  # 0 = first bid, 3 = dealer
@@ -154,7 +152,13 @@ class CompOutcome:
                            self.points_max,
                            self.points_avg)
 
-class Msg(NamedTuple):
+###############
+# PlayDataMsg #
+###############
+
+TraverseKey = tuple[Card, ...]
+
+class PlayDataMsg(NamedTuple):
     pid:              int
     key:              TraverseKey
     context:          PlayContext
@@ -169,12 +173,14 @@ class PlayDataAnalysis(PlayAnalysis):
     """Manage features for generating data for "play" ML models
     """
     trump_values: list[int]
+    run_id:       str
     valid_plays:  list[Card]
     bid_features: BidFeatures
 
     def __init__(self, deal: DealState, **kwargs):
         super().__init__(deal)
         self.trump_values = kwargs.get('trump_values')
+        self.run_id       = kwargs.get('run_id')
         self.valid_plays  = kwargs.get('valid_plays')
         self.bid_features = kwargs.get('bid_features')
 
@@ -240,10 +246,9 @@ class PlayDataAnalysis(PlayAnalysis):
         long_suit = suits[-1][0] if len(suits[-2][1]) != len(suits[-1][1]) else None
 
         features = {
-            # TEMP
-            'pid'             : os.getpid(),
-            'key'             : ' '.join(str(c) for c in key),
             # context features
+            'run_id'          : self.run_id,
+            'key'             : ' '.join(str(c) for c in key),
             'trick_num'       : deal.trick_num,
             'play_seq'        : deal.play_seq,
             'pos'             : deal.pos,
@@ -303,7 +308,9 @@ class PlayDataAnalysis(PlayAnalysis):
 # StrategyPlayTraverse #
 ########################
 
-NUM_PLAYERS = 4
+FMT_JSON    = 'json'
+FMT_TSV     = 'tsv'
+FMT_DFLT    = FMT_TSV
 
 class StrategyPlayTraverse(Strategy):
     """Run though each deal with all possible bids, playing out the hands
@@ -316,13 +323,15 @@ class StrategyPlayTraverse(Strategy):
     hand_analysis:   dict
     play_analysis:   dict
 
-    bid_features:    BidFeatures  = None
-    context:         PlayContext  = None
-    features:        PlayFeatures = None
-    main_proc:       bool         = False
-    child_pids:      list[int]    = None
-    my_plays:        list[Card]   = None
-    lock:            Lock         = None
+    run_id:          str           = None
+    data_fmt:        str           = None
+    main_proc:       bool          = False
+    child_pids:      list[int]     = None
+    my_plays:        list[Card]    = None
+    bid_features:    BidFeatures   = None
+    context:         PlayContext   = None
+    features:        PlayFeatures  = None
+    lock:            Lock          = None
 
     def __init__(self, **kwargs):
         """This class recognizes the following parameters (passed in directly as
@@ -366,6 +375,45 @@ class StrategyPlayTraverse(Strategy):
         if not self.hand_analysis:
             self.hand_analysis = self.play_analysis
 
+    def write_header(self) -> None:
+        """Not pretty to require its own `open()` call, but this is neater
+        code-wise.  The header is not written if appending to an already
+        existing data file.
+        """
+        header = PlayFeatures._fields + PlayOutcome._fields
+        if self.data_fmt == FMT_JSON:
+            header_str = json.dumps(header)
+        else:
+            assert self.data_fmt == FMT_TSV
+            header_str = '\t'.join(header)
+        if data_file := os.environ.get('PLAY_DATA_FILE'):
+            if os.path.exists(data_file) and os.path.getsize(data_file) > 0:
+                return
+            with self.lock, open(data_file, 'a') as f:
+                print(header_str, file=f)
+        else:
+            with self.lock:
+                print(header_str)
+
+    def write_features(self, features: PlayFeatures, outcome: PlayOutcome = None) -> None:
+        """We append tab-delimited records to the specified data file; it is the
+        responsibility of the main program to aggregate the results and compute
+        outcomes for `play_seq` 1 through 4
+        """
+        outcome = outcome or []
+        if self.data_fmt == FMT_JSON:
+            msg = {'features': features, 'outcome': outcome}
+            features_str = json.dumps(msg)
+        else:
+            assert self.data_fmt == FMT_TSV
+            features_str = '\t'.join(str(x) for x in list(features) + list(outcome))
+        if data_file := os.environ.get('PLAY_DATA_FILE'):
+            with self.lock, open(data_file, 'a') as f:
+                print(features_str, file=f)
+        else:
+            with self.lock:
+                print(features_str)
+
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """See base class
         """
@@ -381,16 +429,20 @@ class StrategyPlayTraverse(Strategy):
     def play_card(self, deal: DealState, trick: Trick, valid_plays: list[Card]) -> Card:
         """See base class
         """
-        play_pos = os.environ.get('PLAY_DATA_POS')
+        play_pos = os.environ.get('PLAY_DATA_POS')  # could put this in a class variable!
         assert play_pos is not None
         if deal.pos != int(play_pos):
             return self.base_play_strat.play_card(deal, trick, valid_plays)
 
         if self.my_plays is None:
+            assert self.run_id is None
+            self.run_id = os.environ.get('PLAY_DATA_RUN_ID')
+            self.data_fmt = os.environ.get('PLAY_DATA_FORMAT', FMT_DFLT)
             bid_analysis = BidDataAnalysis(deal, **self.hand_analysis)
             self.bid_features = bid_analysis.get_features(deal.contract)
             # lock is used to synchronize I/O accross processes
             self.lock = mp.Lock()
+            self.write_header()
             # Spawn subprocesses to handle the cards in `valid_plays` (other
             # than the first one, which we will handle ourselves)
             child_pids = []
@@ -432,6 +484,7 @@ class StrategyPlayTraverse(Strategy):
             self.my_plays.append(card)
 
         analysis = PlayDataAnalysis(deal, **self.play_analysis,
+                                    run_id=self.run_id,
                                     valid_plays=valid_plays,
                                     bid_features=self.bid_features)
         # for trick_num 5, features are written in `notify()` along with the
@@ -446,27 +499,6 @@ class StrategyPlayTraverse(Strategy):
             self.context = analysis.get_context(card)
             self.features = analysis.get_features(card, key)
         return card
-
-    def write_features(self, features: PlayFeatures, outcome: PlayOutcome = None) -> None:
-        """For now, we append tab-delimited records to specified data file; LATER,
-        we write to a named pipe, which is will be dequeued by a dedicated process
-        to aggregate results and compute outcomes for `play_seq` 1 through 4
-        """
-        outcome = outcome or []
-        if data_file := os.environ.get('PLAY_DATA_FILE'):
-            with self.lock:
-                if not os.path.exists(data_file):
-                    header = PlayFeatures._fields + PlayOutcome._fields
-                    header_str = '\t'.join(header)
-                else:
-                    header_str = None
-                with open(data_file, 'a') as f:
-                    if header_str:
-                        print(header_str, file=f)
-                    features_str = '\t'.join(str(x) for x in list(features) + list(outcome))
-                    print(features_str, file=f)
-        else:
-            raise LogicError("Stdout not yet implemented")
 
     def notify(self, deal: DealState, notice_type: StrategyNotice) -> None:
         """Write feature set based on traversal on `DEAL_COMPLETE` notification,
@@ -505,6 +537,8 @@ class StrategyPlayTraverse(Strategy):
             self.features     = None
             self.child_pids   = None
             self.my_plays     = None
+            self.run_id       = None
+            self.data_fmt     = None
         else:
             # if we spawned the process, we need to terminate it, so it doesn't
             # continue processing downstream outside of our purview

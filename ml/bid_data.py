@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from os import environ
+import os
 import sys
 import re
 
-environ['EUCH_LOG_NAME'] = 'ml_data'
+os.environ['EUCH_LOG_NAME'] = 'bid_data'
 
 from euchplt.core import cfg, DataFile, DEBUG
 from euchplt.utils import parse_argv
@@ -49,7 +49,7 @@ def main() -> int:
     # REVISIT: this is pretty hacky, but no good way to pass this information
     # down to the strategy class right now (see the other end of the hack in
     # bid_traverse.py)--should really make this prettier at some point!!!
-    environ['BID_DATA_FILE'] = DataFile(file_name)
+    os.environ['BID_DATA_FILE'] = DataFile(file_name)
 
     player_name = bid_models[name].get('data_player')
     if not player_name:
