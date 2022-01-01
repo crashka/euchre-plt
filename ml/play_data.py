@@ -27,6 +27,7 @@ cfg.load('ml_data.yml')
 ########
 
 DFLT_DEALS   = 1
+TMP_TYPE     = '.dat'
 FILE_TYPE    = '.tsv'
 UPD_INTERVAL = 10
 
@@ -63,7 +64,7 @@ def main() -> int:
 
     # we use a temp file to send raw outcomes to us from traversal procs (too
     # difficult to get queues, fifos, etc. to work); not pretty, but workable
-    fd, tmp_file = tempfile.mkstemp(suffix=FILE_TYPE, text=True)
+    fd, tmp_file = tempfile.mkstemp(suffix=TMP_TYPE, text=True)
     # HACKY: see comment in bid_data.py
     os.environ['PLAY_DATA_FILE'] = tmp_file
     os.environ['PLAY_DATA_FORMAT'] = FMT_JSON
