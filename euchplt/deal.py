@@ -402,9 +402,9 @@ def main() -> int:
     if len(sys.argv) > 1:
         ndeals = int(sys.argv[1])
 
-    players = [Player("Player 0", StrategyRandom(seed=12345)),
+    players = [Player("Player 0", StrategyRandom(rand_seed=12345)),
                Player("Player 1", StrategySmart()),
-               Player("Player 2", StrategyRandom(seed=98765)),
+               Player("Player 2", StrategyRandom(rand_seed=98765)),
                Player("Player 3", StrategySmart())]
 
     for _ in range(ndeals):

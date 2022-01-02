@@ -14,12 +14,12 @@ from .base import Strategy
 class StrategyRandom(Strategy):
     """
     """
-    seed:   Optional[int] = None
-    random: Random
+    rand_seed: Optional[int]
+    random:    Random
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.random = Random(self.seed)
+        self.random = Random(self.rand_seed)
 
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """See base class

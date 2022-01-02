@@ -197,14 +197,14 @@ class Tournament:
 
     @classmethod
     def new(cls, tourn_name: str, **kwargs) -> 'Tournament':
-        """Return instantiated Tournament object based on name; format and teams
-        are specified in the config file
+        """Return instantiated Tournament object based on name; format, teams, and
+        parameter defaults are specified in the config file (teams and params can
+        be overridden by `kwargs`)
         """
         tournaments = cfg.config('tournaments')
         if tourn_name not in tournaments:
             raise RuntimeError(f"Tournament '{tourn_name}' is not known")
         tourn_info   = tournaments[tourn_name]
-        teams        = tourn_info.get('teams')
         class_name   = tourn_info.get('tourn_class')
         tourn_params = tourn_info.get('tourn_params') or {}
         if not class_name:
@@ -213,10 +213,12 @@ class Tournament:
         if not issubclass(tourn_class, cls):
             raise ConfigError(f"'{tourn_class.__name__}' not subclass of '{cls.__name__}'")
 
+        # `teams` is not part of `tourn_params`, but can be specified in `kwargs`
+        teams = kwargs.pop('teams', None) or tourn_info.get('teams')
         tourn_params.update(kwargs)
         return tourn_class(tourn_name, teams, **tourn_params)
 
-    def __init__(self, name: str, teams: Iterable[Union[str, Team]], **kwargs):
+    def __init__(self, name: str, teams: Union[Iterable[str], Iterable[Team]], **kwargs):
         """Abstract base class, cannot be instantiated directly.  Tournament teams can
         either be specified by name (in the config file) or instantiated `Team` objects
         (format must be consistent within the iterable).
@@ -286,13 +288,20 @@ class Tournament:
                     for j in range(8):
                         my_stat_list[j] += match_stat_list[j]
 
+    @staticmethod
+    def score_key(x):
+        """Sort by wins then Elo points (this algo works because Elo points will
+        always be less than wins)
+        """
+        return s[1][0] * s[1][0] + s[1][1]
+
     def set_winner(self) -> None:
         """This method is overrideable for tournament formats where the
         results/winner(s) are determined in a way other than match wins
         """
         thresh = 0.1  # for floating point comparison
         # determine winner by number of matches won (element score_item[1][0])
-        scores = sorted(self.team_score.items(), key=lambda s: s[1][0], reverse=True)
+        scores = sorted(self.team_score.items(), key=self.score_key, reverse=True)
         top_score_item = scores[0]
         winners: list[str] = [top_score_item[0]]
         for score_item in scores[1:]:
@@ -314,6 +323,12 @@ class Tournament:
             base_stats[LBStat.ELO_PTS] = score[1]
             self.lb_base[name] = base_stats
 
+    @staticmethod
+    def lb_key(x):
+        """Same algo as `score_key()`
+        """
+        return x[1][LBStat.WINS] * x[1][LBStat.WINS] + x[1][LBStat.ELO_PTS]
+
     def get_leaderboard(self, teams: Iterable[Team] = None, key: Callable = None,
                         reverse: bool = True) -> Leaderboard:
         """Return list of leaderboard stats for each team, indexed by name, and sorted
@@ -321,7 +336,7 @@ class Tournament:
         of `LBStat` members.
         """
         teams = teams or self.teams
-        key = key or (lambda s: s[1][LBStat.WINS])
+        key = key or self.lb_key
 
         team_idx    = {}  # name -> idx
         lb_stats    = {}  # name -> list[stat_val]
@@ -627,7 +642,7 @@ class RoundRobin(Tournament):
             # don't go below `elim_pct` teams remaining
             if len(self.teams) - len(self.eliminated) >= self.elim_num * 2:
                 lb_iter = leaderboard.items()
-                lb_sorted = sorted(lb_iter, key=lambda s: s[1][LBStat.WINS], reverse=True)
+                lb_sorted = sorted(lb_iter, key=self.lb_key, reverse=True)
                 leader_teams = [s[0] for s in lb_sorted if s[0] not in self.eliminated]
                 eliminate = list(reversed(leader_teams[-self.elim_num:]))
                 self.elim_order.extend(eliminate)
@@ -637,7 +652,7 @@ class RoundRobin(Tournament):
 
     def set_winner(self) -> None:
         lb_iter = self.leaderboards[-1].items()
-        lb_sorted = sorted(lb_iter, key=lambda s: s[1][LBStat.WINS], reverse=True)
+        lb_sorted = sorted(lb_iter, key=self.lb_key, reverse=True)
         top_lb_item = lb_sorted[0]
         winners: list[str] = [top_lb_item[0]]
         for lb_item in lb_sorted[1:]:
@@ -702,8 +717,9 @@ class ChallengeLadder(Tournament):
         self.round_score = {}
         self.leaderboards = []
         self.lb_base = None
-        # start ladder with current Elo ratings
-        if not self.reset_elo:
+        # start ladder with current Elo ratings, unless resetting or teams
+        # already arranged in seeded order
+        if not self.seeded and not self.reset_elo:
             self.ladder = [t for t, _ in self.elo_rating.get_sorted()]
         else:
             self.ladder = list(self.teams.keys())

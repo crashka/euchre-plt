@@ -43,7 +43,9 @@ class Player:
             strategy_name = players[name].get('strategy')
             if not strategy_name:
                 raise ConfigError(f"'strategy' not specified for player '{name}'")
-            if name[-1].isdecimal():
+            # SPECIAL_CASE: convention for identifying ML data generation strategies,
+            # all players for the deal will have same name, so we distinguish them
+            if name[-1].isdecimal() and strategy_name == name:
                 name += self.disamb.pop(0)
             self.name = name
             self.strategy = Strategy.new(strategy_name)

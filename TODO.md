@@ -17,7 +17,7 @@ _[In roughly in priority order, within each section...]_
         - Call Make Pct
         - NL Call Pct
 - Optimize base params for 'HandAnalysisSmart' and 'StrategySmart'
-- ML learning frameworks
+- ML model generation
     - Bidding models
     - Playing models
 - Add notifications to Deal-Player interface (to support external 'Player'

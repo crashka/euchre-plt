@@ -2,7 +2,7 @@
 
 from enum import Enum
 from typing import ClassVar, Optional
-import random
+from random import Random
 
 from ..core import ConfigError, LogicError, log
 from ..card import SUITS, Card, right, ace
@@ -27,6 +27,8 @@ class StrategySmart(Strategy):
     various parameters, either in an absolute sense, or possibly relative to
     different opponent profiles.
     """
+    rand_seed:        Optional[int]
+    random:           Random
     hand_analysis:    dict
     # bid parameters
     turn_card_value:  list[int]  # by rank.idx
@@ -45,6 +47,7 @@ class StrategySmart(Strategy):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.random = Random(self.rand_seed)
         self.hand_analysis = self.hand_analysis or {}
         # do a cursory validation of the method names within the rulesets
         # for `play_cards()`; don't think we can "compile" them into real
@@ -275,7 +278,7 @@ class StrategySmart(Strategy):
                     return off_aces[0]
                 else:
                     log.debug("Lead off-ace (random choice)")
-                    return random.choice(off_aces)
+                    return self.random.choice(off_aces)
 
         def lead_to_partner_call() -> Optional[Card]:
             """No trump seen with partner as caller
@@ -296,7 +299,7 @@ class StrategySmart(Strategy):
                             return singleton_cards[0]
                         else:
                             log.debug("Lead singleton to void suit (random choice)")
-                            return random.choice(singleton_cards)
+                            return self.random.choice(singleton_cards)
 
         def lead_to_create_void() -> Optional[Card]:
             """If trump in hand, try and void a suit
@@ -309,7 +312,7 @@ class StrategySmart(Strategy):
                     return singleton_cards[0]
                 else:
                     log.debug("Lead singleton to void suit (random choice)")
-                    return random.choice(singleton_cards)
+                    return self.random.choice(singleton_cards)
 
         def lead_suit_winner() -> Optional[Card]:
             """Try to lead winner (non-trump)
@@ -348,7 +351,7 @@ class StrategySmart(Strategy):
             Note: always returns value, can be last in ruleset
             """
             log.debug("Lead random card")
-            return random.choice(valid_plays)
+            return self.random.choice(valid_plays)
 
         #####################
         # follow card plays #
@@ -463,7 +466,7 @@ class StrategySmart(Strategy):
             Note: always returns value, can be last in ruleset
             """
             log.debug("Lead random card")
-            return random.choice(valid_plays)
+            return self.random.choice(valid_plays)
 
         #############
         # rule sets #

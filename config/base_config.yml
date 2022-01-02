@@ -24,17 +24,18 @@ default:
 
   base_strategy_params:
     StrategyRandom:
-      seed:             null
+      rand_seed:        null
     StrategySimple:
       aggressive:       0x0
     StrategySmart:
+      rand_seed:        null
       hand_analysis:    # keep this empty here, but may be overridden by
                         # individual strategies
       turn_card_value:  [10, 15, 0, 20, 25, 30, 0, 50]
       turn_card_coeff:  [25, 25, 25, 25]
-      bid_thresh:       [35, 35, 35, 30, 35, 35, 35, 30]
+      bid_thresh:       [35, 35, 35, 35, 35, 35, 35, 35]
       alone_margin:     [10, 10, 10, 10, 10, 10, 10, 10]
-      def_alone_thresh: [30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30]
+      def_alone_thresh: [35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35]
       init_lead:
         - next_call_lead
         - draw_trump
@@ -46,8 +47,8 @@ default:
         - lead_last_card
         - draw_trump
         # maybe swap the next two...
-        - lead_to_partner_call
         - lead_off_ace
+        - lead_to_partner_call
         - lead_suit_winner
         - lead_to_create_void
         - lead_low_non_trump
@@ -107,6 +108,7 @@ default:
     ChallengeLadder:
       passes:          1
       round_matches:   1
+      seeded:          false
       reset_elo:       true
       elo_update:      pass
       elo_params:

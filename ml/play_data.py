@@ -7,7 +7,7 @@ import tempfile
 from typing import TextIO
 from itertools import chain
 import re
-import random
+from random import Random
 import json
 
 os.environ['EUCH_LOG_NAME'] = 'play_data'
@@ -30,12 +30,13 @@ DFLT_DEALS   = 1
 TMP_TYPE     = '.dat'
 FILE_TYPE    = '.tsv'
 UPD_INTERVAL = 10
+MY_RANDOM    = Random()
 
 def gen_run_id() -> str:
     """For now, just return a random hex string (inspired by git style, though
     not actually a hash of anything here)
     """
-    return f"{random.randrange(0x1000000):x}"
+    return f"{MY_RANDOM.randrange(0x1000000):x}"
 
 def get_file_name(model_name: str) -> str:
     """Convert to name to snake_case and add file type
