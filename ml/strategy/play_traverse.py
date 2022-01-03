@@ -18,18 +18,8 @@ from euchplt.strategy import Strategy, StrategyNotice
 from .bid_traverse import BidFeatures, BidDataAnalysis
 
 ########################
-# PlayContext/Features #
+# PlayFeatures/Outcome #
 ########################
-
-class PlayContext(NamedTuple):
-    trick_num:        int
-    play_seq:         int
-    cur_trick:        Trick
-    cur_hand:         Hand
-    valid_plays:      list[Card]
-    turn_card:        Card
-    contract:         Bid
-    play_card:        Card
 
 class PlayFeatures(NamedTuple):
     # context features
@@ -161,7 +151,6 @@ TraverseKey = tuple[Card, ...]
 class PlayDataMsg(NamedTuple):
     pid:              int
     key:              TraverseKey
-    context:          PlayContext
     features:         PlayFeatures
     outcome:          CompOutcome
 
@@ -184,23 +173,9 @@ class PlayDataAnalysis(PlayAnalysis):
         self.valid_plays  = kwargs.get('valid_plays')
         self.bid_features = kwargs.get('bid_features')
 
-    def get_context(self, card: Card) -> PlayContext:
+    def get_features(self, card: Card, key: TraverseKey) -> PlayFeatures:
         deal = self.deal
 
-        context = {
-            'trick_num'  : deal.trick_num,
-            'play_seq'   : deal.play_seq,
-            'cur_trick'  : deal.cur_trick,
-            'cur_hand'   : deal.hand.copy(),
-            'valid_plays': self.valid_plays,
-            'turn_card'  : deal.turn_card,
-            'contract'   : deal.contract,
-            'play_card'  : card
-        }
-        return PlayContext._make(context.values())
-
-    def get_features(self, card: Card, key: TraverseKey) -> PlayFeatures:
-        deal        = self.deal
         # context stuff
         trump_suit  = deal.contract.suit
         turn_card   = deal.turn_card
@@ -209,6 +184,7 @@ class PlayDataAnalysis(PlayAnalysis):
         green_suits = turn_suit.green_suits()
         off_aces    = [p[1] for t in deal.tricks
                        for p in t.plays if p[1].rank == ace and p[1].suit != trump_suit]
+
         # current hand stuff
         trump_cards = self.trump_cards()
         trump_strgs = [0] * 5
@@ -220,6 +196,7 @@ class PlayDataAnalysis(PlayAnalysis):
             higher_trump = [c for c in self.trumps_missing() if c.level > trump_cards[0].level]
         else:
             higher_trump = self.trumps_missing()
+
         # card to play stuff
         effcard        = card.effcard(self.ctx)
         card_suit      = card.effsuit(self.ctx)
@@ -329,7 +306,6 @@ class StrategyPlayTraverse(Strategy):
     child_pids:      list[int]     = None
     my_plays:        list[Card]    = None
     bid_features:    BidFeatures   = None
-    context:         PlayContext   = None
     features:        PlayFeatures  = None
     lock:            Lock          = None
 
@@ -491,12 +467,10 @@ class StrategyPlayTraverse(Strategy):
         # outcome information
         if deal.trick_num < 5:
             key = tuple(self.my_plays)
-            context = analysis.get_context(card)
             features = analysis.get_features(card, key)
             self.write_features(features)
         else:
             key = tuple(self.my_plays)
-            self.context = analysis.get_context(card)
             self.features = analysis.get_features(card, key)
         return card
 
@@ -533,7 +507,6 @@ class StrategyPlayTraverse(Strategy):
             # need to reset the class, so this works for the next deal
             self.main_proc    = False
             self.bid_features = None
-            self.context      = None
             self.features     = None
             self.child_pids   = None
             self.my_plays     = None

@@ -15,14 +15,8 @@ from euchplt.analysis import SUIT_CTX, HandAnalysis
 from euchplt.strategy import Strategy, StrategyNotice
 
 #######################
-# BidContext/Features #
+# BidFeatures/Outcome #
 #######################
-
-class BidContext(NamedTuple):
-    bid_pos:          int
-    hand:             Hand
-    turn_card:        Card
-    bid:              Bid
 
 class BidFeatures(NamedTuple):
     bid_pos:          int
@@ -58,15 +52,6 @@ class BidDataAnalysis(HandAnalysis):
         super().__init__(deal.hand.copy())
         self.trump_values = kwargs.get('trump_values')
         self.deal = deal
-
-    def get_context(self, bid: Bid) -> BidContext:
-        context = {
-            'bid_pos'  : self.deal.bid_pos,
-            'hand'     : self.hand,
-            'turn_card': self.deal.turn_card,
-            'bid'      : bid
-        }
-        return BidContext._make(context.values())
 
     def get_features(self, bid: Bid) -> BidFeatures:
         """Comments from `ml-euchre` (need to be rethought and adapted!!!):
@@ -139,7 +124,6 @@ class StrategyBidTraverse(Strategy):
     bid_prune_strat: Optional[Strategy]
     hand_analysis:   dict
 
-    bid_context:     BidContext        = None
     bid_features:    BidFeatures       = None
     bid_outcome:     BidOutcome        = None
     child_pids:      list[int]         = None
@@ -235,7 +219,6 @@ class StrategyBidTraverse(Strategy):
         if deal.bid_round == 1:
             self.my_bid = Bid(deal.turn_card.suit, alone)
             analysis = BidDataAnalysis(deal, **self.hand_analysis)
-            self.bid_context = analysis.get_context(self.my_bid)
             self.bid_features = analysis.get_features(self.my_bid)
             return self.my_bid
         else:
@@ -257,7 +240,6 @@ class StrategyBidTraverse(Strategy):
 
             self.my_bid = Bid(bid_suit, alone)
             analysis = BidDataAnalysis(deal, **self.hand_analysis)
-            self.bid_context = analysis.get_context(self.my_bid)
             self.bid_features = analysis.get_features(self.my_bid)
             return self.my_bid
 
@@ -281,7 +263,7 @@ class StrategyBidTraverse(Strategy):
             return
 
         if self.child_pids:
-            hdr = f"pid {os.getpid()} bod_pos {self.bid_pos} bid {self.my_bid.suit}:"
+            hdr = f"pid {os.getpid()} bid_pos {self.bid_pos} bid {self.my_bid.suit}:"
             child_errs = []
             try:
                 log.debug(f"{hdr} waiting on child pids: {self.child_pids}")
@@ -298,11 +280,6 @@ class StrategyBidTraverse(Strategy):
 
         self.bid_outcome = BidOutcome(deal.my_tricks_won, deal.my_points)
         my_features = list(self.bid_features) + list(self.bid_outcome)
-
-        if DEBUG:
-            self.bid_context.hand.cards.sort(key=lambda c: c.sortkey)
-            log.debug(', '.join(f"{k}: {v}" for k, v in self.bid_context._asdict().items()))
-            log.debug(list(self.bid_features) + list(self.bid_outcome))
 
         # PERF NOTE: it is actually ~9% slower to funnel bid data to the master
         # process (`self.bid_pos = 0`), rather than let all bidders just append
@@ -342,7 +319,6 @@ class StrategyBidTraverse(Strategy):
             # need to reset the class, so this works for the next deal
             StrategyBidTraverse.bid_pos = None
             StrategyBidTraverse.queue   = None
-            self.bid_context            = None
             self.bid_features           = None
             self.bid_outcome            = None
             self.child_pids             = None
@@ -350,6 +326,7 @@ class StrategyBidTraverse(Strategy):
         else:
             self.queue.put(my_features)
             self.queue.close()
+            self.queue.join_thread()
             # if we spawned the process, we need to terminate it, so it doesn't continue
             # processing downstream outside of our purview
             os._exit(0)

@@ -30,14 +30,14 @@ default:
       strategy_params:
         play_strat:      Charlie 1
         discard_strat:
-        bid_prune_strat: Prune Model 2
+        bid_prune_strat: Bid Prune 2
         hand_analysis:
-    Prune Model 2:
-      notes:             "yields ~30% bids for pos 7"
+    Bid Prune 2:
+      notes:             "yields ~59% bids for pos 7"
       module_path:       euchplt.strategy
       base_class:        StrategySmart
       strategy_params:
-        bid_thresh:      [35, 35, 35, 35, 35, 35, 35, 35]
+        bid_thresh:      [38, 38, 38, 38, 38, 38, 38, 38]
     Play Model 1:
       module_path:       ml.strategy.play_traverse
       base_class:        StrategyPlayTraverse
@@ -50,9 +50,9 @@ default:
       module_path:       ml.strategy.play_traverse
       base_class:        StrategyPlayTraverse
       strategy_params:
-        bid_strat:       Charlie 1
+        bid_strat:       Charlie 6
         discard_strat:
-        base_play_strat: Charlie 1
+        base_play_strat: Charlie 6
         hand_analysis:
 
   players:

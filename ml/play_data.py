@@ -29,7 +29,9 @@ cfg.load('ml_data.yml')
 DFLT_DEALS   = 1
 TMP_TYPE     = '.dat'
 FILE_TYPE    = '.tsv'
+TMP_FILE_SZ  = 500  # number of decks
 UPD_INTERVAL = 10
+FIN_INTERVAL = 10000
 MY_RANDOM    = Random()
 
 def gen_run_id() -> str:
@@ -63,11 +65,10 @@ def main() -> int:
         raise RuntimeError(f"Play model '{name}' is not known")
     data_file = DataFile(get_file_name(name))  # this is the final output file
 
-    # we use a temp file to send raw outcomes to us from traversal procs (too
+    # we use temp files to send raw outcomes to us from traversal procs (too
     # difficult to get queues, fifos, etc. to work); not pretty, but workable
-    fd, tmp_file = tempfile.mkstemp(suffix=TMP_TYPE, text=True)
-    # HACKY: see comment in bid_data.py
-    os.environ['PLAY_DATA_FILE'] = tmp_file
+    tmp_files = []
+    tmp_file = None  # created as needed
     os.environ['PLAY_DATA_FORMAT'] = FMT_JSON
 
     player_name = play_models[name].get('data_player')
@@ -79,6 +80,12 @@ def main() -> int:
 
     try:
         for i in range(1, ndeals + 1):
+            if not tmp_file:
+                _, tmp_file = tempfile.mkstemp(suffix=TMP_TYPE, text=True)
+                tmp_files.append(tmp_file)
+                # HACKY: see comment in bid_data.py
+                os.environ['PLAY_DATA_FILE'] = tmp_file
+
             deck = get_deck()
             for j in range(4):
                 os.environ['PLAY_DATA_POS'] = str(j)
@@ -89,6 +96,9 @@ def main() -> int:
                 if deal.is_passed():
                     continue
                 deal.play_cards()
+
+            if i % TMP_FILE_SZ == 0:
+                tmp_file = None
 
             if i % UPD_INTERVAL == 0:
                 print(f"\rIterations: {i:2d}", end='')
@@ -138,7 +148,8 @@ def main() -> int:
     def finalize_run(run_id: str, file: TextIO) -> None:
         nonlocal comp_features, comp_outcome
 
-        for key, comp_data in comp_outcome.items():
+        for i, item in enumerate(comp_outcome.items()):
+            key, comp_data = item
             outcome = comp_data.finalize()
             features = comp_features.pop(key)
             assert features.run_id == run_id
@@ -151,31 +162,42 @@ def main() -> int:
         comp_features = {}
         comp_outcome  = {}
 
+    ifin = 0
     new_file = not os.path.exists(data_file) or os.path.getsize(data_file) == 0
-    with os.fdopen(fd, 'r') as filein, open(data_file, 'a') as fileout:
-        line = filein.readline()
-        decoded = json.loads(line.rstrip())
-        # if the first line was encoded as a list (as opposed to a dict),
-        # it is assumed to a be header record, which we will either write
-        # to `fileout` or ignore, depending on whether we are appending to
-        # existing data
-        if isinstance(decoded, list):
-            if new_file:
-                print(fmt_out(decoded), file=fileout)
-        else:
-            process_line(line, fileout, decoded)
-        for line in filein:
-            process_line(line, fileout)
+    print(f"\rPost-processing: {0:5d}", end='')
+    with open(data_file, 'a') as fileout:
+        for tmp_file in tmp_files:
+            with open(tmp_file, 'r') as filein:
+                line = filein.readline()
+                decoded = json.loads(line.rstrip())
+                # if the first line was encoded as a list (as opposed to a dict),
+                # it is assumed to a be header record, which we will either write
+                # to `fileout` or ignore, depending on whether we are appending to
+                # existing data
+                if isinstance(decoded, list):
+                    if new_file:
+                        print(fmt_out(decoded), file=fileout)
+                        new_file = False
+                else:
+                    process_line(line, fileout, decoded)
+                    ifin += 1
 
-        if cur_run_id:
-            finalize_run(cur_run_id, fileout)
-        else:
-            assert not comp_features and not comp_outcome
+                for line in filein:
+                    process_line(line, fileout)
+                    ifin += 1
+                    if ifin % FIN_INTERVAL == 0:
+                        print(f"\rPost-processing: {ifin:5d}", end='')
+                if cur_run_id:
+                    finalize_run(cur_run_id, fileout)
+                else:
+                    assert not comp_features and not comp_outcome
+    print(f"\rPost-processing: {ifin:5d}")
 
-    if not keep_tmp:
-        os.unlink(tmp_file)
-    else:
-        print(f"tmp file: {tmp_file}", file=sys.stderr)
+    for tmp_file in tmp_files:
+        if not keep_tmp:
+            os.unlink(tmp_file)
+        else:
+            print(f"tmp file: {tmp_file}", file=sys.stderr)
     return 0
 
 if __name__ == '__main__':
