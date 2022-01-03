@@ -336,13 +336,6 @@ DEFEND_ALONE = Bid(defend_suit, True)
 # DealState #
 #############
 
-class DealAttr(Enum):
-    MAKE      = "Make"
-    ALL_5     = "All_5"
-    GO_ALONE  = "Go_Alone"
-    EUCHRE    = "Euchre"
-    DEF_ALONE = "Defend_Alone"
-
 class DealState(NamedTuple):
     pos:              int
     hand:             Hand

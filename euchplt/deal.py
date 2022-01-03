@@ -5,10 +5,11 @@ import sys
 from enum import Enum
 from typing import Optional, TextIO
 
-from .core import DEBUG, LogicError, ImplementationError
+from .utils import parse_argv
+from .core import DEBUG
 from .card import Suit, SUITS, Card, Deck, get_deck
 from .euchre import GameCtxMixin, Hand, Trick, Bid, PASS_BID, NULL_BID
-from .euchre import DealAttr, DealState
+from .euchre import DealState
 from .player import Player, PlayerNotice
 
 ########
@@ -21,6 +22,13 @@ BIDDER_POS  = 0   # meaning, initial bidder
 DEALER_POS  = -1
 
 DealPhase = Enum('DealPhase', 'NEW DEALT BIDDING PASSED CONTRACT PLAYING COMPLETE SCORED')
+
+class DealAttr(Enum):
+    MAKE      = "Make"
+    ALL_5     = "All_5"
+    GO_ALONE  = "Go_Alone"
+    EUCHRE    = "Euchre"
+    DEF_ALONE = "Defend_Alone"
 
 class Deal(GameCtxMixin):
     """Represents the lifecycle of a deal, from the dealing of hands to bidding to
@@ -397,10 +405,25 @@ from .strategy import StrategyRandom, StrategySimple, StrategySmart
 
 def main() -> int:
     """Built-in driver to run through a simple/sample deal
+
+    Usage: deal.py [<ndeals>] [print_result=<res_tags>] [num_print=<nprint>]
     """
-    ndeals = 1
-    if len(sys.argv) > 1:
-        ndeals = int(sys.argv[1])
+    ndeals       = 1     # max number of deals
+    print_result = None  # meaning, only print this result
+    num_print    = 1     # only used if `print_result` specified
+
+    args, kwargs = parse_argv(sys.argv[1:])
+    if len(args) > 0:
+        ndeals = args.pop(0)
+        if args:
+            args_str = ' '.join(str(a) for a in args)
+            raise RuntimeError(f"Unexpected argument(s): {args_str}")
+    #ndeals = kwargs.pop('deals', None) or ndeals
+    print_tags = kwargs.pop('print_result', None)
+    if print_tags:
+        result_tags  = print_tags.upper().split(',')
+        print_result = set([DealAttr[t] for t in result_tags])
+        num_print    = kwargs.pop('num_print', None) or num_print
 
     players = [Player("Player 0", StrategyRandom(rand_seed=12345)),
                Player("Player 1", StrategySmart()),
@@ -414,10 +437,18 @@ def main() -> int:
         deal.deal_cards()
         deal.do_bidding()
         if deal.is_passed():
-            deal.print()
+            if not print_result:
+                deal.print()
             continue
         deal.play_cards()
-        deal.print(verbose=1)
+        if not print_result or deal.result == print_result:
+            if ndeals > 1:
+                print("\n--- New Deal ---")
+            deal.print(verbose=1)
+            if print_result:
+                num_print -= 1
+                if not num_print:
+                    break
 
     return 0
 

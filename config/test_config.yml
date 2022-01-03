@@ -23,10 +23,11 @@ default:
         voids_score:      21
   base_strategy_params:
     StrategyRandom:
-      seed:             null
+      rand_seed:        null
     StrategySimple:
       aggressive:       false
     StrategySmart:
+      rand_seed:        null
       hand_analysis:
         # keep this empty here, but may be overridden by individual strategies
       bid_thresh:       [35, 35, 35, 30, 35, 35, 35, 30]
@@ -71,7 +72,7 @@ default:
       module_path:      euchplt.strategy
       base_class:       StrategyRandom
       strategy_params:
-        seed:             99999
+        rand_seed:      99999
     Bravo 1:
       module_path:      euchplt.strategy
       base_class:       StrategySimple

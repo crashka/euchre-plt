@@ -9,8 +9,7 @@ import random
 
 from .core import DEBUG, LogicError
 from .card import get_deck
-from .euchre import DealAttr
-from .deal import Deal, NUM_PLAYERS, BIDDER_POS, DEALER_POS
+from .deal import Deal, DealAttr, NUM_PLAYERS, BIDDER_POS, DEALER_POS
 from .player import Player
 from .team import Team
 

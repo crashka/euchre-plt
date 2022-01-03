@@ -13,11 +13,11 @@ def test_strategy_new():
     """
     strat = Strategy.new('Alfa 1')
     assert isinstance(strat, StrategyRandom)
-    assert strat.seed is None
+    assert strat.rand_seed is None
 
     strat = Strategy.new('Alfa 2')
     assert isinstance(strat, StrategyRandom)
-    assert strat.seed == 99999
+    assert strat.rand_seed == 99999
 
     strat = Strategy.new('Bravo 1')
     assert isinstance(strat, StrategySimple)
@@ -35,7 +35,7 @@ def test_strategy_new():
     assert isinstance(strat.def_alone_thresh, list)
     assert len(strat.bid_thresh) == 8
     assert len(strat.alone_margin) == 8
-    assert len(strat.def_alone_thresh) == 8
+    assert len(strat.def_alone_thresh) == 11
 
     strat = Strategy.new('Charlie 2')
     assert isinstance(strat, StrategySmart)
@@ -46,4 +46,4 @@ def test_strategy_new():
     assert len(strat.hand_analysis) == 6
     assert len(strat.bid_thresh) == 8
     assert len(strat.alone_margin) == 8
-    assert len(strat.def_alone_thresh) == 8
+    assert len(strat.def_alone_thresh) == 11
