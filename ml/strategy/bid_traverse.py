@@ -176,6 +176,16 @@ class StrategyBidTraverse(Strategy):
             if not isinstance(self.bid_prune_strat, Strategy):
                 raise ConfigError("'bid_prune_strat' must resolve to a Strategy subclass")
 
+    def _reset(self) -> None:
+        """Put both the instance and class variables back to initial state
+        """
+        self.bid_features           = None
+        self.bid_outcome            = None
+        self.child_pids             = None
+        self.my_bid                 = None
+        StrategyBidTraverse.bid_pos = None
+        StrategyBidTraverse.queue   = None
+
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """See base class
         """
@@ -191,10 +201,10 @@ class StrategyBidTraverse(Strategy):
             # see PERF NOTE in `notify()` below
             StrategyBidTraverse.queue = mp.Queue()
             # Spawn subprocesses to handle positions 1-7, we will fallthrough
-            # the loop and handle the 0th position ourselves (take that end of
+            # the loop and handle the 0th position ourselves; take that end of
             # the sequence to avoid spawning both here and in the second round
-            # "7th" position, otherwise we would have to manage `child_pids`
-            # as a class variable)
+            # "7th" position, as well as ensuring that we don't abort due to a
+            # preemptive pruning bid
             child_pids = []
             for i in range(1, BID_POSITIONS):
                 StrategyBidTraverse.bid_pos = i
@@ -211,9 +221,14 @@ class StrategyBidTraverse(Strategy):
             if self.bid_prune_strat:
                 bid = self.bid_prune_strat.bid(deal)
                 if not bid.is_pass():
+                    # note that this is not a real bid, just what the prune strategy
+                    # *would* have bid; it is important that we can't get here from
+                    # the main proc, since that would terminate the entire traversal
+                    assert self.bid_pos != 0
                     log.debug(f"Aborting traverse for bid_pos {self.bid_pos}, "
                               f"preemptive bid ({bid}) from bid_pos {deal.bid_pos}")
-                    exit(0)
+                    self.queue.close()
+                    os._exit(0)
             return PASS_BID
 
         if deal.bid_round == 1:
@@ -281,7 +296,7 @@ class StrategyBidTraverse(Strategy):
         self.bid_outcome = BidOutcome(deal.my_tricks_won, deal.my_points)
         my_features = list(self.bid_features) + list(self.bid_outcome)
 
-        # PERF NOTE: it is actually ~9% slower to funnel bid data to the master
+        # PERF NOTE: it is actually ~10% slower to funnel bid data to the master
         # process (`self.bid_pos = 0`), rather than let all bidders just append
         # to the data file themselves (due to the additional synchronization),
         # but we do it this way for the better integrity
@@ -317,12 +332,7 @@ class StrategyBidTraverse(Strategy):
                 dequeue_print()
 
             # need to reset the class, so this works for the next deal
-            StrategyBidTraverse.bid_pos = None
-            StrategyBidTraverse.queue   = None
-            self.bid_features           = None
-            self.bid_outcome            = None
-            self.child_pids             = None
-            self.my_bid                 = None
+            self._reset()
         else:
             self.queue.put(my_features)
             self.queue.close()

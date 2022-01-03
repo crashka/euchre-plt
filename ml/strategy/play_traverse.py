@@ -351,7 +351,19 @@ class StrategyPlayTraverse(Strategy):
         if not self.hand_analysis:
             self.hand_analysis = self.play_analysis
 
-    def write_header(self) -> None:
+    def _reset(self) -> None:
+        """Put instance variables back to initial state
+        """
+        self.run_id       = None
+        self.data_fmt     = None
+        self.main_proc    = False
+        self.child_pids   = None
+        self.my_plays     = None
+        self.bid_features = None
+        self.features     = None
+        self.lock         = None
+
+    def _write_header(self) -> None:
         """Not pretty to require its own `open()` call, but this is neater
         code-wise.  The header is not written if appending to an already
         existing data file.
@@ -371,7 +383,7 @@ class StrategyPlayTraverse(Strategy):
             with self.lock:
                 print(header_str)
 
-    def write_features(self, features: PlayFeatures, outcome: PlayOutcome = None) -> None:
+    def _write_features(self, features: PlayFeatures, outcome: PlayOutcome = None) -> None:
         """We append tab-delimited records to the specified data file; it is the
         responsibility of the main program to aggregate the results and compute
         outcomes for `play_seq` 1 through 4
@@ -418,7 +430,7 @@ class StrategyPlayTraverse(Strategy):
             self.bid_features = bid_analysis.get_features(deal.contract)
             # lock is used to synchronize I/O accross processes
             self.lock = mp.Lock()
-            self.write_header()
+            self._write_header()
             # Spawn subprocesses to handle the cards in `valid_plays` (other
             # than the first one, which we will handle ourselves)
             child_pids = []
@@ -468,7 +480,7 @@ class StrategyPlayTraverse(Strategy):
         if deal.trick_num < 5:
             key = tuple(self.my_plays)
             features = analysis.get_features(card, key)
-            self.write_features(features)
+            self._write_features(features)
         else:
             key = tuple(self.my_plays)
             self.features = analysis.get_features(card, key)
@@ -485,7 +497,7 @@ class StrategyPlayTraverse(Strategy):
         tricks_won = [deal.my_tricks_won] * 3
         points     = [deal.my_points] * 3
         outcome    = PlayOutcome(*tricks_won, *points)
-        self.write_features(self.features, outcome)
+        self._write_features(self.features, outcome)
 
         if self.child_pids:
             child_errs = []
@@ -505,13 +517,7 @@ class StrategyPlayTraverse(Strategy):
 
         if self.main_proc:
             # need to reset the class, so this works for the next deal
-            self.main_proc    = False
-            self.bid_features = None
-            self.features     = None
-            self.child_pids   = None
-            self.my_plays     = None
-            self.run_id       = None
-            self.data_fmt     = None
+            self._reset()
         else:
             # if we spawned the process, we need to terminate it, so it doesn't
             # continue processing downstream outside of our purview
