@@ -5,8 +5,8 @@ default:
       tourn_class:     RoundRobin
       tourn_params:
         match_games:     5
-        passes:          60
-        elim_passes:     15
+        passes:          40
+        elim_passes:     10
         elim_pct:        25
         reset_elo:       true
         elo_params:
@@ -74,6 +74,34 @@ default:
         - Team 12
         - Team 14
         - Team 16
+    Seed D:
+      tourn_class:     RoundRobin
+      tourn_params:
+        match_games:     5
+        passes:          10
+        reset_elo:       true
+        elo_params:
+          elo_db:          elo_rating_500.db
+          use_margin:      false
+          d_value:         500
+          k_factor:        6
+      teams:
+        - Team 02
+        - Team 03
+        - Team 04
+        - Team 05
+        - Team 06
+        - Team 07
+        - Team 08
+        - Team 09
+        - Team 10
+        - Team 11
+        - Team 12
+        - Team 13
+        - Team 14
+        - Team 15
+        - Team 16
+        - Team 17
     Tourney D:
       tourn_class:     ChallengeLadder
       tourn_params:

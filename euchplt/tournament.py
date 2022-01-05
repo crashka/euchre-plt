@@ -667,7 +667,7 @@ class RoundRobin(Tournament):
     def play(self, **kwargs) -> None:
         """Perform configured number of passes for the tournament, where a pass is
         a single round robin.  We do pass-level progress reporting before truncating
-        `self.matches` to avoid infinite memory consumption.
+        `self.matches` (in `tabulate_pass()`) to avoid infinite memory consumption.
         """
         for pass_num in range(self.passes):
             pass_start = len(self.matches)
@@ -692,6 +692,7 @@ class ChallengeLadder(Tournament):
     # params
     passes:        int
     round_matches: int
+    seeded:        bool
     reset_elo:     bool
     elo_update:    TournUnit
     elo_params:    dict[str, Union[str, Number]]
@@ -708,6 +709,7 @@ class ChallengeLadder(Tournament):
         # just in case (or should we actually just let things blow up???)
         self.passes = self.passes or DFLT_PASSES
         self.round_matches = self.round_matches or DFLT_ROUND_MATCHES
+        self.seeded = self.seeded or False
         self.reset_elo = self.reset_elo or False
         self.elo_params = self.elo_params or {}
         self.elo_params['reset_ratings'] = self.reset_elo
@@ -762,7 +764,7 @@ class ChallengeLadder(Tournament):
             loser  += " (c)"
 
         scores = [s[1] for s in score_items]
-        print(f"Round {round_num}: {winner} def. {loser}\t{scores[0]} - {scores[1]}")
+        print(f"Round {round_num:2}: {winner} def. {loser}\t{scores[0]} - {scores[1]}")
 
         self.round_score = {}
 
@@ -882,11 +884,26 @@ def run_tournament(*args, **kwargs) -> int:
     tourn_args = {k: kwargs.get(k) for k in tourn_keys if kwargs.get(k) is not None}
     stats_file = kwargs.get('stats_file')
     elo_file   = kwargs.get('elo_file')
-    seed       = kwargs.get('seed')
+    rand_seed  = kwargs.get('rand_seed')
     verbose    = kwargs.get('verbose') or 0
+    seeding    = kwargs.get('seeding')
 
-    if seed:
-        random.seed(seed)
+    if rand_seed:
+        random.seed(rand_seed)
+    if seeding:
+        print("----- Seeding -----")
+        # REVISIT: for now, pass same args into both seeding "round"
+        # and main tournament, though we may want to put more control
+        # and/or integrity around this if becoming a primary interface
+        seed_round = Tournament.new(seeding, **tourn_args)
+        seed_round.play()
+        seed_round.print(verbose=verbose)
+        # note that the seeding round results determine the teams playing
+        # in the main tournament (even if not matching configured list)
+        teams = {name: seed_round.teams[name] for name in seed_round.results}
+        tourn_args['teams'] = teams
+        tourn_args['reset_elo'] = False
+        print("----- Main Tournament -----")
     if profiler:
         profiler.start()
     tourney = Tournament.new(tourn_name, **tourn_args)
@@ -920,9 +937,9 @@ def main() -> int:
 
     Functions/usage:
       - round_robin_bracket [teams=<num_teams>]
-      - run_tournament <name> [match_games=<n_games>] [passes=<passes>] [stats_file=<stats_file>]
+      - run_tournament <name> [match_games=<int>] [passes=<int>] [stats_file=<stats_file>]
                        [reset_elo=<bool>] [elo_update=<tourn_unit>] [elo_file=<elo_file>]
-                       [seed=<rand_seed>] [verbose=<level>]
+                       [rand_seed=<int>] [verbose=<level>] [seeding=<seed_tourn>]
     """
     if len(sys.argv) < 2:
         print(f"Utility function not specified", file=sys.stderr)
