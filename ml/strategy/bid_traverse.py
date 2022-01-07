@@ -8,9 +8,10 @@ from typing import ClassVar, Optional, NamedTuple, TextIO
 from multiprocessing.queues import Queue
 import multiprocessing as mp
 
-from euchplt.core import log, DEBUG, ConfigError
+from euchplt.core import log, ConfigError
 from euchplt.card import SUITS, Card
-from euchplt.euchre import Bid, PASS_BID, Hand, Trick, DealState
+from euchplt.euchre import Bid, PASS_BID, NULL_BID, DEFEND_ALONE, defend_suit
+from euchplt.euchre import Trick, DealState
 from euchplt.analysis import SUIT_CTX, HandAnalysis
 from euchplt.strategy import Strategy, StrategyNotice
 
@@ -21,6 +22,8 @@ from euchplt.strategy import Strategy, StrategyNotice
 class BidFeatures(NamedTuple):
     bid_pos:          int
     go_alone:         int
+    def_alone:        int
+    def_pos_rel:      int  # relative to bid_pos: 1 or 3
     turn_card_level:  int
     bid_turn_suit:    int
     bid_next_suit:    int
@@ -41,6 +44,9 @@ class BidOutcome(NamedTuple):
 ###################
 # BidDataAnalysis #
 ###################
+
+NUM_PLAYERS   = 4
+BID_POSITIONS = 8
 
 class BidDataAnalysis(HandAnalysis):
     """
@@ -74,12 +80,28 @@ class BidDataAnalysis(HandAnalysis):
         Output feature(s):
           - Number of tricks taken
         """
-        turn_card   = self.deal.turn_card
+        deal        = self.deal
+        turn_card   = deal.turn_card
         turn_suit   = turn_card.suit
         next_suit   = turn_suit.next_suit()
         green_suits = turn_suit.green_suits()
+        if bid.suit != defend_suit:
+            trump_suit  = bid.suit
+            go_alone    = bid.alone
+            def_alone   = False
+            bid_pos     = deal.bid_pos
+            def_pos_rel = 0
+        else:
+            trump_suit  = deal.contract.suit
+            go_alone    = deal.contract.alone
+            def_alone   = True
+            # note that `deal.bid_round` (in its current form)
+            # doesn't work here
+            bid_round   = 1 if trump_suit == turn_suit else 2
+            bid_pos     = deal.caller_pos + (bid_round - 1) * 4
+            def_pos_rel = deal.bid_pos - bid_pos
 
-        trump_cards = self.trump_cards(bid.suit)
+        trump_cards = self.trump_cards(trump_suit)
         trump_strgs = [0] * 5
         for i, card in enumerate(trump_cards):
             card_value = self.trump_values[card.rank.idx]
@@ -90,29 +112,28 @@ class BidDataAnalysis(HandAnalysis):
         # suits as well???
 
         features = {
-            'bid_pos'         : self.deal.bid_pos,
-            'go_alone'        : int(bid.alone),
+            'bid_pos'         : bid_pos,
+            'go_alone'        : int(go_alone),
+            'def_alone'       : int(def_alone),
+            'def_pos_rel'     : def_pos_rel,
             'turn_card_level' : turn_card.efflevel(SUIT_CTX[turn_suit]),
-            'bid_turn_suit'   : int(bid.suit == turn_suit),
-            'bid_next_suit'   : int(bid.suit == next_suit),
-            'bid_green_suit'  : int(bid.suit in green_suits),
+            'bid_turn_suit'   : int(trump_suit == turn_suit),
+            'bid_next_suit'   : int(trump_suit == next_suit),
+            'bid_green_suit'  : int(trump_suit in green_suits),
             'top_trump_strg'  : trump_strgs[0],
             'top_2_trump_strg': trump_strgs[1],
             'top_3_trump_strg': trump_strgs[2],
             'num_trump'       : len(trump_cards),
-            'num_next'        : len(self.next_suit_cards(bid.suit)),
-            'num_voids'       : len(self.voids(bid.suit)),
-            'num_singletons'  : len(self.singleton_cards(bid.suit)),
-            'num_off_aces'    : len(self.off_aces(bid.suit))
+            'num_next'        : len(self.next_suit_cards(trump_suit)),
+            'num_voids'       : len(self.voids(trump_suit)),
+            'num_singletons'  : len(self.singleton_cards(trump_suit)),
+            'num_off_aces'    : len(self.off_aces(trump_suit))
         }
         return BidFeatures._make(features.values())
 
 #######################
 # StrategyBidTraverse #
 #######################
-
-NUM_PLAYERS   = 4
-BID_POSITIONS = 8
 
 class StrategyBidTraverse(Strategy):
     """Run though each deal with all possible bids, playing out the hands
@@ -129,7 +150,9 @@ class StrategyBidTraverse(Strategy):
     child_pids:      list[int]         = None
     my_bid:          Bid               = None
 
-    bid_pos:         ClassVar[int]     = None
+    bid_pos:         ClassVar[int]     = None  # 0-7 (factors in bidding round)
+    alone:           ClassVar[bool]    = False
+    def_pos:         ClassVar[int]     = None  # defend-alone bid position (1-10)
     queue:           ClassVar[Queue]   = None
 
     def __init__(self, **kwargs):
@@ -184,18 +207,22 @@ class StrategyBidTraverse(Strategy):
         self.child_pids             = None
         self.my_bid                 = None
         StrategyBidTraverse.bid_pos = None
+        StrategyBidTraverse.alone   = False
+        StrategyBidTraverse.def_pos = None
         StrategyBidTraverse.queue   = None
 
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """See base class
         """
-        alone = False  # default for both regular and defensive bidding
-
         if def_bid:
-            # TEMP: for now we won't hit this, since we're not traversing
-            # loner bids right now (LATER may be added into this class or
-            # possibly broken out into separate implementation)
-            assert False
+            if deal.bid_pos == self.def_pos:
+                assert deal.contract
+                assert deal.go_alone
+                self.my_bid = DEFEND_ALONE
+                analysis = BidDataAnalysis(deal, **self.hand_analysis)
+                self.bid_features = analysis.get_features(self.my_bid)
+                return self.my_bid
+            return NULL_BID
 
         if self.bid_pos is None:
             # see PERF NOTE in `notify()` below
@@ -207,9 +234,9 @@ class StrategyBidTraverse(Strategy):
             # preemptive pruning bid
             child_pids = []
             for i in range(1, BID_POSITIONS):
-                StrategyBidTraverse.bid_pos = i
                 child_pid = os.fork()
                 if child_pid == 0:
+                    StrategyBidTraverse.bid_pos = i
                     break
                 child_pids.append(child_pid)
             else:
@@ -221,7 +248,7 @@ class StrategyBidTraverse(Strategy):
             if self.bid_prune_strat:
                 bid = self.bid_prune_strat.bid(deal)
                 if not bid.is_pass():
-                    # note that this is not a real bid, just what the prune strategy
+                    # Note that this is not a real bid, just what the prune strategy
                     # *would* have bid; it is important that we can't get here from
                     # the main proc, since that would terminate the entire traversal
                     assert self.bid_pos != 0
@@ -231,11 +258,9 @@ class StrategyBidTraverse(Strategy):
                     os._exit(0)
             return PASS_BID
 
+        bid_suit = None
         if deal.bid_round == 1:
-            self.my_bid = Bid(deal.turn_card.suit, alone)
-            analysis = BidDataAnalysis(deal, **self.hand_analysis)
-            self.bid_features = analysis.get_features(self.my_bid)
-            return self.my_bid
+            bid_suit = deal.turn_card.suit
         else:
             assert deal.bid_round == 2
             # Spawn subprocesses to handle the first two of the three non-
@@ -243,20 +268,54 @@ class StrategyBidTraverse(Strategy):
             # handle the remaining suit ourselves
             child_pids = []
             biddable_suits = [s for s in SUITS if s != deal.turn_card.suit]
-            for bid_suit in biddable_suits[:-1]:
+            for suit in biddable_suits[:-1]:
                 child_pid = os.fork()
                 if child_pid == 0:
+                    bid_suit = suit
                     break
                 child_pids.append(child_pid)
             else:
                 bid_suit = biddable_suits[-1]
                 assert self.child_pids is None
                 self.child_pids = child_pids
+        assert bid_suit in SUITS
 
-            self.my_bid = Bid(bid_suit, alone)
-            analysis = BidDataAnalysis(deal, **self.hand_analysis)
-            self.bid_features = analysis.get_features(self.my_bid)
-            return self.my_bid
+        # For all biddable cases, we spawn three additional subprocesses for
+        # going alone: for defending together, and for defending alone in each
+        # of the opposing positions
+        child_pids = []
+        for def_pos_rel in [None, 1, 3]:
+            child_pid = os.fork()
+            if child_pid == 0:
+                self.child_pids = None
+                StrategyBidTraverse.alone = True
+                if def_pos_rel:
+                    # note that this is a bid position (1-10), not a deal position
+                    StrategyBidTraverse.def_pos = self.bid_pos + def_pos_rel
+                else:
+                    assert self.def_pos is None
+                break
+            child_pids.append(child_pid)
+        else:
+            assert not self.alone
+            assert self.def_pos is None
+            if self.child_pids is None:
+                self.child_pids = child_pids
+            else:
+                self.child_pids.extend(child_pids)
+
+        # When going alone, don't account the defend-alone outcomes for
+        # the calling hand's features, since they will skew the results;
+        # those cases are purely for the defend-alone model(s)
+        if self.alone and self.def_pos:
+            assert not self.child_pids
+            return Bid(bid_suit, self.alone)
+
+        # Now (finally!) we can compute our features and return our bid
+        self.my_bid = Bid(bid_suit, self.alone)
+        analysis = BidDataAnalysis(deal, **self.hand_analysis)
+        self.bid_features = analysis.get_features(self.my_bid)
+        return self.my_bid
 
     def discard(self, deal: DealState) -> Card:
         """See base class
@@ -309,7 +368,7 @@ class StrategyBidTraverse(Strategy):
             except queue.Empty:
                 pass
 
-        if self.bid_pos == 0:
+        if self.bid_pos == 0 and not self.alone:
             # HACK: see comments in bid_data.py!
             if data_file := os.environ.get('BID_DATA_FILE'):
                 if not os.path.exists(data_file):
