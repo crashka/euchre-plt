@@ -39,7 +39,7 @@ class PlayFeatures(NamedTuple):
     caller_pos:       int  # 0-7 relative to first bid
     go_alone:         int
     def_alone:        int
-    def_pos:          int
+    def_pos_rel:      int
     turn_card_level:  int
     bid_turn_suit:    int
     bid_next_suit:    int
@@ -175,13 +175,13 @@ class PlayDataAnalysis(PlayAnalysis):
 
     def get_features(self, card: Card, key: TraverseKey) -> PlayFeatures:
         deal = self.deal
+        bid_features = self.bid_features
 
         # context stuff
         trump_suit  = deal.contract.suit
         turn_card   = deal.turn_card
         turn_suit   = turn_card.effsuit(self.ctx)
         next_suit   = turn_suit.next_suit()
-        green_suits = turn_suit.green_suits()
         off_aces    = [p[1] for t in deal.tricks
                        for p in t.plays if p[1].rank == ace and p[1].suit != trump_suit]
 
@@ -237,23 +237,23 @@ class PlayDataAnalysis(PlayAnalysis):
             'next_seen'       : len(deal.played_by_suit[next_suit]),
             'aces_seen'       : len(off_aces),
             # contract features
-            'caller_pos'      : deal.caller_pos,  # 0-7 relative to init bidder
-            'go_alone'        : int(deal.go_alone),         # cannot be None???
-            'def_alone'       : int(bool(deal.def_alone)),  # can be None
-            'def_pos'         : -1 if deal.def_pos is None else deal.def_pos,
-            'turn_card_level' : turn_card.efflevel(SUIT_CTX[turn_suit]),
-            'bid_turn_suit'   : int(trump_suit == turn_suit),
-            'bid_next_suit'   : int(trump_suit == next_suit),
-            'bid_green_suit'  : int(trump_suit in green_suits),
+            'caller_pos'      : bid_features.bid_pos,
+            'go_alone'        : bid_features.go_alone,
+            'def_alone'       : bid_features.def_alone,
+            'def_pos_rel'     : bid_features.def_pos_rel,
+            'turn_card_level' : bid_features.turn_card_level,
+            'bid_turn_suit'   : bid_features.bid_turn_suit,
+            'bid_next_suit'   : bid_features.bid_next_suit,
+            'bid_green_suit'  : bid_features.bid_green_suit,
             # starting hand features
-            'top_trump_strg'  : self.bid_features.top_trump_strg,
-            'top_2_trump_strg': self.bid_features.top_2_trump_strg,
-            'top_3_trump_strg': self.bid_features.top_3_trump_strg,
-            'num_trump'       : self.bid_features.num_trump,
-            'num_next'        : self.bid_features.num_next,
-            'num_voids'       : self.bid_features.num_voids,
-            'num_singletons'  : self.bid_features.num_singletons,
-            'num_off_aces'    : self.bid_features.num_off_aces,
+            'top_trump_strg'  : bid_features.top_trump_strg,
+            'top_2_trump_strg': bid_features.top_2_trump_strg,
+            'top_3_trump_strg': bid_features.top_3_trump_strg,
+            'num_trump'       : bid_features.num_trump,
+            'num_next'        : bid_features.num_next,
+            'num_voids'       : bid_features.num_voids,
+            'num_singletons'  : bid_features.num_singletons,
+            'num_off_aces'    : bid_features.num_off_aces,
             # current hand features
             'cur_top_trump_strg' : trump_strgs[0],
             'cur_top_2_trump_strg': trump_strgs[1],
