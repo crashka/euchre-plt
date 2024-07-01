@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='euchre-plt',
-    version='',
+    version='0.1',
     packages=find_packages(include=['euchplt']),
     url='',
     license='',

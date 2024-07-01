@@ -345,8 +345,8 @@ class Tournament:
         win_pct_vec = []
         elo_pts_vec = []
         cur_elo_vec = []
-        idx         = 0
-        for name in teams:
+
+        for idx, name in enumerate(teams):
             if self.lb_base:
                 base_stats = self.lb_base[name]
                 match_off  = base_stats[LBStat.MATCHES]
@@ -371,7 +371,6 @@ class Tournament:
             win_pct_vec.append(win_pct)
             elo_pts_vec.append(elo_pts)
             cur_elo_vec.append(cur_elo)
-            idx += 1
 
         wins_rank    = rankdata(wins_vec, method='min')
         win_pct_rank = rankdata(win_pct_vec, method='min')
@@ -933,7 +932,7 @@ def run_tournament(*args, **kwargs) -> int:
 def main() -> int:
     """Built-in driver to invoke various utility functions for the module
 
-    Usage: strategy.py <func_name> [<args> ...]
+    Usage: tournament.py <func_name> [<args> ...]
 
     Functions/usage:
       - round_robin_bracket [teams=<num_teams>]

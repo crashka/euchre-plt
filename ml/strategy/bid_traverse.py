@@ -163,7 +163,7 @@ class StrategyBidTraverse(Strategy):
             a named configuration) is used to play out deals for each bid traversal
             selection.
 
-          - `discard_stat` (again, object or config name) is used to determine the
+          - `discard_strat` (again, object or config name) is used to determine the
             discard for each bid selection (considered part of the "play" process,
             for purposes of bid model training, even in the case of the first round
             dealer bid).  If not specified, the `play_strat` instance will be used.
@@ -304,9 +304,9 @@ class StrategyBidTraverse(Strategy):
             else:
                 self.child_pids.extend(child_pids)
 
-        # When going alone, don't account the defend-alone outcomes for
-        # the calling hand's features, since they will skew the results;
-        # those cases are purely for the defend-alone model(s)
+        # When going alone, don't account the defend-alone outcomes for the
+        # calling hand's features, since that would skew the results; those
+        # cases are purely for the defend-alone model(s)
         if self.alone and self.def_pos:
             assert not self.child_pids
             return Bid(bid_suit, self.alone)
@@ -368,6 +368,9 @@ class StrategyBidTraverse(Strategy):
             except queue.Empty:
                 pass
 
+        # FIX: this implicitly identifies the main process (based on knowledge
+        # of current implementation in `bid()`); would definitely be better to
+        # make this explicit (as in `play_traverse.py`)!!!
         if self.bid_pos == 0 and not self.alone:
             # HACK: see comments in bid_data.py!
             if data_file := os.environ.get('BID_DATA_FILE'):

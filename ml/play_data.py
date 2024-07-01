@@ -41,7 +41,7 @@ def gen_run_id() -> str:
     return f"{MY_RANDOM.randrange(0x1000000):x}"
 
 def get_file_name(model_name: str) -> str:
-    """Convert to name to snake_case and add file type
+    """Convert the name to snake_case and add file type
     """
     return re.sub(r'\W+', '_', model_name).lower() + FILE_TYPE
 
@@ -63,7 +63,7 @@ def main() -> int:
     play_models = cfg.config('play_models')
     if name not in play_models:
         raise RuntimeError(f"Play model '{name}' is not known")
-    data_file = DataFile(get_file_name(name))  # this is the final output file
+    data_file = DataFile(get_file_name(name), add_ts=True)  # this is the final output file
 
     # we use temp files to send raw outcomes to us from traversal procs (too
     # difficult to get queues, fifos, etc. to work); not pretty, but workable

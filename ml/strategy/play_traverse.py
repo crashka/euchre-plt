@@ -317,12 +317,12 @@ class StrategyPlayTraverse(Strategy):
             a named configuration) is used to do the initial bidding to set the
             contract for the play traversal process.
 
-          - `discard_stat` (again, object or config name) is used to determine the
+          - `discard_strat` (again, object or config name) is used to determine the
             dealer discard in the case of first-round bids (considered part of the
             "bid" process, for purposes of play model training).  If not specified,
             the `bid_strat` instance will be used.
 
-          - `base_play_stat` (object or config name) is used to play cards for the
+          - `base_play_strat` (object or config name) is used to play cards for the
             three other positions (not `play_pos`) during play traversal, including
             the `play_pos` partner.
         """

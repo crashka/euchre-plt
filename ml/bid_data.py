@@ -26,6 +26,8 @@ FILE_TYPE    = '.tsv'
 UPD_INTERVAL = 10
 
 def get_file_name(model_name: str) -> str:
+    """Convert the name to snake_case and add file type
+    """
     return re.sub(r'\W+', '_', model_name).lower() + FILE_TYPE
 
 def main() -> int:
@@ -49,7 +51,7 @@ def main() -> int:
     # REVISIT: this is pretty hacky, but no good way to pass this information
     # down to the strategy class right now (see the other end of the hack in
     # bid_traverse.py)--should really make this prettier at some point!!!
-    os.environ['BID_DATA_FILE'] = DataFile(file_name)
+    os.environ['BID_DATA_FILE'] = DataFile(file_name, add_ts=True)
 
     player_name = bid_models[name].get('data_player')
     if not player_name:

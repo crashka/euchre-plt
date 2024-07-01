@@ -30,12 +30,15 @@ DEBUG        = int(environ.get('EUCH_DEBUG') or 0)
 ########
 
 DATA_DIR    = 'data'
-ARCH_DT_FMT = '%Y%m%d_%H%M%S'
+DATA_TS_FMT = '%Y%m%d_%H%M%S'
 
-def DataFile(file_name: str, dir: str = DATA_DIR) -> str:
+def DataFile(file_name: str, dir: str = DATA_DIR, add_ts: bool = False) -> str:
     """Given name of file, return full path name (in DATA_DIR, or specified
     directory)
     """
+    if add_ts:
+        now_ts = datetime.now().strftime(DATA_TS_FMT)
+        file_name += '-' + now_ts
     return os.path.join(BASE_DIR, dir, file_name)
 
 def ArchiveDataFile(file_name: str) -> None:
@@ -44,9 +47,9 @@ def ArchiveDataFile(file_name: str) -> None:
     a new version can be created
     """
     data_file = DataFile(file_name)
-    arch_dt = datetime.now().strftime(ARCH_DT_FMT)
+    arch_ts = datetime.now().strftime(DATA_TS_FMT)
     try:
-        rename(data_file, data_file + '-' + arch_dt)
+        rename(data_file, data_file + '-' + arch_ts)
     except FileNotFoundError:
         pass
 
