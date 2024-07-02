@@ -6,6 +6,7 @@
 
 .. automodule:: ml.bid_data
    :members:
+   :special-members:
    :show-inheritance:
 
 :mod:`ml.play_data` -- Play Data
@@ -13,6 +14,7 @@
 
 .. automodule:: ml.play_data
    :members:
+   :special-members:
    :show-inheritance:
 
 :mod:`ml.analysis` -- Analysis
@@ -20,6 +22,7 @@
 
 .. automodule:: ml.analysis
    :members:
+   :special-members:
    :imported-members:
    :show-inheritance:
 
@@ -28,5 +31,6 @@
 
 .. automodule:: ml.strategy
    :members:
+   :special-members:
    :imported-members:
    :show-inheritance:
