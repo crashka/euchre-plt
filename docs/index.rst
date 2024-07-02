@@ -6,15 +6,17 @@
 Welcome to Euchre Platform's documentation!
 ===========================================
 
+Modules
+-------
+
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
-   api
+   euchplt
+   ml
 
-
-Indices and tables
-==================
+Indexes and Tables
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`
