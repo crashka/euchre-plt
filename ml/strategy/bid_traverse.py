@@ -61,24 +61,32 @@ class BidDataAnalysis(HandAnalysis):
 
     def get_features(self, bid: Bid) -> BidFeatures:
         """Comments from `ml-euchre` (need to be rethought and adapted!!!):
+
         Input features:
-          - Bid position (0-7)
-          - Loner called
-          - Level of turncard (1-8)
-          - Relative suit of turncard (in relation to trump)
-              - One-hot encoding for next, green, or purple (all zeros if turncard
-                picked up)
-          - Trump (turncard or called) suit strength (various measures, start with
-            sum of levels 1-8)
-              - Top 1, 2, and 3 trump cards (three aggregate values)
-              - Note: include turncard and exclude discard, if dealer (which implies
-                that model will be tied to discard algorithm)
-          - Trump/next/green/purple suit scores (instead of just trump strength?)
-          - Number of trump (with turncard/discard, if dealer)
-          - Number of voids (or suits)
-          - Number of off-aces
+
+        - Bid position (0-7)
+        - Loner called
+        - Level of turncard (1-8)
+        - Relative suit of turncard (in relation to trump)
+
+            - One-hot encoding for next, green, or purple (all zeros if turncard
+              picked up)
+
+        - Trump (turncard or called) suit strength (various measures, start with
+          sum of levels 1-8)
+
+            - Top 1, 2, and 3 trump cards (three aggregate values)
+            - Note: include turncard and exclude discard, if dealer (which implies
+              that model will be tied to discard algorithm)
+
+        - Trump/next/green/purple suit scores (instead of just trump strength?)
+        - Number of trump (with turncard/discard, if dealer)
+        - Number of voids (or suits)
+        - Number of off-aces
+
         Output feature(s):
-          - Number of tricks taken
+
+        - Number of tricks taken
         """
         deal        = self.deal
         turn_card   = deal.turn_card
@@ -159,25 +167,25 @@ class StrategyBidTraverse(Strategy):
         """This class recognizes the following parameters (passed in directly as
         as kwargs, or specified in the config file, if using `Strategy.new()`):
 
-          - `play_strat` (passed in as either an instantiated `Strategy` object or
-            a named configuration) is used to play out deals for each bid traversal
-            selection.
+        - `play_strat` (passed in as either an instantiated `Strategy` object or
+          a named configuration) is used to play out deals for each bid traversal
+          selection.
 
-          - `discard_strat` (again, object or config name) is used to determine the
-            discard for each bid selection (considered part of the "play" process,
-            for purposes of bid model training, even in the case of the first round
-            dealer bid).  If not specified, the `play_strat` instance will be used.
+        - `discard_strat` (again, object or config name) is used to determine the
+          discard for each bid selection (considered part of the "play" process,
+          for purposes of bid model training, even in the case of the first round
+          dealer bid).  If not specified, the `play_strat` instance will be used.
 
-          - `bid_prune_strat` (object or config name) is used to determine whether
-            a preemptive bid would issued (rather than dutifully passing) prior to
-            reaching the target bid position.  If so, then this bid traversal
-            instance is eliminated, which will prevent a errant/misleading playing
-            out of a target bid, since it would be facing an unrealistically strong
-            opposition.  If this parameter is not specified, then no pruning occurs,
-            and the target bid is always played out and recorded.  Note that pruning
-            using a fairly aggressive bidding strategy has the unfortunate side
-            effect of requiring many more cycles to generate sufficient data for
-            later (especially second round) bidding positions.
+        - `bid_prune_strat` (object or config name) is used to determine whether
+          a preemptive bid would issued (rather than dutifully passing) prior to
+          reaching the target bid position.  If so, then this bid traversal
+          instance is eliminated, which will prevent a errant/misleading playing
+          out of a target bid, since it would be facing an unrealistically strong
+          opposition.  If this parameter is not specified, then no pruning occurs,
+          and the target bid is always played out and recorded.  Note that pruning
+          using a fairly aggressive bidding strategy has the unfortunate side
+          effect of requiring many more cycles to generate sufficient data for
+          later (especially second round) bidding positions.
         """
         super().__init__(**kwargs)
         if not self.play_strat:
