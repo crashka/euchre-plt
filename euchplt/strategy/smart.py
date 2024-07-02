@@ -62,21 +62,30 @@ class StrategySmart(Strategy):
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """General logic:
         round 1:
-          - non-dealer:
-            - compute hand strength for turn suit
-            - adjust for turn card (partner vs. opp)
-            - bid if strength > round1_thresh (by position)
-          - dealer:
-            - compute strength for turn suit + each possible discard
-              (including turn card)
-            - bid if max(strength) > round1_thresh (dealer position)
+
+        - non-dealer:
+
+          - compute hand strength for turn suit
+          - adjust for turn card (partner vs. opp)
+          - bid if strength > round1_thresh (by position)
+
+        - dealer:
+
+          - compute strength for turn suit + each possible discard
+            (including turn card)
+          - bid if max(strength) > round1_thresh (dealer position)
+
         round 2:
-          - all players:
-            - compute strength for each non-turn suit
-            - bid if max(strength) > round2_thresh (by position)
+
+        - all players:
+
+          - compute strength for each non-turn suit
+          - bid if max(strength) > round2_thresh (by position)
+
         loners:
-          - go alone if strength exceeds threshold by specified margin parameter
-          - defend alone if strength (for contract suit) > def_alone_thresh
+
+        - go alone if strength exceeds threshold by specified margin parameter
+        - defend alone if strength (for contract suit) > def_alone_thresh
         """
         persist       = deal.player_state
         bid_pos       = deal.bid_pos
@@ -155,20 +164,28 @@ class StrategySmart(Strategy):
         this is called
 
         possible future logic (first successful tactic):
-          - all trump case (discard lowest)
-          - create void
-            - don't discard singleton ace (exception case?)
-            - prefer next or green suit?
-            - "always void next if loner called from pos 2"[???]
-          - create doubleton
-            - perhaps only do if high card in suit is actually viable (>=Q)
-          - discard from next
-            - don't unguard doubleton king or break up A-K
-          - discard lowest
-            - avoid unguarding doubleton king, while making sure that A-K doubleton
-              takes precedence (if also present)
-            - worry about off-ace vs. low trump?
-            - choose between green suit doubletons?
+
+        - all trump case (discard lowest)
+        - create void
+
+          - don't discard singleton ace (exception case?)
+          - prefer next or green suit?
+          - "always void next if loner called from pos 2"[???]
+
+        - create doubleton
+
+          - perhaps only do if high card in suit is actually viable (>=Q)
+
+        - discard from next
+
+          - don't unguard doubleton king or break up A-K
+
+        - discard lowest
+
+          - avoid unguarding doubleton king, while making sure that A-K doubleton
+            takes precedence (if also present)
+          - worry about off-ace vs. low trump?
+          - choose between green suit doubletons?
         """
         assert deal.turn_card in deal.hand
         turn_suit = deal.turn_card.suit

@@ -18,19 +18,20 @@ DEFAULT_PROFILE = 'default'
 
 class Config:
     """Manages YAML config information, features include:
-      - Loading from multiple config files
-      - Caching of aggregated config file parameters
-      - Named "profiles" to override 'default' profile parameters
 
-    Config file structure:
-    ---
-    default:
-      my_section:
-        my_param: value
+    - Loading from multiple config files
+    - Caching of aggregated config file parameters
+    - Named "profiles" to override 'default' profile parameters
 
-    alt_profile:
-      my_section:
-        my_param: alt_value  # overwrites value from 'default' profile
+    Config file structure::
+
+      ---
+      default:
+        my_section:
+          my_param: value
+      alt_profile:
+        my_section:
+          my_param: alt_value  # overwrites value from 'default' profile
     """
     config_dir:   Optional[str]
     filepaths:    list[str]        # list of file pathnames loaded
@@ -135,9 +136,10 @@ logging.setLoggerClass(MyLogger)
 def rankdata(a: Sequence[Number], method: str ='average', reverse: bool = True) -> list[Number]:
     """Standalone implementation of scipy.stats.rankdata, adapted from
     https://stackoverflow.com/a/3071441, with the following added:
-      - `method` arg, with support for 'average' (default) and 'min'
-      - `reverse` flag, with `True` (default) signifying descending sort order
-        (i.e. the highest value in `a` has a rank of 1, as opposed to `len(a)`)
+
+    - `method` arg, with support for 'average' (default) and 'min'
+    - `reverse` flag, with `True` (default) signifying descending sort order
+      (i.e. the highest value in `a` has a rank of 1, as opposed to `len(a)`)
 
     Note that return rankings with be type `float` for method='average'
     and `int` for method='min'.
