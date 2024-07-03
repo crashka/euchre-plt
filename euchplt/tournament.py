@@ -935,10 +935,11 @@ def main() -> int:
     Usage: tournament.py <func_name> [<args> ...]
 
     Functions/usage:
-      - round_robin_bracket [teams=<num_teams>]
-      - run_tournament <name> [match_games=<int>] [passes=<int>] [stats_file=<stats_file>]
-                       [reset_elo=<bool>] [elo_update=<tourn_unit>] [elo_file=<elo_file>]
-                       [rand_seed=<int>] [verbose=<level>] [seeding=<seed_tourn>]
+
+    - round_robin_bracket [teams=<num_teams>]
+    - run_tournament <name> [match_games=<int>] [passes=<int>] [stats_file=<stats_file>]
+                     [reset_elo=<bool>] [elo_update=<tourn_unit>] [elo_file=<elo_file>]
+                     [rand_seed=<int>] [verbose=<level>] [seeding=<seed_tourn>]
     """
     if len(sys.argv) < 2:
         print(f"Utility function not specified", file=sys.stderr)

@@ -48,7 +48,8 @@ def main() -> int:
     Usage: strategy.py <func_name> [<arg> ...]
 
     Functions/usage:
-      - tune_strategy_smart [<seed>]
+
+    - tune_strategy_smart [<seed>]
     """
     if len(sys.argv) < 2:
         print(f"Utility function not specified", file=sys.stderr)

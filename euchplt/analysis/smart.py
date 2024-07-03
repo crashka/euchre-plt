@@ -10,26 +10,27 @@ from .base import SUIT_CTX, HandAnalysis
 #####################
 
 class HandAnalysisSmart(HandAnalysis):
-    """Example parameter values (current defaults in config.yml):
+    """Example parameter values (current defaults in config.yml)::
 
-         trump_values     = [0, 0, 0, 1, 2, 4, 7, 10]
-         suit_values      = [0, 0, 0, 1, 5, 10]
-         num_trump_scores = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
-         off_aces_scores  = [0.0, 0.2, 0.5, 1.0]
-         voids_scores     = [0.0, 0.3, 0.7, 1.0] (index capped by number of trump)
+      trump_values     = [0, 0, 0, 1, 2, 4, 7, 10]
+      suit_values      = [0, 0, 0, 1, 5, 10]
+      num_trump_scores = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+      off_aces_scores  = [0.0, 0.2, 0.5, 1.0]
+      voids_scores     = [0.0, 0.3, 0.7, 1.0] (index capped by number of trump)
 
-         scoring_coeff    = {'trump_score':     40,
-                             'max_suit_score':  10,
-                             'num_trump_score': 20,
-                             'off_aces_score':  15,
-                             'voids_score':     15}
+      scoring_coeff    = {'trump_score':     40,
+                          'max_suit_score':  10,
+                          'num_trump_score': 20,
+                          'off_aces_score':  15,
+                          'voids_score':     15}
 
-         hand scoring aspects (multiply by coefficients):
-           - trump strength (add card values)
-           - max off-suit strength (same)
-           - num trump
-           - off-aces
-           - voids
+    hand scoring aspects (multiply by coefficients):
+
+    - trump strength (add card values)
+    - max off-suit strength (same)
+    - num trump
+    - off-aces
+    - voids
     """
     # the following annotations represent the parameters that are specified
     # in the config file for the class name under `base_analysis_params`
