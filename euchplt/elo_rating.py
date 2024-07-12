@@ -32,6 +32,8 @@ class EloRating:
     ratings_hist:  dict[str, list[float]]  # list of updates, indexed by team name
 
     def __init__(self, teams: Iterable[Team], params: dict = None):
+        """
+        """
         params = params or {}
         self.elo_db        = params.get('elo_db')        or DFLT_ELO_DB
         self.reset_ratings = params.get('reset_ratings') or False
@@ -69,6 +71,8 @@ class EloRating:
         return self.team_ratings[team.name], self.ratings_hist[team.name]
 
     def get_sorted(self) -> tuple[str, float]:
+        """
+        """
         by_rating = sorted(self.team_ratings.items(), key=lambda s: s[1], reverse=True)
         for item in by_rating:
             yield item

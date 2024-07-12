@@ -146,6 +146,8 @@ def main() -> int:
             comp_outcome[my_key] = CompOutcome()
 
     def finalize_run(run_id: str, file: TextIO) -> None:
+        """
+        """
         nonlocal comp_features, comp_outcome
 
         for i, item in enumerate(comp_outcome.items()):

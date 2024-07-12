@@ -168,6 +168,8 @@ Leaderboard = dict[str, LBStats]          # indexed by team name
 TournUnit = Enum('TournUnit', 'MATCH ROUND PASS')
 
 class Tournament:
+    """Abstract base class, cannot be instantiated directly.
+    """
     # params/config
     name:           str
     teams:          dict[str, Team]  # indexed by team name
@@ -219,9 +221,8 @@ class Tournament:
         return tourn_class(tourn_name, teams, **tourn_params)
 
     def __init__(self, name: str, teams: Union[Iterable[str], Iterable[Team]], **kwargs):
-        """Abstract base class, cannot be instantiated directly.  Tournament teams can
-        either be specified by name (in the config file) or instantiated `Team` objects
-        (format must be consistent within the iterable).
+        """Tournament teams can either be specified by name (in the config file) or
+        instantiated `Team` objects (format must be consistent within the iterable)
         """
         self.name = name
         self.teams = {}
@@ -313,6 +314,8 @@ class Tournament:
         self.results = [s[0] for s in scores]
 
     def set_lb_base(self, lb_current: Leaderboard) -> None:
+        """
+        """
         self.lb_base = {}
         for name in lb_current:
             stats = self.team_stats[name]
@@ -439,6 +442,8 @@ class Tournament:
         print(f"Tournament Winner{plural}:\n  {', '.join(self.winner)}")
 
     def print_stats(self, file: TextIO = sys.stdout, by_pos: bool = False) -> None:
+        """
+        """
         CSF = CompStatFormulas
         NOT_APPLICABLE = "n/a"
         print("Tournament Stats:", file=file)
@@ -517,6 +522,8 @@ class Tournament:
                         yield field_name, pos_stat[i]
 
         def comp_stats_gen(stats_map: StatsMap, pos_stats_map: StatsMap) -> tuple[str, int]:
+            """
+            """
             CSF = CompStatFormulas
             for stat in CSF:
                 num = stats_map[CSF[stat][0]]
@@ -599,6 +606,8 @@ class RoundRobin(Tournament):
             list_tail = rotate(list_tail)
 
     def __init__(self, name: str, teams: Union[Iterable[str], Iterable[Team]], **kwargs):
+        """
+        """
         super().__init__(name, teams, **kwargs)
         # REVISIT: there _shouldn't_ be any empty values here, but apply defaults
         # just in case (or should we actually just let things blow up???)
@@ -614,6 +623,8 @@ class RoundRobin(Tournament):
         self.elim_order = []
 
     def tabulate(self, match: Match) -> None:
+        """
+        """
         super().tabulate(match)
         if self.elo_update == TournUnit.MATCH:
             self.elo_rating.update([match])
@@ -650,6 +661,8 @@ class RoundRobin(Tournament):
         self.matches.clear()
 
     def set_winner(self) -> None:
+        """
+        """
         lb_iter = self.leaderboards[-1].items()
         lb_sorted = sorted(lb_iter, key=self.lb_key, reverse=True)
         top_lb_item = lb_sorted[0]
@@ -688,6 +701,8 @@ class RoundRobin(Tournament):
 DFLT_ROUND_MATCHES = 1
 
 class ChallengeLadder(Tournament):
+    """
+    """
     # params
     passes:        int
     round_matches: int
@@ -703,6 +718,8 @@ class ChallengeLadder(Tournament):
     round_winners: list[str]
 
     def __init__(self, name: str, teams: Union[Iterable[str], Iterable[Team]], **kwargs):
+        """
+        """
         super().__init__(name, teams, **kwargs)
         # REVISIT: there _shouldn't_ be any empty values here, but apply defaults
         # just in case (or should we actually just let things blow up???)
@@ -727,6 +744,8 @@ class ChallengeLadder(Tournament):
         self.ladder_hist = [{t: pos for pos, t in enumerate(self.ladder)}]
 
     def get_matchup(self, round_num: int) -> tuple[Team, Team]:
+        """
+        """
         # last team for round_num = 0, going up the ladder each round
         chal = len(self.teams) - round_num - 1
         matchup = (self.ladder[chal], self.ladder[chal-1])
@@ -736,6 +755,8 @@ class ChallengeLadder(Tournament):
         return matchup
 
     def tabulate(self, match: Match) -> None:
+        """
+        """
         super().tabulate(match)
         if self.elo_update == TournUnit.MATCH:
             self.elo_rating.update([match])
@@ -787,6 +808,8 @@ class ChallengeLadder(Tournament):
         self.matches.clear()
 
     def set_winner(self) -> None:
+        """
+        """
         self.winner = tuple((self.ladder[0],))
         self.results = self.ladder
         self.elo_rating.persist()
@@ -812,6 +835,8 @@ class ChallengeLadder(Tournament):
         self.set_winner()
 
     def print(self, file: TextIO = sys.stdout, verbose: int = 0) -> None:
+        """
+        """
         print(f"Tournament Results:")
         init_ladder = self.ladder_hist[0]
         for pos, team in enumerate(self.ladder):
@@ -876,6 +901,8 @@ def round_robin_bracket(*args, **kwargs) -> int:
     return 0
 
 def run_tournament(*args, **kwargs) -> int:
+    """
+    """
     if len(args) < 1:
         raise RuntimeError("Tournament name not specified")
     tourn_name = args[0]
@@ -938,8 +965,8 @@ def main() -> int:
 
     - round_robin_bracket [teams=<num_teams>]
     - run_tournament <name> [match_games=<int>] [passes=<int>] [stats_file=<stats_file>]
-                     [reset_elo=<bool>] [elo_update=<tourn_unit>] [elo_file=<elo_file>]
-                     [rand_seed=<int>] [verbose=<level>] [seeding=<seed_tourn>]
+          [reset_elo=<bool>] [elo_update=<tourn_unit>] [elo_file=<elo_file>]
+          [rand_seed=<int>] [verbose=<level>] [seeding=<seed_tourn_name>]
     """
     if len(sys.argv) < 2:
         print(f"Utility function not specified", file=sys.stderr)

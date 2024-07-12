@@ -127,6 +127,8 @@ class Match(object):
             self.print_stats(file=file)
 
     def print_score(self, file: TextIO = sys.stdout) -> None:
+        """
+        """
         print("Match Score:", file=file)
         for i, team in enumerate(self.teams):
             print(f"  {team.name}: {self.score[i]}", file=file)
@@ -137,6 +139,8 @@ class Match(object):
         print(f"Match Winner:\n  {self.winner[1]}")
 
     def print_stats(self, file: TextIO = sys.stdout) -> None:
+        """
+        """
         print("Match Stats:", file=file)
         for i, team in enumerate(self.teams):
             mystats = self.stats[i]
@@ -147,8 +151,6 @@ class Match(object):
 ########
 # main #
 ########
-
-from .strategy import StrategyRandom, StrategySimple, StrategySmart
 
 def main() -> int:
     """Built-in driver to run through a simple/sample match

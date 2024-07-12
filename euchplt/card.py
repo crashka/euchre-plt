@@ -43,6 +43,8 @@ Rank
 ################
 
 class Rank(NamedTuple):
+    """
+    """
     idx:   int
     name:  str
     level: int
@@ -55,6 +57,8 @@ class Rank(NamedTuple):
         return self.tag
 
 class BowerRank(Rank):
+    """
+    """
     pass
 
 nine        = Rank(0, 'nine',  1, '9')
@@ -78,6 +82,8 @@ ALL_RANKS   = RANKS + BOWER_RANKS
 ########
 
 class Suit(NamedTuple):
+    """
+    """
     idx:  int
     name: str
     tag:  str
@@ -117,6 +123,8 @@ class Card(NamedTuple):
         return self.tag
 
 class Bower(Card):
+    """
+    """
     pass
 
 card_list = []

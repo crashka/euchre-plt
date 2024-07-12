@@ -25,12 +25,16 @@ class GameCtxMixin:
     lead_suit:  Suit = None
 
     def set_trump_suit(self, trump_suit: Suit) -> None:
+        """
+        """
         if self.trump_suit:
             raise LogicError(f"Cannot change trump_suit for {type(self).__name__}")
         self.trump_suit = trump_suit
         self.next_suit = trump_suit.next_suit()
 
     def set_lead_card(self, lead_card: Card) -> None:
+        """
+        """
         if self.lead_card:
             raise LogicError(f"Cannot change lead_card for {type(self).__name__}")
         self.lead_card = lead_card
@@ -123,9 +127,13 @@ def realcard(self, ctx: GameCtxMixin) -> Card:
     raise LogicError(f"Don't know how to get realcard for {self}")
 
 def same_as(self, other: Card, ctx: GameCtxMixin) -> bool:
+    """
+    """
     return self.effcard(ctx) == other.effcard(ctx)
 
 def beats(self, other: Card, ctx: GameCtxMixin) -> bool:
+    """
+    """
     if ctx.lead_card is None:
         raise LogicError("Lead card not set")
 
@@ -172,6 +180,8 @@ class Hand:
     by_suit: list[dict[Suit, dict[Suit, list[Card]]]]
 
     def __init__(self, cards: list[Card]):
+        """
+        """
         self.cards = cards
         self.by_suit = [{suit: None for suit in SUITS} for _ in range(2)]
 
@@ -194,6 +204,8 @@ class Hand:
         return self.cards.copy()
 
     def append_card(self, card: Card, ctx: GameCtxMixin = None) -> None:
+        """
+        """
         if ctx:
             if ctx.trump_suit is None:
                 raise LogicError("Trump suit not set")
@@ -204,6 +216,8 @@ class Hand:
         return self.cards.append(card)
 
     def remove_card(self, card: Card, ctx: GameCtxMixin = None) -> None:
+        """
+        """
         if ctx:
             if ctx.trump_suit is None:
                 raise LogicError("Trump suit not set")
@@ -265,6 +279,8 @@ class Trick(GameCtxMixin):
     winning_pos:  Optional[int]
 
     def __init__(self, parent_ctx: GameCtxMixin):
+        """
+        """
         self.plays        = []
         self.cards        = [None] * 4
         self.winning_card = None
@@ -296,6 +312,8 @@ class Trick(GameCtxMixin):
         return False
 
     def lead_trumped(self) -> bool:
+        """
+        """
         if not self.lead_card:
             raise LogicError("Lead card not yet played")
         non_trump_led = self.lead_card.effsuit(self) != self.trump_suit
@@ -312,15 +330,21 @@ null_suit   = Suit(-2, 'null', 'null')
 defend_suit = Suit(-3, 'defend', 'defend')
 
 class Bid(NamedTuple):
+    """
+    """
     suit:  Suit          # either real suit or dummy suit
     alone: bool = False  # used for either bidding or defending
 
     def is_pass(self, include_null: bool = False) -> bool:
+        """
+        """
         if include_null and self.suit == null_suit:
             return True
         return self.suit == pass_suit
 
     def is_defend(self) -> bool:
+        """
+        """
         return self.suit == defend_suit
 
     def __str__(self) -> str:
@@ -337,6 +361,8 @@ DEFEND_ALONE = Bid(defend_suit, True)
 #############
 
 class DealState(NamedTuple):
+    """
+    """
     pos:              int
     hand:             Hand
     turn_card:        Optional[Card]

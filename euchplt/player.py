@@ -21,9 +21,14 @@ class PlayerNotice(Enum):
 ##########
 
 class Player:
-    """For now, we just delegate calls to the Strategy class.  LATER: we probably
+    """A player maybe be defined by an entry in the config file (identified by
+    `name`); or if an instantiated `strategy` object, we will create an ad hoc
+    player (in which case `name` is just a label with no additional meaning or
+    association)
+
+    For now, we just delegate calls to the Strategy class.  LATER: we probably
     need to rethink the design of this class (perhaps if/when we add human and/or
-    network players)!!!
+    remote players)!!!
     """
     name:       str
     strategy:   Strategy
@@ -31,10 +36,7 @@ class Player:
     disamb:     ClassVar[list[str]] = [c for c in 'abcdefghijklmnop']
 
     def __init__(self, name: str, strategy: Strategy = None):
-        """A player maybe be defined by an entry in the config file (identified
-        by `name`); or if an instantiated `strategy` object, we will create an
-        ad hoc player (in which case `name` is just a label with no additional
-        meaning or association)
+        """
         """
         if not strategy:
             players = cfg.config('players')
@@ -100,10 +102,10 @@ class PlayerHuman(Player):
     pass
 
 #################
-# PlayerNetwork #
+# PlayerRemote #
 #################
 
-class PlayerNetwork(Player):
+class PlayerRemote(Player):
     """
     """
     pass

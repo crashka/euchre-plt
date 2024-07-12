@@ -87,12 +87,18 @@ if DEBUG:
 ##############
 
 class ConfigError(RuntimeError):
+    """
+    """
     pass
 
 class LogicError(RuntimeError):
+    """
+    """
     pass
 
 class ImplementationError(RuntimeError):
+    """
+    """
     pass
 
 ##################

@@ -1,6 +1,30 @@
 :mod:`euchplt` -- Platform
 --------------------------
 
+:mod:`euchplt.player` -- Player
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: euchplt.player
+   :members:
+   :special-members: __init__
+   :show-inheritance:
+
+:mod:`euchplt.team` -- Team
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: euchplt.team
+   :members:
+   :special-members: __init__
+   :show-inheritance:
+
+:mod:`euchplt.card` -- Card
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: euchplt.card
+   :members:
+   :special-members: __init__
+   :show-inheritance:
+
 :mod:`euchplt.deal` -- Deal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -33,20 +57,11 @@
    :special-members: __init__
    :show-inheritance:
 
-:mod:`euchplt.core` -- Core
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. automodule:: euchplt.core
-   :members:
-   :special-members: __init__
-   :show-inheritance:
-
 :mod:`euchplt.euchre` -- Euchre
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: euchplt.euchre
    :members:
-   :undoc-members:
    :special-members: __init__
    :show-inheritance:
 
@@ -68,6 +83,22 @@
    :undoc-members:
    :special-members: __init__
    :imported-members:
+   :show-inheritance:
+
+:mod:`euchplt.elo_rating` -- Elo Rating
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: euchplt.elo_rating
+   :members:
+   :special-members: __init__
+   :show-inheritance:
+
+:mod:`euchplt.core` -- Core
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: euchplt.core
+   :members:
+   :special-members: __init__
    :show-inheritance:
 
 :mod:`euchplt.utils` -- Utils

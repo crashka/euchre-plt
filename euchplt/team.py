@@ -15,6 +15,10 @@ MIXED_STRATEGY = "mixed strategy"
 DFLT_PLAYER_IDS = ("Player A", "Player B")
 
 class Team:
+    """A team can be defined by an entry in the config file; or by an iterable (with
+    two entries) of instantiated `Player` objects, in which case a team name will be
+    generated from the player names
+    """
     name:          str
     # note that the following is the name of configured strategy in the config
     # file, and not the instantiated `Strategy` object itself (as in `Player`)
@@ -22,9 +26,7 @@ class Team:
     players:       list[Player]
 
     def __init__(self, team_def: Union[str, Iterable[Player]]):
-        """A team can be defined by an entry in the config file; or by an iterable (with
-        two entries) of instantiated `Player` objects, in which case a team name will be
-        generated from the player names
+        """
         """
         if isinstance(team_def, str):
             teams = cfg.config('teams')
