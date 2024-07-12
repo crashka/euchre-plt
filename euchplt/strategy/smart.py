@@ -46,6 +46,8 @@ class StrategySmart(Strategy):
                                            'part_winning', 'opp_winning')
 
     def __init__(self, **kwargs):
+        """See base class
+        """
         super().__init__(**kwargs)
         self.random = Random(self.rand_seed)
         self.hand_analysis = self.hand_analysis or {}
@@ -61,6 +63,7 @@ class StrategySmart(Strategy):
 
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """General logic:
+
         round 1:
 
         - non-dealer:
@@ -163,7 +166,7 @@ class StrategySmart(Strategy):
         """Note that the turn card is already in the player's hand (six cards now) when
         this is called
 
-        possible future logic (first successful tactic):
+        Possible future logic (first successful tactic):
 
         - all trump case (discard lowest)
         - create void

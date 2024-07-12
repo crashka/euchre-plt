@@ -48,9 +48,13 @@ class HandAnalysis:
         return self.suit_cards_by_trump[trump_suit]
 
     def trump_cards(self, trump_suit: Suit) -> list[Card]:
+        """
+        """
         return self.get_suit_cards(trump_suit)[trump_suit]
 
     def next_suit_cards(self, trump_suit: Suit) -> list[Card]:
+        """
+        """
         return self.get_suit_cards(trump_suit)[trump_suit.next_suit()]
 
     def green_suit_cards(self, trump_suit: Suit) -> tuple[list[Card], ...]:
@@ -62,13 +66,19 @@ class HandAnalysis:
         return suit_cards if is_ordered else suit_cards[::-1]
 
     def off_aces(self, trump_suit: Suit) -> list[Card]:
+        """
+        """
         return [c for c in self.hand.cards if c.rank == ace and c.suit != trump_suit]
 
     def bowers(self, trump_suit: Suit) -> list[Bower]:
+        """
+        """
         trumps = self.trump_cards(trump_suit)
         return [c for c in trumps if isinstance(c, Bower)]
 
     def voids(self, trump_suit: Suit) -> list[Suit]:
+        """
+        """
         suit_cards = self.get_suit_cards(trump_suit)
         return [suit for suit, cards in suit_cards.items() if len(cards) == 0]
 
@@ -101,27 +111,41 @@ class PlayAnalysis:
     hand_analysis: HandAnalysis
 
     def __init__(self, deal: DealState):
+        """
+        """
         self.deal          = deal
         self.ctx           = SUIT_CTX[deal.contract.suit]
         self.hand          = deal.hand
         self.hand_analysis = HandAnalysis(self.hand)
 
     def get_suit_cards(self) -> SuitCards:
+        """
+        """
         return self.hand_analysis.get_suit_cards(self.ctx.suit)
 
     def trump_cards(self) -> list[Card]:
+        """
+        """
         return self.hand_analysis.trump_cards(self.ctx.suit)
 
     def next_suit_cards(self) -> list[Card]:
+        """
+        """
         return self.hand_analysis.next_suit_cards(self.ctx.suit)
 
     def green_suit_cards(self) -> tuple[list[Card], ...]:
+        """
+        """
         return self.hand_analysis.green_suit_cards(self.ctx.suit)
 
     def off_aces(self) -> list[Card]:
+        """
+        """
         return self.hand_analysis.off_aces(self.ctx.suit)
 
     def bowers(self) -> list[Card]:
+        """
+        """
         return self.hand_analysis.bowers(self.ctx.suit)
 
     def follow_cards(self, lead_card: Card) -> list[Card]:

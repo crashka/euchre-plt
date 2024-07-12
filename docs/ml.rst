@@ -15,12 +15,10 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: ml.analysis
-   :undoc-members:
    :imported-members:
 
 :mod:`ml.strategy` -- Strategy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: ml.strategy
-   :undoc-members:
    :imported-members:

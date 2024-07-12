@@ -20,6 +20,8 @@ from euchplt.strategy import Strategy, StrategyNotice
 #######################
 
 class BidFeatures(NamedTuple):
+    """
+    """
     bid_pos:          int
     go_alone:         int
     def_alone:        int
@@ -38,6 +40,8 @@ class BidFeatures(NamedTuple):
     num_off_aces:     int
 
 class BidOutcome(NamedTuple):
+    """
+    """
     num_tricks:       float
     points:           float
 
@@ -55,6 +59,8 @@ class BidDataAnalysis(HandAnalysis):
     deal:         DealState
 
     def __init__(self, deal: DealState, **kwargs):
+        """
+        """
         super().__init__(deal.hand.copy())
         self.trump_values = kwargs.get('trump_values')
         self.deal = deal

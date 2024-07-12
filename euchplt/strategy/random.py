@@ -18,6 +18,8 @@ class StrategyRandom(Strategy):
     random:    Random
 
     def __init__(self, **kwargs):
+        """See base class
+        """
         super().__init__(**kwargs)
         self.random = Random(self.rand_seed)
 

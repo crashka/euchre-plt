@@ -44,6 +44,8 @@ class HandAnalysisSmart(HandAnalysis):
     scoring_coeff:    dict[str, int]
 
     def __init__(self, hand: Hand, **kwargs):
+        """
+        """
         super().__init__(hand)
         class_name = type(self).__name__
         base_params = cfg.config('base_analysis_params')
@@ -65,6 +67,8 @@ class HandAnalysisSmart(HandAnalysis):
         return tot_value / sum(value_arr)
 
     def hand_strength(self, trump_suit: Suit) -> float:
+        """
+        """
         trump_score = None
         suit_scores = []  # no need to track associated suits, for now
 

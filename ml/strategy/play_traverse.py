@@ -22,6 +22,8 @@ from .bid_traverse import BidFeatures, BidDataAnalysis
 ########################
 
 class PlayFeatures(NamedTuple):
+    """
+    """
     # context features
     run_id:           str
     key:              str
@@ -107,9 +109,13 @@ class CompOutcome:
     points_avg: float = 0.0
 
     def empty(self) -> bool:
+        """
+        """
         return self.count == 0
 
     def add(self, outcome: PlayOutcome) -> None:
+        """
+        """
         if self.final:
             raise LogicError("Cannot add to finalized outcome")
         self.count += 1
@@ -121,6 +127,8 @@ class CompOutcome:
         self.points_max = max(self.points_max, outcome.points_max)
 
     def combine(self, other: 'CompOutcome') -> None:
+        """
+        """
         if self.final:
             raise LogicError("Cannot combine to finalized outcome")
         self.count += other.count
@@ -132,6 +140,8 @@ class CompOutcome:
         self.points_max = max(self.points_max, other.points_max)
 
     def finalize(self) -> PlayOutcome:
+        """
+        """
         self.tricks_avg = self.tricks_sum / self.count
         self.points_avg = self.points_sum / self.count
         self.final = True
@@ -149,6 +159,8 @@ class CompOutcome:
 TraverseKey = tuple[Card, ...]
 
 class PlayDataMsg(NamedTuple):
+    """
+    """
     pid:              int
     key:              TraverseKey
     features:         PlayFeatures
@@ -167,6 +179,8 @@ class PlayDataAnalysis(PlayAnalysis):
     bid_features: BidFeatures
 
     def __init__(self, deal: DealState, **kwargs):
+        """
+        """
         super().__init__(deal)
         self.trump_values = kwargs.get('trump_values')
         self.run_id       = kwargs.get('run_id')
@@ -174,6 +188,8 @@ class PlayDataAnalysis(PlayAnalysis):
         self.bid_features = kwargs.get('bid_features')
 
     def get_features(self, card: Card, key: TraverseKey) -> PlayFeatures:
+        """
+        """
         deal = self.deal
         bid_features = self.bid_features
 

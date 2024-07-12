@@ -45,14 +45,12 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: euchplt.analysis
-   :undoc-members:
    :imported-members:
 
 :mod:`euchplt.strategy` -- Strategy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: euchplt.strategy
-   :undoc-members:
    :imported-members:
 
 :mod:`euchplt.elo_rating` -- Elo Rating
