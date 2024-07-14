@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>ml – ML &#8212; Euchre Platform  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="euchplt – Platform" href="euchplt.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="ml-ml">
+<h1><code class="xref py py-mod docutils literal notranslate"><span class="pre">ml</span></code> – ML<a class="headerlink" href="#ml-ml" title="Link to this heading">¶</a></h1>
+<section id="module-ml.bid_data">
+<span id="ml-bid-data-bid-data"></span><h2><a class="reference internal" href="#module-ml.bid_data" title="ml.bid_data"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ml.bid_data</span></code></a> – Bid Data<a class="headerlink" href="#module-ml.bid_data" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="ml.bid_data.get_file_name">
+<span class="sig-prename descclassname"><span class="pre">ml.bid_data.</span></span><span class="sig-name descname"><span class="pre">get_file_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#ml.bid_data.get_file_name" title="Link to this definition">¶</a></dt>
+<dd><p>Convert the name to snake_case and add file type</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ml.bid_data.main">
+<span class="sig-prename descclassname"><span class="pre">ml.bid_data.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#ml.bid_data.main" title="Link to this definition">¶</a></dt>
+<dd><p>Generate data for bid model</p>
+<p>Usage: bid_data.py &lt;bid_model&gt; [deals=&lt;ndeals&gt;]</p>
+</dd></dl>
+
+</section>
+<section id="module-ml.play_data">
+<span id="ml-play-data-play-data"></span><h2><a class="reference internal" href="#module-ml.play_data" title="ml.play_data"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ml.play_data</span></code></a> – Play Data<a class="headerlink" href="#module-ml.play_data" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="ml.play_data.gen_run_id">
+<span class="sig-prename descclassname"><span class="pre">ml.play_data.</span></span><span class="sig-name descname"><span class="pre">gen_run_id</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#ml.play_data.gen_run_id" title="Link to this definition">¶</a></dt>
+<dd><p>For now, just return a random hex string (inspired by git style, though
+not actually a hash of anything here)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ml.play_data.get_file_name">
+<span class="sig-prename descclassname"><span class="pre">ml.play_data.</span></span><span class="sig-name descname"><span class="pre">get_file_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#ml.play_data.get_file_name" title="Link to this definition">¶</a></dt>
+<dd><p>Convert the name to snake_case and add file type</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ml.play_data.main">
+<span class="sig-prename descclassname"><span class="pre">ml.play_data.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#ml.play_data.main" title="Link to this definition">¶</a></dt>
+<dd><p>Generate data for play model</p>
+<p>Usage: play_data.py &lt;play_model&gt; [deals=&lt;ndeals&gt;] [keep_tmp=&lt;bool&gt;]</p>
+</dd></dl>
+
+</section>
+<section id="module-ml.analysis">
+<span id="ml-analysis-analysis"></span><h2><a class="reference internal" href="#module-ml.analysis" title="ml.analysis"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ml.analysis</span></code></a> – Analysis<a class="headerlink" href="#module-ml.analysis" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-ml.strategy">
+<span id="ml-strategy-strategy"></span><h2><a class="reference internal" href="#module-ml.strategy" title="ml.strategy"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ml.strategy</span></code></a> – Strategy<a class="headerlink" href="#module-ml.strategy" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ml.strategy.BidDataAnalysis">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ml.strategy.</span></span><span class="sig-name descname"><span class="pre">BidDataAnalysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ml.strategy.BidDataAnalysis" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="euchplt.html#euchplt.analysis.HandAnalysis" title="euchplt.analysis.base.HandAnalysis"><code class="xref py py-class docutils literal notranslate"><span class="pre">HandAnalysis</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ml.strategy.BidDataAnalysis.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ml.strategy.BidDataAnalysis.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml.strategy.BidDataAnalysis.get_features">
+<span class="sig-name descname"><span class="pre">get_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.euchre.Bid" title="euchplt.euchre.Bid"><span class="pre">Bid</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">BidFeatures</span></span></span><a class="headerlink" href="#ml.strategy.BidDataAnalysis.get_features" title="Link to this definition">¶</a></dt>
+<dd><p>Comments from <cite>ml-euchre</cite> (need to be rethought and adapted!!!):</p>
+<p>Input features:</p>
+<ul>
+<li><p>Bid position (0-7)</p></li>
+<li><p>Loner called</p></li>
+<li><p>Level of turncard (1-8)</p></li>
+<li><p>Relative suit of turncard (in relation to trump)</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>One-hot encoding for next, green, or purple (all zeros if turncard
+picked up)</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Trump (turncard or called) suit strength (various measures, start with
+sum of levels 1-8)</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Top 1, 2, and 3 trump cards (three aggregate values)</p></li>
+<li><p>Note: include turncard and exclude discard, if dealer (which implies
+that model will be tied to discard algorithm)</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Trump/next/green/purple suit scores (instead of just trump strength?)</p></li>
+<li><p>Number of trump (with turncard/discard, if dealer)</p></li>
+<li><p>Number of voids (or suits)</p></li>
+<li><p>Number of off-aces</p></li>
+</ul>
+<p>Output feature(s):</p>
+<ul class="simple">
+<li><p>Number of tricks taken</p></li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ml.strategy.StrategyBidTraverse">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ml.strategy.</span></span><span class="sig-name descname"><span class="pre">StrategyBidTraverse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ml.strategy.StrategyBidTraverse" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="euchplt.html#euchplt.strategy.Strategy" title="euchplt.strategy.base.Strategy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Strategy</span></code></a></p>
+<p>Run though each deal with all possible bids, playing out the hands
+using the specified strategy.  Append results (bid features and deal
+outcome) to training data set.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ml.strategy.StrategyBidTraverse.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ml.strategy.StrategyBidTraverse.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>This class recognizes the following parameters (passed in directly as
+as kwargs, or specified in the config file, if using <cite>Strategy.new()</cite>):</p>
+<ul class="simple">
+<li><p><cite>play_strat</cite> (passed in as either an instantiated <cite>Strategy</cite> object or
+a named configuration) is used to play out deals for each bid traversal
+selection.</p></li>
+<li><p><cite>discard_strat</cite> (again, object or config name) is used to determine the
+discard for each bid selection (considered part of the “play” process,
+for purposes of bid model training, even in the case of the first round
+dealer bid).  If not specified, the <cite>play_strat</cite> instance will be used.</p></li>
+<li><p><cite>bid_prune_strat</cite> (object or config name) is used to determine whether
+a preemptive bid would issued (rather than dutifully passing) prior to
+reaching the target bid position.  If so, then this bid traversal
+instance is eliminated, which will prevent a errant/misleading playing
+out of a target bid, since it would be facing an unrealistically strong
+opposition.  If this parameter is not specified, then no pruning occurs,
+and the target bid is always played out and recorded.  Note that pruning
+using a fairly aggressive bidding strategy has the unfortunate side
+effect of requiring many more cycles to generate sufficient data for
+later (especially second round) bidding positions.</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml.strategy.StrategyBidTraverse.bid">
+<span class="sig-name descname"><span class="pre">bid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">def_bid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="euchplt.html#euchplt.euchre.Bid" title="euchplt.euchre.Bid"><span class="pre">Bid</span></a></span></span><a class="headerlink" href="#ml.strategy.StrategyBidTraverse.bid" title="Link to this definition">¶</a></dt>
+<dd><p>See base class</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml.strategy.StrategyBidTraverse.discard">
+<span class="sig-name descname"><span class="pre">discard</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="euchplt.html#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></span><a class="headerlink" href="#ml.strategy.StrategyBidTraverse.discard" title="Link to this definition">¶</a></dt>
+<dd><p>See base class</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml.strategy.StrategyBidTraverse.play_card">
+<span class="sig-name descname"><span class="pre">play_card</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">trick</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.euchre.Trick" title="euchplt.euchre.Trick"><span class="pre">Trick</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_plays</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="euchplt.html#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="euchplt.html#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></span><a class="headerlink" href="#ml.strategy.StrategyBidTraverse.play_card" title="Link to this definition">¶</a></dt>
+<dd><p>See base class</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml.strategy.StrategyBidTraverse.notify">
+<span class="sig-name descname"><span class="pre">notify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">notice_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.strategy.StrategyNotice" title="euchplt.strategy.base.StrategyNotice"><span class="pre">StrategyNotice</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#ml.strategy.StrategyBidTraverse.notify" title="Link to this definition">¶</a></dt>
+<dd><p>Write feature set based on traversal on <cite>DEAL_COMPLETE</cite> notification,
+also ensure that child processes completed successfully</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ml.strategy.PlayDataAnalysis">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ml.strategy.</span></span><span class="sig-name descname"><span class="pre">PlayDataAnalysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ml.strategy.PlayDataAnalysis" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="euchplt.html#euchplt.analysis.PlayAnalysis" title="euchplt.analysis.base.PlayAnalysis"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlayAnalysis</span></code></a></p>
+<p>Manage features for generating data for “play” ML models</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ml.strategy.PlayDataAnalysis.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ml.strategy.PlayDataAnalysis.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml.strategy.PlayDataAnalysis.get_features">
+<span class="sig-name descname"><span class="pre">get_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">card</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="euchplt.html#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">PlayFeatures</span></span></span><a class="headerlink" href="#ml.strategy.PlayDataAnalysis.get_features" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ml.strategy.StrategyPlayTraverse">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ml.strategy.</span></span><span class="sig-name descname"><span class="pre">StrategyPlayTraverse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ml.strategy.StrategyPlayTraverse" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="euchplt.html#euchplt.strategy.Strategy" title="euchplt.strategy.base.Strategy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Strategy</span></code></a></p>
+<p>Run though each deal with all possible bids, playing out the hands
+using the specified strategy.  Append results (bid features and deal
+outcome) to training data set.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ml.strategy.StrategyPlayTraverse.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ml.strategy.StrategyPlayTraverse.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>This class recognizes the following parameters (passed in directly as
+as kwargs, or specified in the config file, if using <cite>Strategy.new()</cite>):</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><cite>bid_strat</cite> (passed in as either an instantiated <cite>Strategy</cite> object or
+a named configuration) is used to do the initial bidding to set the
+contract for the play traversal process.</p></li>
+<li><p><cite>discard_strat</cite> (again, object or config name) is used to determine the
+dealer discard in the case of first-round bids (considered part of the
+“bid” process, for purposes of play model training).  If not specified,
+the <cite>bid_strat</cite> instance will be used.</p></li>
+<li><p><cite>base_play_strat</cite> (object or config name) is used to play cards for the
+three other positions (not <cite>play_pos</cite>) during play traversal, including
+the <cite>play_pos</cite> partner.</p></li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml.strategy.StrategyPlayTraverse.bid">
+<span class="sig-name descname"><span class="pre">bid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">def_bid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="euchplt.html#euchplt.euchre.Bid" title="euchplt.euchre.Bid"><span class="pre">Bid</span></a></span></span><a class="headerlink" href="#ml.strategy.StrategyPlayTraverse.bid" title="Link to this definition">¶</a></dt>
+<dd><p>See base class</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml.strategy.StrategyPlayTraverse.discard">
+<span class="sig-name descname"><span class="pre">discard</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="euchplt.html#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></span><a class="headerlink" href="#ml.strategy.StrategyPlayTraverse.discard" title="Link to this definition">¶</a></dt>
+<dd><p>See base class</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml.strategy.StrategyPlayTraverse.play_card">
+<span class="sig-name descname"><span class="pre">play_card</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">trick</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.euchre.Trick" title="euchplt.euchre.Trick"><span class="pre">Trick</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_plays</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="euchplt.html#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="euchplt.html#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></span><a class="headerlink" href="#ml.strategy.StrategyPlayTraverse.play_card" title="Link to this definition">¶</a></dt>
+<dd><p>See base class</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ml.strategy.StrategyPlayTraverse.notify">
+<span class="sig-name descname"><span class="pre">notify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">notice_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.strategy.StrategyNotice" title="euchplt.strategy.base.StrategyNotice"><span class="pre">StrategyNotice</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#ml.strategy.StrategyPlayTraverse.notify" title="Link to this definition">¶</a></dt>
+<dd><p>Write feature set based on traversal on <cite>DEAL_COMPLETE</cite> notification,
+also ensure that child processes completed successfully</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Euchre Platform</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="euchplt.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">euchplt</span></code> – Platform</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ml</span></code> – ML</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-ml.bid_data"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ml.bid_data</span></code> – Bid Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ml.play_data"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ml.play_data</span></code> – Play Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ml.analysis"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ml.analysis</span></code> – Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ml.strategy"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ml.strategy</span></code> – Strategy</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="euchplt.html" title="previous chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">euchplt</span></code> – Platform</a></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2022, Crash.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="_sources/ml.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -13,6 +13,8 @@ from .base import Strategy
 class StrategySimple(Strategy):
     """Represents minimum logic for passable play, very basic strategy, fairly
     conservative (though we add several `aggressive` flag options)
+
+    TODO (maybe): parameterize some of the magic numbers in this code!?!?
     """
     # this is actually a bitfield, see individual switches below
     aggressive: int = 0x0
