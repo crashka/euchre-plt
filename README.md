@@ -96,10 +96,7 @@ had the highest Elo rating, at 1542.7.  Note that Elo rating doesn't always corr
 the tournament results (depending on tournament format, as well as luck of the cards), but
 is generally a close indicator for touraments involving a sufficient amount of game play.
 
-### Tournament Parameters
-
-Now let's take a look at the parameters for the tournament.  Here is an explanation of the
-command line arguments for the sample run above:
+Here is an explanation of the command line arguments for the sample run above:
 
 - `"demo"` – the name of the tournament to run; it is defined in the
   [config/tournaments.yml](config/tournaments.yml) config file (see below)
