@@ -1,3 +1,5 @@
+### Local Development
+
 To build (or rebuild) docs:
 
 ``` bash
@@ -6,8 +8,12 @@ $ make clean
 $ make html
 ```
 
-To open docs in browser (Linux):
+To view local docs (Linux):
 
 ``` bash
 $ xdg-open ${project_root}/docs/_build/html/index.html
 ```
+
+### Online
+
+See [euchre-plt documentation](https://crashka.github.io/euchre-plt/)
