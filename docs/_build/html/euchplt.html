@@ -1676,6 +1676,17 @@ are not persisted until <cite>persist()</cite> is called.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="euchplt.elo_rating.EloRating._update_collective">
+<span class="sig-name descname"><span class="pre">_update_collective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matches</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.match.Match" title="euchplt.match.Match"><span class="pre">Match</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.elo_rating.EloRating._update_collective" title="Link to this definition">¶</a></dt>
+<dd><p>We sum the inbound ratings and scores, and do single bulk computations
+for some segment of the tournament in which inbound ratings are fixed.</p>
+<p>Note that this implementaion degenerates into the sequential case above
+if individual teams don’t play multiple times in <cite>matches</cite>, so we can
+actually just always use this if sequential bahavior isn’t explicitly
+needed (for less repeated code, at a very slight performance penalty)</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="euchplt.elo_rating.EloRating.persist">
 <span class="sig-name descname"><span class="pre">persist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">archive</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.elo_rating.EloRating.persist" title="Link to this definition">¶</a></dt>
 <dd><p>Merges current Elo ratings with the existing database; the previous

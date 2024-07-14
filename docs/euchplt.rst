@@ -57,6 +57,7 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: euchplt.elo_rating
+   :private-members:
 
 :mod:`euchplt.core` -- Core
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
