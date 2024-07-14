@@ -9,6 +9,7 @@ from typing import Optional, Union, TypeVar, TextIO
 from numbers import Number
 import random
 import csv
+import os
 
 from .utils import rankdata, parse_argv
 from .core import DEBUG, cfg, DataFile, ConfigError
@@ -942,14 +943,16 @@ def run_tournament(*args, **kwargs) -> int:
     if stats_file:
         with open(DataFile(stats_file), 'w', newline='') as file:
             header = tourney.stats_header()
-            writer = csv.DictWriter(file, fieldnames=header, dialect='excel-tab')
+            writer = csv.DictWriter(file, fieldnames=header, dialect='excel-tab',
+                                    lineterminator=os.linesep)
             writer.writeheader()
             for row in tourney.iter_stats():
                 writer.writerow(row)
     if elo_file:
         with open(DataFile(elo_file), 'w', newline='') as file:
             header = tourney.elo_rating.elo_header()
-            writer = csv.DictWriter(file, fieldnames=header, dialect='excel-tab')
+            writer = csv.DictWriter(file, fieldnames=header, dialect='excel-tab',
+                                    lineterminator=os.linesep)
             writer.writeheader()
             for row in tourney.elo_rating.iter_elo():
                 writer.writerow(row)

@@ -169,3 +169,23 @@ default:
       teams:
         - Team 06
         - Team 07
+    demo:
+      tourn_class:     RoundRobin
+      tourn_params:
+        match_games:     5
+        passes:          20
+        reset_elo:       true
+        elo_params:
+          elo_db:          elo_rating_600.db
+          use_margin:      true
+          d_value:         600
+          k_factor:        8
+      teams:
+        - Team 02
+        - Team 04
+        - Team 06
+        - Team 08
+        - Team 10
+        - Team 12
+        - Team 14
+        - Team 16
