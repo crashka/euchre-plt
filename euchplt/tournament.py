@@ -295,7 +295,7 @@ class Tournament:
         """Sort by wins then Elo points (this algo works because Elo points will
         always be less than wins)
         """
-        return s[1][0] * s[1][0] + s[1][1]
+        return x[1][0] * x[1][0] + x[1][1]
 
     def set_winner(self) -> None:
         """This method is overrideable for tournament formats where the

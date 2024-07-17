@@ -38,9 +38,9 @@ class HandAnalysisSmart(HandAnalysis):
     # a parent strategy's configuration)
     trump_values:     list[int]
     suit_values:      list[int]
-    num_trump_values: list[float]
-    off_aces_values:  list[float]
-    voids_values:     list[float]
+    num_trump_scores: list[float]
+    off_aces_scores:  list[float]
+    voids_scores:     list[float]
     scoring_coeff:    dict[str, int]
 
     def __init__(self, hand: Hand, **kwargs):

@@ -258,11 +258,7 @@ class Hand:
     def playable_cards(self, ctx: GameCtxMixin) -> list[Card]:
         """
         """
-        playables = []
-        for card in self.cards:
-            if self.can_play(card, ctx):
-                playables.append(card)
-        return playables
+        return [c for c in self.cards if self.can_play(c, ctx)]
 
 ##############
 # Play/Trick #

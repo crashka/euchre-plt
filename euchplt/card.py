@@ -170,10 +170,13 @@ def find_bower(rank: BowerRank, suit: Suit) -> Bower:
 Deck = list[Card]
 
 def get_deck() -> Deck:
-    """Get a shuffled deck of cards.  This function uses the `random` module, but it is up to
-    the caller as to whether `seed()` is called beforehand.  Later on, we can support various
-    shuffling techniques that mimic physical shuffling of cards based on the collection of a
-    previous set of tricks and buries.
+    """Get a shuffled deck of cards.  This function uses the `random` module, but it is up
+    to the caller as to whether `seed()` is called beforehand for repeatability (modulo
+    all intervening calls to `random`).
+
+    Later on, we can support various shuffling techniques that mimic physical shuffling of
+    cards based on the collection of a previous set of tricks and buries (pretty hardcore,
+    but perhaps a bit silly).
     """
     deck = [c for c in random.sample(CARDS, k=len(CARDS))]
     return deck

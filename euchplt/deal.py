@@ -6,7 +6,7 @@ from enum import Enum
 from typing import Optional, TextIO
 
 from .utils import parse_argv
-from .core import DEBUG
+from .core import DEBUG, LogicError, ImplementationError
 from .card import Suit, SUITS, Card, Deck, get_deck
 from .euchre import GameCtxMixin, Hand, Trick, Bid, PASS_BID, NULL_BID
 from .euchre import DealState

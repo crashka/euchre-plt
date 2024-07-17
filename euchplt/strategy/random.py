@@ -22,7 +22,7 @@ class StrategyRandom(Strategy):
         """See base class
         """
         super().__init__(**kwargs)
-        self.random = Random(self.rand_seed)
+        self.random = Random(self.rand_seed or id(self))
 
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """See base class

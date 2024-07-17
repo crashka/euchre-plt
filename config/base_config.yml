@@ -28,7 +28,6 @@ default:
     StrategySimple:
       aggressive:       0x0
     StrategySmart:
-      rand_seed:        null
       hand_analysis:    # keep this empty here, but may be overridden by
                         # individual strategies
       turn_card_value:  [10, 15, 0, 20, 25, 30, 0, 50]

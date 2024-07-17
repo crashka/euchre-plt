@@ -3,7 +3,7 @@
 
 import sys
 import random
-import time
+import os
 
 from ..core import log, dbg_hand
 from ..card import SUITS, get_deck
@@ -21,8 +21,8 @@ def tune_strategy_smart(*args) -> int:
     parameters implied by the end-user input.
     """
     HAND_CARDS = 5
-    seed = int(args[0]) if args else int(time.time()) % 1000000
-    random.seed(seed)
+    rand_seed = int(args[0]) if args else os.getpid()
+    random.seed(rand_seed)
 
     log.addHandler(dbg_hand)
     log.info(f"random.seed({seed})")
@@ -49,7 +49,7 @@ def main() -> int:
 
     Functions/usage:
 
-    - tune_strategy_smart [<seed>]
+    - tune_strategy_smart [<rand_seed>]
     """
     if len(sys.argv) < 2:
         print(f"Utility function not specified", file=sys.stderr)
