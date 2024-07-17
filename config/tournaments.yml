@@ -11,7 +11,7 @@ default:
         reset_elo:       true
         elo_params:
           elo_db:          elo_rating_500.db
-          use_margin:      false
+          use_margin:      true
           d_value:         500
           k_factor:        6
       teams:
@@ -41,7 +41,7 @@ default:
         reset_elo:       true
         elo_params:
           elo_db:          elo_rating_600.db
-          use_margin:      false
+          use_margin:      true
           d_value:         600
           k_factor:        8
       teams:
@@ -62,7 +62,7 @@ default:
         reset_elo:       false
         elo_params:
           elo_db:          elo_rating_600.db
-          use_margin:      false
+          use_margin:      true
           d_value:         600
           k_factor:        8
       teams:
@@ -82,7 +82,7 @@ default:
         reset_elo:       true
         elo_params:
           elo_db:          elo_rating_500.db
-          use_margin:      false
+          use_margin:      true
           d_value:         500
           k_factor:        6
       teams:
@@ -111,7 +111,7 @@ default:
         reset_elo:       false
         elo_params:
           elo_db:          elo_rating_500.db
-          use_margin:      false
+          use_margin:      true
           d_value:         500
           k_factor:        6
       teams:
