@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from typing import NamedTuple
-import random
+from random import Random
 
 from .core import validate_basedata
 
@@ -168,17 +168,25 @@ def find_bower(rank: BowerRank, suit: Suit) -> Bower:
 ########
 
 Deck = list[Card]
+mod_rand = Random()  # isolate deck shuffles from other usages of `random`
+
+def set_seed(rand_seed: int) -> None:
+    """Set seed for local (module-specific) instance of `random.Random`
+    """
+    mod_rand.seed(rand_seed)
 
 def get_deck() -> Deck:
-    """Get a shuffled deck of cards.  This function uses the `random` module, but it is up
-    to the caller as to whether `seed()` is called beforehand for repeatability (modulo
-    all intervening calls to `random`).
+    """Get a shuffled deck of cards.  This function uses a local (module-specific)
+    instance of `random.Random` for isolation from the other callers of the `random`
+    library.  The instantiating program has the option to initialize the state of the
+    local instance using `set_seed()` for repeatability of deals.
 
-    Later on, we can support various shuffling techniques that mimic physical shuffling of
+    Later, we can support various shuffling techniques that mimic physical shuffling of
     cards based on the collection of a previous set of tricks and buries (pretty hardcore,
     but perhaps a bit silly).
+
     """
-    deck = [c for c in random.sample(CARDS, k=len(CARDS))]
+    deck = [c for c in mod_rand.sample(CARDS, k=len(CARDS))]
     return deck
 
 ##############

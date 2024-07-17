@@ -865,6 +865,8 @@ class DoubleElimination(Tournament):
 
 from os import environ
 
+from .card import set_seed as set_card_seed
+
 PROFILER = environ.get('EUCH_PROFILER')
 if PROFILER and PROFILER == 'pyinstrument':
     from pyinstrument import Profiler
@@ -911,12 +913,15 @@ def run_tournament(*args, **kwargs) -> int:
     tourn_args = {k: kwargs.get(k) for k in tourn_keys if kwargs.get(k) is not None}
     stats_file = kwargs.get('stats_file')
     elo_file   = kwargs.get('elo_file')
-    rand_seed  = kwargs.get('rand_seed')
+    rand_seed  = kwargs.get('rand_seed')  # for system PRNG (`random` module)
+    card_seed  = kwargs.get('card_seed')  # for `card` module-specific PRNG
     verbose    = kwargs.get('verbose') or 0
     seeding    = kwargs.get('seeding')
 
     if rand_seed:
         random.seed(rand_seed)
+    if card_seed:
+        set_card_seed(card_seed)
     if seeding:
         print("----- Seeding -----")
         # REVISIT: for now, pass same args into both seeding "round"
@@ -969,7 +974,7 @@ def main() -> int:
     - round_robin_bracket [teams=<num_teams>]
     - run_tournament <name> [match_games=<int>] [passes=<int>] [stats_file=<stats_file>]
           [reset_elo=<bool>] [elo_update=<tourn_unit>] [elo_file=<elo_file>]
-          [rand_seed=<int>] [verbose=<level>] [seeding=<seed_tourn_name>]
+          [rand_seed=<int>] [card_seed=<int>] [verbose=<level>] [seeding=<seed_tourn_name>]
     """
     if len(sys.argv) < 2:
         print(f"Utility function not specified", file=sys.stderr)
