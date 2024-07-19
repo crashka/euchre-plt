@@ -190,7 +190,7 @@ hardwired defaults in code).
 Now let's take a look at how the teams and their strategies are defined.  Each of the
 teams participating in a tournament must be defined in the
 [config/players_teams.yml](config/players_teams.yml) config file.  Note that individual
-players can also be defined in the same config file, so that customer teams with mixed
+players can also be defined in the same config file, so that custom teams with mixed
 strategies can be configured.  For most tournaments, however, it is assumed that both
 players on a team will utilize the same strategy (in order for the strategies themselves
 to be pitted against each other), so we will only focus on team definitions for now.
