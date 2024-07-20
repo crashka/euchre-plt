@@ -164,8 +164,9 @@ class PlayAnalysis:
         return self.hand_analysis.bowers(self.ctx.suit)
 
     def follow_cards(self, lead_card: Card) -> list[Card]:
-        """Note, this does NOT currently translate jacks into bowers, so cards from this
-        list can be returned directly by `play_card()`.
+        """Return the list of cards that follow the lead card suit.  Note, this does NOT
+        currently translate jacks into bowers, so cards from this list can be returned
+        directly by `play_card()`.
         """
         lead_suit = lead_card.effsuit(self.ctx)
         return self.hand.cards_by_suit(self.ctx, use_bowers=False)[lead_suit]
