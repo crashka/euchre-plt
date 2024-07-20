@@ -289,12 +289,21 @@ the one in the deck)</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="euchplt.card.set_seed">
+<span class="sig-prename descclassname"><span class="pre">euchplt.card.</span></span><span class="sig-name descname"><span class="pre">set_seed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rand_seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.card.set_seed" title="Link to this definition">¶</a></dt>
+<dd><p>Set seed for local (module-specific) instance of <cite>random.Random</cite></p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="euchplt.card.get_deck">
 <span class="sig-prename descclassname"><span class="pre">euchplt.card.</span></span><span class="sig-name descname"><span class="pre">get_deck</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.card.get_deck" title="Link to this definition">¶</a></dt>
-<dd><p>Get a shuffled deck of cards.  This function uses the <cite>random</cite> module, but it is up to
-the caller as to whether <cite>seed()</cite> is called beforehand.  Later on, we can support various
-shuffling techniques that mimic physical shuffling of cards based on the collection of a
-previous set of tricks and buries.</p>
+<dd><p>Get a shuffled deck of cards.  This function uses a local (module-specific)
+instance of <cite>random.Random</cite> for isolation from the other callers of the <cite>random</cite>
+library.  The instantiating program has the option to initialize the state of the
+local instance using <cite>set_seed()</cite> for repeatability of deals.</p>
+<p>Later, we can support various shuffling techniques that mimic physical shuffling of
+cards based on the collection of a previous set of tricks and buries (pretty hardcore,
+but perhaps a bit silly).</p>
 </dd></dl>
 
 </section>
@@ -828,7 +837,7 @@ wired to happen after each round of head-to-head challenge matches.</p>
 <li><p>round_robin_bracket [teams=&lt;num_teams&gt;]</p></li>
 <li><dl class="simple">
 <dt>run_tournament &lt;name&gt; [match_games=&lt;int&gt;] [passes=&lt;int&gt;] [stats_file=&lt;stats_file&gt;]</dt><dd><p>[reset_elo=&lt;bool&gt;] [elo_update=&lt;tourn_unit&gt;] [elo_file=&lt;elo_file&gt;]
-[rand_seed=&lt;int&gt;] [verbose=&lt;level&gt;] [seeding=&lt;seed_tourn_name&gt;]</p>
+[rand_seed=&lt;int&gt;] [card_seed=&lt;int&gt;] [verbose=&lt;level&gt;] [seeding=&lt;seed_tourn_name&gt;]</p>
 </dd>
 </dl>
 </li>
@@ -1148,10 +1157,15 @@ of losing the deal (i.e. zero points), return negative of opponent points.</p>
 </section>
 <section id="module-euchplt.analysis">
 <span id="euchplt-analysis-analysis"></span><h2><a class="reference internal" href="#module-euchplt.analysis" title="euchplt.analysis"><code class="xref py py-mod docutils literal notranslate"><span class="pre">euchplt.analysis</span></code></a> – Analysis<a class="headerlink" href="#module-euchplt.analysis" title="Link to this heading">¶</a></h2>
+<p>This module provides helper classes for the <cite>strategy</cite> module.  The primary base
+classes are <cite>Hand Analysis</cite> and <cite>PlayAnalysis</cite>, both of which can be subclassed by any
+strategy that requires additional or specialized functionality.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="euchplt.analysis.SuitCtx">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.analysis.</span></span><span class="sig-name descname"><span class="pre">SuitCtx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">suit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.analysis.SuitCtx" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#euchplt.euchre.GameCtxMixin" title="euchplt.euchre.GameCtxMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">GameCtxMixin</span></code></a></p>
+<p>Wrapper for <cite>GameCtxMixin</cite> for usage within the module (treating the base class as
+abstract).  See <cite>SUIT_CTX</cite>.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.SuitCtx.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">suit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.analysis.SuitCtx.__init__" title="Link to this definition">¶</a></dt>
@@ -1163,7 +1177,14 @@ of losing the deal (i.e. zero points), return negative of opponent points.</p>
 <dt class="sig sig-object py" id="euchplt.analysis.HandAnalysis">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.analysis.</span></span><span class="sig-name descname"><span class="pre">HandAnalysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hand</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.Hand" title="euchplt.euchre.Hand"><span class="pre">Hand</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.analysis.HandAnalysis" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>This class can be used for both bidding and playing</p>
+<p>This class provides helper methods for evaluating hands, typically by extracting
+useful subsets (i.e. lists) of cards, given a trump suit context.  Counts can then be
+easily derived using <cite>len()</cite>.  This class is generally only used directly in the
+bidding process, during which the underlying hand does not change (there is no caching
+of results).</p>
+<p>Note that these calls still work if/as the hand changes (e.g. cards are swapped and/or
+played), thus <cite>PlayAnalysis</cite> contains wrapper methods which automatically pass in the
+trump suit context (since it will already be known for the deal).</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.HandAnalysis.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hand</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.Hand" title="euchplt.euchre.Hand"><span class="pre">Hand</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.analysis.HandAnalysis.__init__" title="Link to this definition">¶</a></dt>
@@ -1172,45 +1193,51 @@ of losing the deal (i.e. zero points), return negative of opponent points.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.HandAnalysis.get_suit_cards">
 <span class="sig-name descname"><span class="pre">get_suit_cards</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trump_suit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.HandAnalysis.get_suit_cards" title="Link to this definition">¶</a></dt>
-<dd><p>Note that this always translates jacks into bowers, and sorts by
-descending rank/level within each suit</p>
+<dd><p>Return list of cards indexed by suit.  Note that this always translates jacks
+into bowers, and sorts by descending rank/level within each suit.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.HandAnalysis.trump_cards">
 <span class="sig-name descname"><span class="pre">trump_cards</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trump_suit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.HandAnalysis.trump_cards" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return list of trump cards, sorted by descending rank.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.HandAnalysis.next_suit_cards">
 <span class="sig-name descname"><span class="pre">next_suit_cards</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trump_suit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.HandAnalysis.next_suit_cards" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return list of cards in “next” suit, sorted by descending rank.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.HandAnalysis.green_suit_cards">
 <span class="sig-name descname"><span class="pre">green_suit_cards</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trump_suit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.HandAnalysis.green_suit_cards" title="Link to this definition">¶</a></dt>
-<dd><p>Returns tuple of Card lists, ordered by decreasing length</p>
+<dd><p>Returns tuple of card lists, ordered by decreasing length (and descending rank
+within each suit).</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.HandAnalysis.off_aces">
 <span class="sig-name descname"><span class="pre">off_aces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trump_suit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.HandAnalysis.off_aces" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return list of off-aces, in no particular order.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.HandAnalysis.bowers">
 <span class="sig-name descname"><span class="pre">bowers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trump_suit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Bower" title="euchplt.card.Bower"><span class="pre">Bower</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.HandAnalysis.bowers" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return list of bowers, in order of descending rank.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.HandAnalysis.voids">
 <span class="sig-name descname"><span class="pre">voids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trump_suit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.HandAnalysis.voids" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return list of suits that are void in the hand.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.HandAnalysis.singleton_cards">
 <span class="sig-name descname"><span class="pre">singleton_cards</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trump_suit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.HandAnalysis.singleton_cards" title="Link to this definition">¶</a></dt>
-<dd><p>Return the singleton cards themselves; the singleton suits are implied</p>
+<dd><p>Return the singleton cards themselves; the singleton suits are implied.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1218,7 +1245,7 @@ descending rank/level within each suit</p>
 <span class="sig-name descname"><span class="pre">cards_by_level</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trump_suit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset_trump</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.HandAnalysis.cards_by_level" title="Link to this definition">¶</a></dt>
 <dd><p>Return cards by descending level.  <cite>offset_trump=True</cite> sorts all trump higher
 than all non-trump.  Note, this does NOT currently translate jacks into bowers,
-though recognizes them by effective level and always sorts them highest</p>
+though recognizes them by effective level and always sorts them highest.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1235,44 +1262,50 @@ though recognizes them by effective level and always sorts them highest</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.PlayAnalysis.get_suit_cards">
 <span class="sig-name descname"><span class="pre">get_suit_cards</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.get_suit_cards" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Wrapper methods for <cite>HandAnalysis.get_suit_cards()</cite>.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.PlayAnalysis.trump_cards">
 <span class="sig-name descname"><span class="pre">trump_cards</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.trump_cards" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Wrapper methods for <cite>HandAnalysis.trump_cards()</cite>.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.PlayAnalysis.next_suit_cards">
 <span class="sig-name descname"><span class="pre">next_suit_cards</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.next_suit_cards" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Wrapper methods for <cite>HandAnalysis.next_suit_cards()</cite>.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.PlayAnalysis.green_suit_cards">
 <span class="sig-name descname"><span class="pre">green_suit_cards</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.green_suit_cards" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Wrapper methods for <cite>HandAnalysis.green_suit_cards()</cite>.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.PlayAnalysis.off_aces">
 <span class="sig-name descname"><span class="pre">off_aces</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.off_aces" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Wrapper methods for <cite>HandAnalysis.off_aces()</cite>.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.PlayAnalysis.bowers">
 <span class="sig-name descname"><span class="pre">bowers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.bowers" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Wrapper methods for <cite>HandAnalysis.bowers()</cite>.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.PlayAnalysis.follow_cards">
 <span class="sig-name descname"><span class="pre">follow_cards</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lead_card</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.follow_cards" title="Link to this definition">¶</a></dt>
-<dd><p>Note, this does NOT currently translate jacks into bowers, so cards
-from this list can be returned directly by <cite>play_card()</cite></p>
+<dd><p>Note, this does NOT currently translate jacks into bowers, so cards from this
+list can be returned directly by <cite>play_card()</cite>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.PlayAnalysis.singleton_cards">
 <span class="sig-name descname"><span class="pre">singleton_cards</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.singleton_cards" title="Link to this definition">¶</a></dt>
-<dd><p>Return the singleton cards themselves; the singleton suits are implied</p>
+<dd><p>Return the singleton cards themselves; the singleton suits are implied.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1280,53 +1313,52 @@ from this list can be returned directly by <cite>play_card()</cite></p>
 <span class="sig-name descname"><span class="pre">cards_by_level</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset_trump</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.cards_by_level" title="Link to this definition">¶</a></dt>
 <dd><p>Return cards by descending level.  Note, this does NOT currently translate
 jacks into bowers (based on the HandAnalysis implementation), so cards from this
-list can be returned directly by <cite>play_card()</cite></p>
+list can be returned directly by <cite>play_card()</cite>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.PlayAnalysis.unplayed_by_suit">
 <span class="sig-name descname"><span class="pre">unplayed_by_suit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.unplayed_by_suit" title="Link to this definition">¶</a></dt>
-<dd><p>Recast card sets as lists, so we can order them by descending level
-within each suit.  Note, this does NOT currently translate jacks into
-bowers, so cards from this list can be returned directly by <cite>play_card()</cite></p>
+<dd><p>Recast card sets as lists, so we can order them by descending level within each
+suit.  Note, this does NOT currently translate jacks into bowers, so cards from
+this list can be returned directly by <cite>play_card()</cite>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.PlayAnalysis.suit_winners">
 <span class="sig-name descname"><span class="pre">suit_winners</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.suit_winners" title="Link to this definition">¶</a></dt>
-<dd><p>Return the highest outstanding card for each suit, or None if
-no cards remaining</p>
+<dd><p>Return the highest outstanding card for each suit, or None if no cards
+remaining.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.PlayAnalysis.my_winners">
 <span class="sig-name descname"><span class="pre">my_winners</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.my_winners" title="Link to this definition">¶</a></dt>
-<dd><p>Return flat list of non-trump suit high cards in the current hand;
-sort by card level descending across suits</p>
+<dd><p>Return flat list of non-trump suit high cards in the current hand; sort by card
+level descending across suits.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.PlayAnalysis.trumps_played">
 <span class="sig-name descname"><span class="pre">trumps_played</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.trumps_played" title="Link to this definition">¶</a></dt>
-<dd><p>These are the cards that have been played by anyone.  Note, this
-DOES translate jacks into bowers, so that bower levels and ranks can
-be used; return list is NOT sorted</p>
+<dd><p>These are the cards that have been played by anyone.  Note, this DOES translate
+jacks into bowers, so that bower levels and ranks can be used; return list is NOT
+sorted.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.PlayAnalysis.trumps_unplayed">
 <span class="sig-name descname"><span class="pre">trumps_unplayed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.trumps_unplayed" title="Link to this definition">¶</a></dt>
-<dd><p>Note, this DOES translate jacks into bowers, so that bower levels and
-ranks can be used; return list is NOT sorted</p>
+<dd><p>Note, this DOES translate jacks into bowers, so that bower levels and ranks can
+be used; return list is NOT sorted.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.PlayAnalysis.trumps_missing">
 <span class="sig-name descname"><span class="pre">trumps_missing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.trumps_missing" title="Link to this definition">¶</a></dt>
-<dd><p>Returns trump cards not yet played and not in the current hand–
-in other words, those that we need to account for.  Note, this DOES
-translate jacks into bowers, so that bower levels and ranks can be
-used, the return list IS sorted</p>
+<dd><p>Returns trump cards not yet played and not in the current hand– in other
+words, those that we need to account for.  Note, this DOES translate jacks into
+bowers, so that bower levels and ranks can be used, the return list IS sorted.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1628,7 +1660,7 @@ parameters implied by the end-user input.</p>
 <p>Usage: strategy.py &lt;func_name&gt; [&lt;arg&gt; …]</p>
 <p>Functions/usage:</p>
 <ul class="simple">
-<li><p>tune_strategy_smart [&lt;seed&gt;]</p></li>
+<li><p>tune_strategy_smart [&lt;rand_seed&gt;]</p></li>
 </ul>
 </dd></dl>
 
