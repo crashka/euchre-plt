@@ -90,4 +90,4 @@ All of the subscores added together yields the overall hand strengh score used b
 
 ## Full Docs
 
-See [module-euchplt.analysis](https://crashka.github.io/euchre-plt/_build/html/euchplt.html#module-euchplt.analysis).
+See [module-euchplt.analysis](../../docs/_build/html/euchplt.html#module-euchplt.analysis).

@@ -14,6 +14,6 @@ To view local docs (Linux):
 $ xdg-open ${project_root}/docs/_build/html/index.html
 ```
 
-### Online
+### Online (GitHub Pages)
 
-See [euchre-plt documentation](https://crashka.github.io/euchre-plt/)
+See [https://crashka.github.io/euchre-plt](https://crashka.github.io/euchre-plt/).
