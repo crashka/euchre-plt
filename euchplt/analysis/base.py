@@ -118,7 +118,9 @@ class HandAnalysis:
 ################
 
 class PlayAnalysis:
-    """
+    """This class provides helper methods for evaluating hands during the play process.
+    It contains wrappers for useful `HandAnalysis` methods (which will reflect the current
+    state of the hand in the deal), as well as additional functions helpful during play.
     """
     deal:          DealState
     ctx:           GameCtxMixin
@@ -132,32 +134,32 @@ class PlayAnalysis:
         self.hand_analysis = HandAnalysis(self.hand)
 
     def get_suit_cards(self) -> SuitCards:
-        """Wrapper methods for `HandAnalysis.get_suit_cards()`.
+        """Wrapper method for `HandAnalysis.get_suit_cards()`
         """
         return self.hand_analysis.get_suit_cards(self.ctx.suit)
 
     def trump_cards(self) -> list[Card]:
-        """Wrapper methods for `HandAnalysis.trump_cards()`.
+        """Wrapper method for `HandAnalysis.trump_cards()`
         """
         return self.hand_analysis.trump_cards(self.ctx.suit)
 
     def next_suit_cards(self) -> list[Card]:
-        """Wrapper methods for `HandAnalysis.next_suit_cards()`.
+        """Wrapper method for `HandAnalysis.next_suit_cards()`
         """
         return self.hand_analysis.next_suit_cards(self.ctx.suit)
 
     def green_suit_cards(self) -> tuple[list[Card], ...]:
-        """Wrapper methods for `HandAnalysis.green_suit_cards()`.
+        """Wrapper method for `HandAnalysis.green_suit_cards()`
         """
         return self.hand_analysis.green_suit_cards(self.ctx.suit)
 
     def off_aces(self) -> list[Card]:
-        """Wrapper methods for `HandAnalysis.off_aces()`.
+        """Wrapper method for `HandAnalysis.off_aces()`
         """
         return self.hand_analysis.off_aces(self.ctx.suit)
 
     def bowers(self) -> list[Card]:
-        """Wrapper methods for `HandAnalysis.bowers()`.
+        """Wrapper method for `HandAnalysis.bowers()`
         """
         return self.hand_analysis.bowers(self.ctx.suit)
 

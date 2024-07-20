@@ -1254,6 +1254,9 @@ though recognizes them by effective level and always sorts them highest.</p>
 <dt class="sig sig-object py" id="euchplt.analysis.PlayAnalysis">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.analysis.</span></span><span class="sig-name descname"><span class="pre">PlayAnalysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class provides helper methods for evaluating hands during the play process.
+It contains wrappers for useful <cite>HandAnalysis</cite> methods (which will reflect the current
+state of the hand in the deal), as well as additional functions helpful during play.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.PlayAnalysis.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.__init__" title="Link to this definition">¶</a></dt>
@@ -1262,37 +1265,37 @@ though recognizes them by effective level and always sorts them highest.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.PlayAnalysis.get_suit_cards">
 <span class="sig-name descname"><span class="pre">get_suit_cards</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.get_suit_cards" title="Link to this definition">¶</a></dt>
-<dd><p>Wrapper methods for <cite>HandAnalysis.get_suit_cards()</cite>.</p>
+<dd><p>Wrapper method for <cite>HandAnalysis.get_suit_cards()</cite></p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.PlayAnalysis.trump_cards">
 <span class="sig-name descname"><span class="pre">trump_cards</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.trump_cards" title="Link to this definition">¶</a></dt>
-<dd><p>Wrapper methods for <cite>HandAnalysis.trump_cards()</cite>.</p>
+<dd><p>Wrapper method for <cite>HandAnalysis.trump_cards()</cite></p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.PlayAnalysis.next_suit_cards">
 <span class="sig-name descname"><span class="pre">next_suit_cards</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.next_suit_cards" title="Link to this definition">¶</a></dt>
-<dd><p>Wrapper methods for <cite>HandAnalysis.next_suit_cards()</cite>.</p>
+<dd><p>Wrapper method for <cite>HandAnalysis.next_suit_cards()</cite></p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.PlayAnalysis.green_suit_cards">
 <span class="sig-name descname"><span class="pre">green_suit_cards</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.green_suit_cards" title="Link to this definition">¶</a></dt>
-<dd><p>Wrapper methods for <cite>HandAnalysis.green_suit_cards()</cite>.</p>
+<dd><p>Wrapper method for <cite>HandAnalysis.green_suit_cards()</cite></p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.PlayAnalysis.off_aces">
 <span class="sig-name descname"><span class="pre">off_aces</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.off_aces" title="Link to this definition">¶</a></dt>
-<dd><p>Wrapper methods for <cite>HandAnalysis.off_aces()</cite>.</p>
+<dd><p>Wrapper method for <cite>HandAnalysis.off_aces()</cite></p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.PlayAnalysis.bowers">
 <span class="sig-name descname"><span class="pre">bowers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.bowers" title="Link to this definition">¶</a></dt>
-<dd><p>Wrapper methods for <cite>HandAnalysis.bowers()</cite>.</p>
+<dd><p>Wrapper method for <cite>HandAnalysis.bowers()</cite></p>
 </dd></dl>
 
 <dl class="py method">
