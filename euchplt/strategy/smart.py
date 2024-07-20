@@ -129,7 +129,7 @@ class StrategySmart(Strategy):
                 turn_rank = analysis.turn_card_rank(deal.turn_card)
                 turn_value = self.turn_card_value[turn_rank.idx] / sum(self.turn_card_value)
                 turn_strength = turn_value * self.turn_card_coeff[bid_pos]
-                strength += turn_strength * (1.0 if deal.is_partner_dealer else -1)
+                strength += turn_strength * (1.0 if deal.is_partner_dealer else -1.0)
                 log.debug(f"{'turn card adj':15}: "
                          f"{'+' if deal.is_partner_dealer else '-'}{turn_strength:.2f}")
                 log.debug(f"{'adj_strength':15}: {strength:6.2f}")

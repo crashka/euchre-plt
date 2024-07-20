@@ -29,7 +29,7 @@ purposes above:
 Run the following to install the required libraries (only needed once after cloning the
 repo):
 
-``` bash
+```bash
 $ pip install -r requirements.txt
 $ pip install -e .
 ```
@@ -45,7 +45,7 @@ We'll take a walkthrough of the main components by way of an example.
 
 Here is the command to run a sample tourament:
 
-``` bash
+```bash
 $ tournament run_tournament "demo" stats_file=demo_stats.tsv elo_file=demo_elo.tsv
 ```
 
@@ -130,7 +130,7 @@ turn, often override default values hardwired into the code, e.g. `DFLT_MATCH_GA
 Here is the definition for the `"demo"` tournament in the
 [config/tournaments.yml](config/tournaments.yml) config file:
 
-``` yaml
+```yaml
     demo:
       tourn_class:     RoundRobin
       tourn_params:
@@ -199,7 +199,7 @@ Currently, the only parameter for each team is `strategy`; there is no other per
 indidvidual identification.  Here are the definitions for the teams in the sample
 tournament above (with each team implementing a different strategy):
 
-``` yaml
+```yaml
   teams:
     Team 02:
       strategy:        Bravo 1
@@ -223,7 +223,7 @@ Here are the first few strategy definitions in the
 [config/strategies.yml](config/strategies.yml) config file for the teams in our sample
 tourament:
 
-``` yaml
+```yaml
     Bravo 1:
       comments:         "base StrategySimple configuration"
       module_path:      euchplt.strategy
