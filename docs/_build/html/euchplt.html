@@ -1371,11 +1371,20 @@ bowers, so that bower levels and ranks can be used, the return list IS sorted.</
 <dt class="sig sig-object py" id="euchplt.analysis.HandAnalysisSmart">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.analysis.</span></span><span class="sig-name descname"><span class="pre">HandAnalysisSmart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hand</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.Hand" title="euchplt.euchre.Hand"><span class="pre">Hand</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.analysis.HandAnalysisSmart" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#euchplt.analysis.HandAnalysis" title="euchplt.analysis.base.HandAnalysis"><code class="xref py py-class docutils literal notranslate"><span class="pre">HandAnalysis</span></code></a></p>
-<p>Extend <code class="docutils literal notranslate"><span class="pre">HandAnalysis</span></code> to determine a “hand strength” score given a trump suit
+<p>Extends <code class="docutils literal notranslate"><span class="pre">HandAnalysis</span></code> to determine a “hand strength” score given a trump suit
 context, for use in bidding.  This score is used in the associated <code class="docutils literal notranslate"><span class="pre">StartegySmart</span></code>
-class against thresholds based on bidding position to determine whether/what to bid.
-We specify a number of config parameters to help compute this score.</p>
-<p>Example parameter values (see base_config.yml for actual default values):</p>
+class against various thresholds (based on bidding position) to determine whether/what
+to bid.</p>
+<p>The overall score is based on subscores for the following aspects of the hand:</p>
+<ul class="simple">
+<li><p>Trump card strength</p></li>
+<li><p>Best off-suit strength</p></li>
+<li><p>Number of trump cards</p></li>
+<li><p>Number of off-aces</p></li>
+<li><p>Number of voids</p></li>
+</ul>
+<p>These are the config parameters used to help compute this score (example values shown
+here–see base_config.yml for the actual base values):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trump_values</span><span class="p">:</span>     <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">null</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
 <span class="n">suit_values</span><span class="p">:</span>      <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
 <span class="n">num_trump_scores</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>
@@ -1389,43 +1398,34 @@ We specify a number of config parameters to help compute this score.</p>
   <span class="n">voids_score</span><span class="p">:</span>      <span class="mi">15</span>
 </pre></div>
 </div>
-<p>Overall score is based on subscores for the following aspects of the hand:</p>
+<p>Here are descriptions of the parameters:</p>
 <ul class="simple">
-<li><p>Trump card strength</p></li>
-<li><p>Best off-suit strength</p></li>
-<li><p>Number of trump cards</p></li>
-<li><p>Number of off-aces</p></li>
-<li><p>Number of voids</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">trump_values</span></code> - value for each trump card in the hand, indexed by card rank (9-R,
+which includes L and ignores the J position [promoted to R]), to be added together
+and normalized for total trump subscore</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">suit_values</span></code> - value for each card in non-trump suits, indexed by card rank (9-A,
+noting that J does not exist for next suit), to be added together and normalized for
+each suit to get total suit subscore</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">num_trump_scores</span></code> - subscore for number of trump cards in the hand, indexed by
+count (0-5)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">off_aces_scores</span></code> - subscore for number of off-aces in the hand, indexed by count
+(0-3)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">voids_scores</span></code> - subscore for number of void suits in the hand, indexed by count
+(0-3)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scoring_coeff</span></code> - array of coefficients to be multipled by the corresponding
+subscores (as described above) for their contribution to the overall hand strength
+score</p></li>
 </ul>
-<p>Trump and off-suit strength subscores are computed by adding the values (based on
-lookups in the <code class="docutils literal notranslate"><span class="pre">trump_values</span></code> and <code class="docutils literal notranslate"><span class="pre">suit_values</span></code> arrays) for all of the cards in
-each suit, normalizing to the total available points for the suit, then multiplying by
-the appropriate scoring coefficient.</p>
-<p>For trump, the individual card values are (from above):</p>
-<ul class="simple">
-<li><p>9 - 0 pts</p></li>
-<li><p>10 - 0 pts</p></li>
-<li><p>J - n/a (promoted to R)</p></li>
-<li><p>Q - 1 pt</p></li>
-<li><p>K - 2 pts</p></li>
-<li><p>A - 4 pts</p></li>
-<li><p>L - 7 pts</p></li>
-<li><p>R - 10 pts</p></li>
-</ul>
-<p>Thus, if the trump holding for the suit under consideration is L-K-10, the value
-(based on lookup) is 7 + 2 + 0 = 9, which is then divided by total trump points (24)
-and multiplied by the <code class="docutils literal notranslate"><span class="pre">trump_score</span></code> coefficient of 40 to get the subscore.  The same
-method is applied for computing off-suit scores (9-through-A lookup, since there are
-no bowers); the highest suit value is then divided by 16 and mutiplied by the
-<code class="docutils literal notranslate"><span class="pre">max_suit_score</span></code> coefficient.</p>
-<p>For the other scoring components, the lookup value is by number of trump cards in the
-hand (thus, ascribing some value to 9s and 10s), number of off-aces, and number of
-void suits, respectively.  That value is then multiplied by the corresponding
-<code class="docutils literal notranslate"><span class="pre">scoring_coeff</span></code> number.  Note that the set of scoring coefficients don’t have to add
-up to 100, but keeping it so makes it easier to understand the relative weighting
+<p>Normalization for trump and off-suit subscores means dividing the aggregate card value
+by the total number of points available for the category.  Thus, if the trump holding
+for the suit under consideration is L-K-10, the sum (based on lookup) is 7 + 2 + 0 =
+9, which is then divided by the total available points (24 in this case), before being
+multiplied by the <code class="docutils literal notranslate"><span class="pre">trump_score</span></code> coefficient.  For off-suits, only the highest
+normalized suit value is mulitplied by the <code class="docutils literal notranslate"><span class="pre">max_suit_score</span></code> coefficient.</p>
+<p>The weighted subscores are added together to yield the overall hand strengh score used
+by <code class="docutils literal notranslate"><span class="pre">StrategySmart</span></code>.  Note that the set of scoring coefficients don’t have to add up
+to 100, but specifying it thus makes it easier to understand the relative weighting
 between the scoring components.</p>
-<p>All of the subscores added together yields the overall hand strengh score used by
-<code class="docutils literal notranslate"><span class="pre">StrategySmart</span></code>.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.HandAnalysisSmart.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hand</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.Hand" title="euchplt.euchre.Hand"><span class="pre">Hand</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.analysis.HandAnalysisSmart.__init__" title="Link to this definition">¶</a></dt>
@@ -1577,11 +1577,12 @@ visibility (this is, after all, a teaching tool).</p>
 <dd><p>Bases: <a class="reference internal" href="#euchplt.strategy.Strategy" title="euchplt.strategy.base.Strategy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Strategy</span></code></a></p>
 <p>Represents minimum logic for passable play–very basic strategy, fairly
 conservative (though we add several options for more aggressive play).</p>
-<p><code class="docutils literal notranslate"><span class="pre">aggressive</span></code> parameter bit fields:</p>
+<p><code class="docutils literal notranslate"><span class="pre">aggressive</span></code> parameter (int) bit fields (can be OR’ed together):</p>
 <ul class="simple">
-<li><p>partner is winning, but play high (pre-emptive) from the third seat rather than duck</p></li>
-<li><p>take high (if possible) from second or third seat, rather than lower take (e.g. use
-A instead of Q on a lead of 9)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">0x01</span></code> - partner is winning, but play high (pre-emptive) from the third seat rather
+than duck</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">0x02</span></code> - take high (if possible) from second or third seat, rather than lower take
+(e.g. use A instead of Q on a lead of 9)</p></li>
 </ul>
 <p>TODO (maybe): parameterize some of the magic numbers in this code!?!?</p>
 <dl class="py method">

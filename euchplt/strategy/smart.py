@@ -538,6 +538,7 @@ class StrategySmart(Strategy):
                 raise LogicError("Ruleset did not produce valid result ({ruleset})")
             return result
 
+        # actual processing starts here
         if deal.play_seq == 0:
             ruleset = init_lead if deal.trick_num == 1 else subseq_lead
         else:

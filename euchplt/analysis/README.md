@@ -26,12 +26,21 @@ state of the hand in the deal), as well as additional functions helpful during p
 
 ### HandAnalysisSmart
 
-Extend `HandAnalysis` to determine a "hand strength" score given a trump suit
+Extends `HandAnalysis` to determine a "hand strength" score given a trump suit
 context, for use in bidding.  This score is used in the associated `StartegySmart`
-class against thresholds based on bidding position to determine whether/what to bid.
-We specify a number of config parameters to help compute this score.
+class against various thresholds (based on bidding position) to determine whether/what
+to bid.
 
-Example parameter values (see base_config.yml for actual default values):
+The overall score is based on subscores for the following aspects of the hand:
+
+- Trump card strength
+- Best off-suit strength
+- Number of trump cards
+- Number of off-aces
+- Number of voids
+
+These are the config parameters used to help compute this score (example values shown
+here--see base_config.yml for the actual base values)::
 
 ```yaml
   trump_values:     [0, 0, null, 1, 2, 4, 7, 10]
@@ -47,46 +56,35 @@ Example parameter values (see base_config.yml for actual default values):
     voids_score:      15
 ```
 
-Overall score is based on subscores for the following aspects of the hand:
+Here are descriptions of the parameters:
 
-- Trump card strength
-- Best off-suit strength
-- Number of trump cards
-- Number of off-aces
-- Number of voids
+- `trump_values` - value for each trump card in the hand, indexed by card rank (9-R,
+  which includes L and ignores the J position [promoted to R]), to be added together
+  and normalized for total trump subscore
+- `suit_values` - value for each card in non-trump suits, indexed by card rank (9-A,
+  noting that J does not exist for next suit), to be added together and normalized for
+  each suit to get total suit subscore
+- `num_trump_scores` - subscore for number of trump cards in the hand, indexed by
+  count (0-5)
+- `off_aces_scores` - subscore for number of off-aces in the hand, indexed by count
+  (0-3)
+- `voids_scores` - subscore for number of void suits in the hand, indexed by count
+  (0-3)
+- `scoring_coeff` - array of coefficients to be multipled by the corresponding
+  subscores (as described above) for their contribution to the overall hand strength
+  score
 
-Trump and off-suit strength subscores are computed by adding the values (based on
-lookups in the `trump_values` and `suit_values` arrays) for all of the cards in each
-suit, normalizing to the total available points for the suit, then multiplying by the
-appropriate scoring coefficient.
+Normalization for trump and off-suit subscores means dividing the aggregate card value
+by the total number of points available for the category.  Thus, if the trump holding
+for the suit under consideration is L-K-10, the sum (based on lookup) is 7 + 2 + 0 =
+9, which is then divided by the total available points (24 in this case), before being
+multiplied by the `trump_score` coefficient.  For off-suits, only the highest
+normalized suit value is mulitplied by the `max_suit_score` coefficient.
 
-For trump, the individual card values are (from above):
-
-- 9 - 0 pts
-- 10 - 0 pts
-- J - n/a (promoted to R)
-- Q - 1 pt
-- K - 2 pts
-- A - 4 pts
-- L - 7 pts
-- R - 10 pts
-
-Thus, if the trump holding for the suit under consideration is L-K-10, the value
-(based on lookup) is 7 + 2 + 0 = 9, which is then divided by total trump points (24)
-and multiplied by the `trump_score` coefficient of 40 to get the subscore.  The same
-method is applied for computing off-suit scores (9-through-A lookup, since there are
-no bowers); the highest suit value is then divided by 16 and mutiplied by the
-`max_suit_score` coefficient.
-
-For the other scoring components, the lookup value is by number of trump cards in the
-hand (thus, ascribing some value to 9s and 10s), number of off-aces, and number of
-void suits, respectively.  That value is then multiplied by the corresponding
-`scoring_coeff` number.  Note that the set of scoring coefficients don't have to add
-up to 100, but keeping it so makes it easier to understand the relative weighting
+The weighted subscores are added together to yield the overall hand strengh score used
+by `StrategySmart`.  Note that the set of scoring coefficients don't have to add up
+to 100, but specifying it thus makes it easier to understand the relative weighting
 between the scoring components.
-
-All of the subscores added together yields the overall hand strengh score used by
-`StrategySmart`.
 
 ## Full Docs
 
