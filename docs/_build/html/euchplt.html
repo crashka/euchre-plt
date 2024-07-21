@@ -1157,15 +1157,15 @@ of losing the deal (i.e. zero points), return negative of opponent points.</p>
 </section>
 <section id="module-euchplt.analysis">
 <span id="euchplt-analysis-analysis"></span><h2><a class="reference internal" href="#module-euchplt.analysis" title="euchplt.analysis"><code class="xref py py-mod docutils literal notranslate"><span class="pre">euchplt.analysis</span></code></a> – Analysis<a class="headerlink" href="#module-euchplt.analysis" title="Link to this heading">¶</a></h2>
-<p>This module provides helper classes for the <cite>strategy</cite> module.  The primary base
-classes are <cite>Hand Analysis</cite> and <cite>PlayAnalysis</cite>, both of which can be subclassed by any
+<p>This module provides helper classes for the <code class="docutils literal notranslate"><span class="pre">strategy</span></code> module.  The primary base
+classes are <code class="docutils literal notranslate"><span class="pre">Hand</span> <span class="pre">Analysis</span></code> and <code class="docutils literal notranslate"><span class="pre">PlayAnalysis</span></code>, both of which can be subclassed by any
 strategy that requires additional or specialized functionality.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="euchplt.analysis.SuitCtx">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.analysis.</span></span><span class="sig-name descname"><span class="pre">SuitCtx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">suit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.analysis.SuitCtx" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#euchplt.euchre.GameCtxMixin" title="euchplt.euchre.GameCtxMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">GameCtxMixin</span></code></a></p>
-<p>Wrapper for <cite>GameCtxMixin</cite> for usage within the module (treating the base class as
-abstract).  See <cite>SUIT_CTX</cite>.</p>
+<p>Wrapper for <code class="docutils literal notranslate"><span class="pre">GameCtxMixin</span></code> for usage within the module (treating the base class as
+abstract).  See <code class="docutils literal notranslate"><span class="pre">SUIT_CTX</span></code>.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.SuitCtx.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">suit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.analysis.SuitCtx.__init__" title="Link to this definition">¶</a></dt>
@@ -1179,11 +1179,11 @@ abstract).  See <cite>SUIT_CTX</cite>.</p>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>This class provides helper methods for evaluating hands, typically by extracting
 useful subsets (i.e. lists) of cards, given a trump suit context.  Counts can then be
-easily derived using <cite>len()</cite>.  This class is generally only used directly in the
+easily derived using <code class="docutils literal notranslate"><span class="pre">len()</span></code>.  This class is generally only used directly in the
 bidding process, during which the underlying hand does not change (there is no caching
 of results).</p>
 <p>Note that these calls still work if/as the hand changes (e.g. cards are swapped and/or
-played), thus <cite>PlayAnalysis</cite> contains wrapper methods which automatically pass in the
+played), thus <code class="docutils literal notranslate"><span class="pre">PlayAnalysis</span></code> contains wrapper methods which automatically pass in the
 trump suit context (since it will already be known for the deal).</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.HandAnalysis.__init__">
@@ -1243,7 +1243,7 @@ within each suit).</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.HandAnalysis.cards_by_level">
 <span class="sig-name descname"><span class="pre">cards_by_level</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trump_suit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset_trump</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.HandAnalysis.cards_by_level" title="Link to this definition">¶</a></dt>
-<dd><p>Return cards by descending level.  <cite>offset_trump=True</cite> sorts all trump higher
+<dd><p>Return cards by descending level.  <code class="docutils literal notranslate"><span class="pre">offset_trump=True</span></code> sorts all trump higher
 than all non-trump.  Note, this does NOT currently translate jacks into bowers,
 though recognizes them by effective level and always sorts them highest.</p>
 </dd></dl>
@@ -1255,7 +1255,7 @@ though recognizes them by effective level and always sorts them highest.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.analysis.</span></span><span class="sig-name descname"><span class="pre">PlayAnalysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>This class provides helper methods for evaluating hands during the play process.
-It contains wrappers for useful <cite>HandAnalysis</cite> methods (which will reflect the current
+It contains wrappers for useful <code class="docutils literal notranslate"><span class="pre">HandAnalysis</span></code> methods (which will reflect the current
 state of the hand in the deal), as well as additional functions helpful during play.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.PlayAnalysis.__init__">
@@ -1265,37 +1265,37 @@ state of the hand in the deal), as well as additional functions helpful during p
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.PlayAnalysis.get_suit_cards">
 <span class="sig-name descname"><span class="pre">get_suit_cards</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.get_suit_cards" title="Link to this definition">¶</a></dt>
-<dd><p>Wrapper method for <cite>HandAnalysis.get_suit_cards()</cite></p>
+<dd><p>Wrapper method for <code class="docutils literal notranslate"><span class="pre">HandAnalysis.get_suit_cards()</span></code></p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.PlayAnalysis.trump_cards">
 <span class="sig-name descname"><span class="pre">trump_cards</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.trump_cards" title="Link to this definition">¶</a></dt>
-<dd><p>Wrapper method for <cite>HandAnalysis.trump_cards()</cite></p>
+<dd><p>Wrapper method for <code class="docutils literal notranslate"><span class="pre">HandAnalysis.trump_cards()</span></code></p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.PlayAnalysis.next_suit_cards">
 <span class="sig-name descname"><span class="pre">next_suit_cards</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.next_suit_cards" title="Link to this definition">¶</a></dt>
-<dd><p>Wrapper method for <cite>HandAnalysis.next_suit_cards()</cite></p>
+<dd><p>Wrapper method for <code class="docutils literal notranslate"><span class="pre">HandAnalysis.next_suit_cards()</span></code></p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.PlayAnalysis.green_suit_cards">
 <span class="sig-name descname"><span class="pre">green_suit_cards</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.green_suit_cards" title="Link to this definition">¶</a></dt>
-<dd><p>Wrapper method for <cite>HandAnalysis.green_suit_cards()</cite></p>
+<dd><p>Wrapper method for <code class="docutils literal notranslate"><span class="pre">HandAnalysis.green_suit_cards()</span></code></p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.PlayAnalysis.off_aces">
 <span class="sig-name descname"><span class="pre">off_aces</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.off_aces" title="Link to this definition">¶</a></dt>
-<dd><p>Wrapper method for <cite>HandAnalysis.off_aces()</cite></p>
+<dd><p>Wrapper method for <code class="docutils literal notranslate"><span class="pre">HandAnalysis.off_aces()</span></code></p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.PlayAnalysis.bowers">
 <span class="sig-name descname"><span class="pre">bowers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.bowers" title="Link to this definition">¶</a></dt>
-<dd><p>Wrapper method for <cite>HandAnalysis.bowers()</cite></p>
+<dd><p>Wrapper method for <code class="docutils literal notranslate"><span class="pre">HandAnalysis.bowers()</span></code></p>
 </dd></dl>
 
 <dl class="py method">
@@ -1303,7 +1303,7 @@ state of the hand in the deal), as well as additional functions helpful during p
 <span class="sig-name descname"><span class="pre">follow_cards</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lead_card</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.follow_cards" title="Link to this definition">¶</a></dt>
 <dd><p>Return the list of cards that follow the lead card suit.  Note, this does NOT
 currently translate jacks into bowers, so cards from this list can be returned
-directly by <cite>play_card()</cite>.</p>
+directly by <code class="docutils literal notranslate"><span class="pre">play_card()</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1317,7 +1317,7 @@ directly by <cite>play_card()</cite>.</p>
 <span class="sig-name descname"><span class="pre">cards_by_level</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset_trump</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.cards_by_level" title="Link to this definition">¶</a></dt>
 <dd><p>Return cards by descending level.  Note, this does NOT currently translate
 jacks into bowers (based on the HandAnalysis implementation), so cards from this
-list can be returned directly by <cite>play_card()</cite>.</p>
+list can be returned directly by <code class="docutils literal notranslate"><span class="pre">play_card()</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1325,7 +1325,7 @@ list can be returned directly by <cite>play_card()</cite>.</p>
 <span class="sig-name descname"><span class="pre">unplayed_by_suit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.analysis.PlayAnalysis.unplayed_by_suit" title="Link to this definition">¶</a></dt>
 <dd><p>Recast card sets as lists, so we can order them by descending level within each
 suit.  Note, this does NOT currently translate jacks into bowers, so cards from
-this list can be returned directly by <cite>play_card()</cite>.</p>
+this list can be returned directly by <code class="docutils literal notranslate"><span class="pre">play_card()</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1371,22 +1371,22 @@ bowers, so that bower levels and ranks can be used, the return list IS sorted.</
 <dt class="sig sig-object py" id="euchplt.analysis.HandAnalysisSmart">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.analysis.</span></span><span class="sig-name descname"><span class="pre">HandAnalysisSmart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hand</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.Hand" title="euchplt.euchre.Hand"><span class="pre">Hand</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.analysis.HandAnalysisSmart" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#euchplt.analysis.HandAnalysis" title="euchplt.analysis.base.HandAnalysis"><code class="xref py py-class docutils literal notranslate"><span class="pre">HandAnalysis</span></code></a></p>
-<p>Extend <cite>HandAnalysis</cite> to determine a “hand strength” score given a trump suit
-context, for use in bidding.  This score is used in the associated <cite>StartegySmart</cite>
+<p>Extend <code class="docutils literal notranslate"><span class="pre">HandAnalysis</span></code> to determine a “hand strength” score given a trump suit
+context, for use in bidding.  This score is used in the associated <code class="docutils literal notranslate"><span class="pre">StartegySmart</span></code>
 class against thresholds based on bidding position to determine whether/what to bid.
 We specify a number of config parameters to help compute this score.</p>
 <p>Example parameter values (see base_config.yml for actual default values):</p>
-<div class="highlight-YAML notranslate"><div class="highlight"><pre><span></span><span class="nt">trump_values</span><span class="p">:</span><span class="w">     </span><span class="p p-Indicator">[</span><span class="nv">0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">null</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">1</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">2</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">4</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">7</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">10</span><span class="p p-Indicator">]</span>
-<span class="nt">suit_values</span><span class="p">:</span><span class="w">      </span><span class="p p-Indicator">[</span><span class="nv">0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">1</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">5</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">10</span><span class="p p-Indicator">]</span>
-<span class="nt">num_trump_scores</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.2</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.4</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.6</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.8</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">1.0</span><span class="p p-Indicator">]</span>
-<span class="nt">off_aces_scores</span><span class="p">:</span><span class="w">  </span><span class="p p-Indicator">[</span><span class="nv">0.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.2</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.5</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">1.0</span><span class="p p-Indicator">]</span>
-<span class="nt">voids_scores</span><span class="p">:</span><span class="w">     </span><span class="p p-Indicator">[</span><span class="nv">0.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.3</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.7</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">1.0</span><span class="p p-Indicator">]</span>
-<span class="nt">scoring_coeff</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">trump_score</span><span class="p">:</span><span class="w">      </span><span class="l l-Scalar l-Scalar-Plain">40</span>
-<span class="w">  </span><span class="nt">max_suit_score</span><span class="p">:</span><span class="w">   </span><span class="l l-Scalar l-Scalar-Plain">10</span>
-<span class="w">  </span><span class="nt">num_trump_score</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">20</span>
-<span class="w">  </span><span class="nt">off_aces_score</span><span class="p">:</span><span class="w">   </span><span class="l l-Scalar l-Scalar-Plain">15</span>
-<span class="w">  </span><span class="nt">voids_score</span><span class="p">:</span><span class="w">      </span><span class="l l-Scalar l-Scalar-Plain">15</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trump_values</span><span class="p">:</span>     <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">null</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+<span class="n">suit_values</span><span class="p">:</span>      <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+<span class="n">num_trump_scores</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>
+<span class="n">off_aces_scores</span><span class="p">:</span>  <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>
+<span class="n">voids_scores</span><span class="p">:</span>     <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>
+<span class="n">scoring_coeff</span><span class="p">:</span>
+  <span class="n">trump_score</span><span class="p">:</span>      <span class="mi">40</span>
+  <span class="n">max_suit_score</span><span class="p">:</span>   <span class="mi">10</span>
+  <span class="n">num_trump_score</span><span class="p">:</span>  <span class="mi">20</span>
+  <span class="n">off_aces_score</span><span class="p">:</span>   <span class="mi">15</span>
+  <span class="n">voids_score</span><span class="p">:</span>      <span class="mi">15</span>
 </pre></div>
 </div>
 <p>Overall score is based on subscores for the following aspects of the hand:</p>
@@ -1398,9 +1398,9 @@ We specify a number of config parameters to help compute this score.</p>
 <li><p>Number of voids</p></li>
 </ul>
 <p>Trump and off-suit strength subscores are computed by adding the values (based on
-lookups in the <cite>trump_values</cite> and <cite>suit_values</cite> arrays) for all of the cards in each
-suit, normalizing to the total available points for the suit, then multiplying by the
-appropriate scoring coefficient.</p>
+lookups in the <code class="docutils literal notranslate"><span class="pre">trump_values</span></code> and <code class="docutils literal notranslate"><span class="pre">suit_values</span></code> arrays) for all of the cards in
+each suit, normalizing to the total available points for the suit, then multiplying by
+the appropriate scoring coefficient.</p>
 <p>For trump, the individual card values are (from above):</p>
 <ul class="simple">
 <li><p>9 - 0 pts</p></li>
@@ -1414,24 +1414,24 @@ appropriate scoring coefficient.</p>
 </ul>
 <p>Thus, if the trump holding for the suit under consideration is L-K-10, the value
 (based on lookup) is 7 + 2 + 0 = 9, which is then divided by total trump points (24)
-and multiplied by the <cite>trump_score</cite> coefficient of 40 to get the subscore.  The same
+and multiplied by the <code class="docutils literal notranslate"><span class="pre">trump_score</span></code> coefficient of 40 to get the subscore.  The same
 method is applied for computing off-suit scores (9-through-A lookup, since there are
 no bowers); the highest suit value is then divided by 16 and mutiplied by the
-<cite>max_suit_score</cite> coefficient.</p>
+<code class="docutils literal notranslate"><span class="pre">max_suit_score</span></code> coefficient.</p>
 <p>For the other scoring components, the lookup value is by number of trump cards in the
 hand (thus, ascribing some value to 9s and 10s), number of off-aces, and number of
 void suits, respectively.  That value is then multiplied by the corresponding
-<cite>scoring_coeff</cite> number.  Note that the set of scoring coefficients don’t have to add
+<code class="docutils literal notranslate"><span class="pre">scoring_coeff</span></code> number.  Note that the set of scoring coefficients don’t have to add
 up to 100, but keeping it so makes it easier to understand the relative weighting
 between the scoring components.</p>
 <p>All of the subscores added together yields the overall hand strengh score used by
-<cite>StrategySmart</cite>.</p>
+<code class="docutils literal notranslate"><span class="pre">StrategySmart</span></code>.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.HandAnalysisSmart.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hand</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.Hand" title="euchplt.euchre.Hand"><span class="pre">Hand</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.analysis.HandAnalysisSmart.__init__" title="Link to this definition">¶</a></dt>
-<dd><p>Note that config parameters passed in through <cite>kwargs</cite> will override the values
-specified in base_config.yml.  The entire <cite>scoring_coeff</cite> dict must be provided if
-overriding any of the individual coefficients.</p>
+<dd><p>Note that config parameters passed in through <code class="docutils literal notranslate"><span class="pre">kwargs</span></code> will override the
+values specified in base_config.yml.  The entire <code class="docutils literal notranslate"><span class="pre">scoring_coeff</span></code> dict must be
+provided if overriding any of the individual coefficients.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1439,7 +1439,7 @@ overriding any of the individual coefficients.</p>
 <span class="sig-name descname"><span class="pre">suit_strength</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">suit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">trump_suit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#euchplt.analysis.HandAnalysisSmart.suit_strength" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the suit strength (sum of card values, normalized to total points for
 the suit) given a trump context.  Note that this call requires that jacks be
-replaced by BOWER cards (rank of <cite>right</cite> or <cite>left</cite>).</p>
+replaced by BOWER cards (rank of <code class="docutils literal notranslate"><span class="pre">right</span></code> or <code class="docutils literal notranslate"><span class="pre">left</span></code>).</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1454,7 +1454,7 @@ plus constructor overrides).</p>
 <dt class="sig sig-object py" id="euchplt.analysis.HandAnalysisSmart.turn_card_rank">
 <span class="sig-name descname"><span class="pre">turn_card_rank</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">turn_card</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Rank" title="euchplt.card.Rank"><span class="pre">Rank</span></a></span></span><a class="headerlink" href="#euchplt.analysis.HandAnalysisSmart.turn_card_rank" title="Link to this definition">¶</a></dt>
 <dd><p>SUPER-HACKY: this doesn’t really belong here, need to figure out a nicer way of
-doing this (needed by <cite>StrategySmart.bid()</cite>)!!!</p>
+doing this (needed by <code class="docutils literal notranslate"><span class="pre">StrategySmart.bid()</span></code>)!!!</p>
 </dd></dl>
 
 </dd></dl>
@@ -1462,11 +1462,24 @@ doing this (needed by <cite>StrategySmart.bid()</cite>)!!!</p>
 </section>
 <section id="module-euchplt.strategy">
 <span id="euchplt-strategy-strategy"></span><h2><a class="reference internal" href="#module-euchplt.strategy" title="euchplt.strategy"><code class="xref py py-mod docutils literal notranslate"><span class="pre">euchplt.strategy</span></code></a> – Strategy<a class="headerlink" href="#module-euchplt.strategy" title="Link to this heading">¶</a></h2>
+<p>This module provides classes that implement bidding and playing strategies for players
+and teams.  Note that <code class="docutils literal notranslate"><span class="pre">Strategy</span></code> (abstract base class) can also be subclassed by other
+modules for special purpose use (see <code class="docutils literal notranslate"><span class="pre">ml</span></code> module).</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="euchplt.strategy.Strategy">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.strategy.</span></span><span class="sig-name descname"><span class="pre">Strategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.strategy.Strategy" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Abstract base class, cannot be instantiated directly</p>
+<p>Abstract base class, cannot be instantiated directly.  Subclasses should be
+instantiated using <code class="docutils literal notranslate"><span class="pre">Strategy.new(&lt;strat_name&gt;).</span></code></p>
+<p>Subclasses must implement the following methods:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">bid()</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">discard()</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">play_card()</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">notify()</span></code> – <em>[optional]</em> handle notifications (e.g. <code class="docutils literal notranslate"><span class="pre">DEAL_COMPLETE</span></code>)</p></li>
+</ul>
+<p>The context for all calls is provided by <cite>DealState</cite>, which is defined as follows (in
+euchre.py).</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.strategy.Strategy.new">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">new</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strat_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.strategy.Strategy" title="euchplt.strategy.base.Strategy"><span class="pre">Strategy</span></a></span></span><a class="headerlink" href="#euchplt.strategy.Strategy.new" title="Link to this definition">¶</a></dt>
@@ -1485,7 +1498,7 @@ specified for the underlying implementation class</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.strategy.Strategy.bid">
 <span class="sig-name descname"><span class="pre">bid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">def_bid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.euchre.Bid" title="euchplt.euchre.Bid"><span class="pre">Bid</span></a></span></span><a class="headerlink" href="#euchplt.strategy.Strategy.bid" title="Link to this definition">¶</a></dt>
-<dd><p>Note that <cite>deal</cite> contains a dict element named <cite>player_state</cite>, which the
+<dd><p>Note that <code class="docutils literal notranslate"><span class="pre">deal</span></code> contains a dict element named <code class="docutils literal notranslate"><span class="pre">player_state</span></code>, which the
 implementation may use to persist state between calls (opaque to the calling
 module)</p>
 </dd></dl>
@@ -1500,17 +1513,18 @@ this is called</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.strategy.Strategy.play_card">
 <span class="sig-name descname"><span class="pre">play_card</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">trick</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.Trick" title="euchplt.euchre.Trick"><span class="pre">Trick</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_plays</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></span><a class="headerlink" href="#euchplt.strategy.Strategy.play_card" title="Link to this definition">¶</a></dt>
-<dd><p>TODO: should probably remove <cite>trick</cite> as an arg (always same as <cite>deal.cur_trick</cite>)</p>
-<p>Note that in <cite>valid_plays</cite>, jacks are NOT translated into bowers, and thus the
-implementation should also NOT return bowers (<cite>card.realcard()</cite> can be used if
-bowers are used as part of the analysis)</p>
+<dd><p>TODO: should probably remove <code class="docutils literal notranslate"><span class="pre">trick</span></code> as an arg (always same as
+<code class="docutils literal notranslate"><span class="pre">deal.cur_trick</span></code>)</p>
+<p>Note that in <code class="docutils literal notranslate"><span class="pre">valid_plays</span></code> (arg), jacks are NOT translated into bowers, and thus
+the implementation should also NOT return bowers (<code class="docutils literal notranslate"><span class="pre">card.realcard()</span></code> can be used
+if bowers are utilized as part of the analysis and/or strategy)</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.strategy.Strategy.notify">
 <span class="sig-name descname"><span class="pre">notify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">notice_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.strategy.StrategyNotice" title="euchplt.strategy.base.StrategyNotice"><span class="pre">StrategyNotice</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.Strategy.notify" title="Link to this definition">¶</a></dt>
 <dd><p>Subclasses do not have to implement this.  We are currently only expecting
-<cite>DEAL_COMPLETE</cite> notifications (to support “traversal” strategies for ML data
+<code class="docutils literal notranslate"><span class="pre">DEAL_COMPLETE</span></code> notifications (to support “traversal” strategies for ML data
 generation).</p>
 </dd></dl>
 
@@ -1520,14 +1534,17 @@ generation).</p>
 <dt class="sig sig-object py" id="euchplt.strategy.StrategyNotice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.strategy.</span></span><span class="sig-name descname"><span class="pre">StrategyNotice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names=&lt;not</span> <span class="pre">given&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.strategy.StrategyNotice" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Notification type for the <code class="docutils literal notranslate"><span class="pre">notify()</span></code> call</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="euchplt.strategy.StrategyRandom">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.strategy.</span></span><span class="sig-name descname"><span class="pre">StrategyRandom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.strategy.StrategyRandom" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#euchplt.strategy.Strategy" title="euchplt.strategy.base.Strategy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Strategy</span></code></a></p>
-<p>TODO (for the hell of it…maybe): parameterize the various magic numbers in
-this class (i.e. thresholds for whether/when to bid, go/defend alone, etc.)!?!?</p>
+<p>Randomly pick between valid bids, discards, and card plays.  Note that there are a
+number of magic numbers hardwired into the implementation (e.g. thresholds for whether
+or when to bid, go/defend alone, etc.), which we may want to parameterize for some
+visibility (this is, after all, a teaching tool).</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.strategy.StrategyRandom.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.strategy.StrategyRandom.__init__" title="Link to this definition">¶</a></dt>
@@ -1558,8 +1575,14 @@ this class (i.e. thresholds for whether/when to bid, go/defend alone, etc.)!?!?<
 <dt class="sig sig-object py" id="euchplt.strategy.StrategySimple">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.strategy.</span></span><span class="sig-name descname"><span class="pre">StrategySimple</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.strategy.StrategySimple" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#euchplt.strategy.Strategy" title="euchplt.strategy.base.Strategy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Strategy</span></code></a></p>
-<p>Represents minimum logic for passable play, very basic strategy, fairly
-conservative (though we add several <cite>aggressive</cite> flag options)</p>
+<p>Represents minimum logic for passable play–very basic strategy, fairly
+conservative (though we add several options for more aggressive play).</p>
+<p><code class="docutils literal notranslate"><span class="pre">aggressive</span></code> parameter bit fields:</p>
+<ul class="simple">
+<li><p>partner is winning, but play high (pre-emptive) from the third seat rather than duck</p></li>
+<li><p>take high (if possible) from second or third seat, rather than lower take (e.g. use
+A instead of Q on a lead of 9)</p></li>
+</ul>
 <p>TODO (maybe): parameterize some of the magic numbers in this code!?!?</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.strategy.StrategySimple.bid">
@@ -1585,12 +1608,35 @@ conservative (though we add several <cite>aggressive</cite> flag options)</p>
 <dt class="sig sig-object py" id="euchplt.strategy.StrategySmart">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.strategy.</span></span><span class="sig-name descname"><span class="pre">StrategySmart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.strategy.StrategySmart" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#euchplt.strategy.Strategy" title="euchplt.strategy.base.Strategy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Strategy</span></code></a></p>
-<p>Strategy based on rule-based scoring/strength assessments, both for
-bidding and playing.  The rules are parameterized, so variations can be
-specified in the config file.</p>
-<p>FUTURE: there is an opportunity to build a framework for optimizing the
-various parameters, either in an absolute sense, or possibly relative to
-different opponent profiles.</p>
+<p>Strategy based on rule-based scoring/strength assessments, both for bidding and
+playing.  The rules are parameterized, so variations can be specified in the config
+file.</p>
+<p>Example parameter values for bidding:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hand_analysis</span><span class="p">:</span>    <span class="c1"># keep this empty here, but may be overridden by</span>
+                  <span class="c1"># individual strategies</span>
+<span class="n">turn_card_value</span><span class="p">:</span>  <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">]</span>
+<span class="n">turn_card_coeff</span><span class="p">:</span>  <span class="p">[</span><span class="mi">25</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">25</span><span class="p">]</span>
+<span class="n">bid_thresh</span><span class="p">:</span>       <span class="p">[</span><span class="mi">35</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">35</span><span class="p">]</span>
+<span class="n">alone_margin</span><span class="p">:</span>     <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+<span class="n">def_alone_thresh</span><span class="p">:</span> <span class="p">[</span><span class="mi">35</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">35</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Brief description of bid parameters (see <code class="docutils literal notranslate"><span class="pre">bid()</span></code> for more information):</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">hand_analysis</span></code> - override base config parameters for <code class="docutils literal notranslate"><span class="pre">HandAnalysisSmart</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">turn_card_value</span></code> - value for turn card, indexed by rank (9-R, e.g. A = 30, above)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">turn_card_coeff</span></code> - multiplier for <code class="docutils literal notranslate"><span class="pre">turn_card_value</span></code>, indexed by seat position
+(product to be added to hand strength)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">bid_thresh</span></code> - total strength needed to bid, indexed by bid position (across 2
+rounds)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">alone_margin</span></code> - margin above <code class="docutils literal notranslate"><span class="pre">bid_thresh</span></code> needed to go alone, indexed by bid
+positions</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">def_alone_thresh</span></code> - total strength needed to defend alone, indexed by bid
+position</p></li>
+</ul>
+<p>FUTURE: there is an opportunity to build a framework for optimizing the various
+parameters, either in an absolute sense, or possibly relative to different opponent
+profiles.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.strategy.StrategySmart.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.strategy.StrategySmart.__init__" title="Link to this definition">¶</a></dt>
@@ -1601,37 +1647,33 @@ different opponent profiles.</p>
 <dt class="sig sig-object py" id="euchplt.strategy.StrategySmart.bid">
 <span class="sig-name descname"><span class="pre">bid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">def_bid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.euchre.Bid" title="euchplt.euchre.Bid"><span class="pre">Bid</span></a></span></span><a class="headerlink" href="#euchplt.strategy.StrategySmart.bid" title="Link to this definition">¶</a></dt>
 <dd><p>General logic:</p>
-<p>round 1:</p>
+<section id="round-1">
+<h3>Round 1<a class="headerlink" href="#round-1" title="Link to this heading">¶</a></h3>
+<p><strong>Non-dealer</strong></p>
 <ul class="simple">
-<li><p>non-dealer:</p>
-<ul>
-<li><p>compute hand strength for turn suit</p></li>
-<li><p>adjust for turn card (partner vs. opp)</p></li>
-<li><p>bid if strength &gt; round1_thresh (by position)</p></li>
+<li><p>Compute hand strength for turn suit</p></li>
+<li><p>Adjust for turn card (partner vs. opp)</p></li>
+<li><p>Bid if strength &gt; round1_thresh (by position)</p></li>
 </ul>
-</li>
-<li><p>dealer:</p>
-<ul>
-<li><p>compute strength for turn suit + each possible discard
-(including turn card)</p></li>
-<li><p>bid if max(strength) &gt; round1_thresh (dealer position)</p></li>
-</ul>
-</li>
-</ul>
-<p>round 2:</p>
+<p><strong>Dealer</strong></p>
 <ul class="simple">
-<li><p>all players:</p>
-<ul>
-<li><p>compute strength for each non-turn suit</p></li>
-<li><p>bid if max(strength) &gt; round2_thresh (by position)</p></li>
+<li><p>Compute strength for turn suit + each possible discard (including turn card)</p></li>
+<li><p>Bid if max(strength) &gt; round1_thresh (dealer position)</p></li>
 </ul>
-</li>
-</ul>
-<p>loners:</p>
+</section>
+<section id="round-2">
+<h3>Round 2<a class="headerlink" href="#round-2" title="Link to this heading">¶</a></h3>
+<p><strong>All players</strong></p>
 <ul class="simple">
-<li><p>go alone if strength exceeds threshold by specified margin parameter</p></li>
-<li><p>defend alone if strength (for contract suit) &gt; def_alone_thresh</p></li>
+<li><p>Compute strength for each non-turn suit</p></li>
+<li><p>Bid if max(strength) &gt; round2_thresh (by position)</p></li>
 </ul>
+<p><strong>Loners</strong></p>
+<ul class="simple">
+<li><p>Go alone if strength exceeds threshold by specified margin parameter</p></li>
+<li><p>Defend alone if strength &gt; def_alone_thresh (for contract suit)</p></li>
+</ul>
+</section>
 </dd></dl>
 
 <dl class="py method">
@@ -1641,30 +1683,30 @@ different opponent profiles.</p>
 this is called</p>
 <p>Possible future logic (first successful tactic):</p>
 <ul class="simple">
-<li><p>all trump case (discard lowest)</p></li>
-<li><p>create void</p>
+<li><p>All trump case (discard lowest)</p></li>
+<li><p>Create void</p>
 <ul>
-<li><p>don’t discard singleton ace (exception case?)</p></li>
-<li><p>prefer next or green suit?</p></li>
-<li><p>“always void next if loner called from pos 2”[???]</p></li>
+<li><p>Don’t discard singleton ace (exception case?)</p></li>
+<li><p>Prefer next or green suit?</p></li>
+<li><p>“Always void next if loner called from pos 2”[???]</p></li>
 </ul>
 </li>
-<li><p>create doubleton</p>
+<li><p>Create doubleton</p>
 <ul>
-<li><p>perhaps only do if high card in suit is actually viable (&gt;=Q)</p></li>
+<li><p>Perhaps only do if high card in suit is actually viable (&gt;=Q)</p></li>
 </ul>
 </li>
-<li><p>discard from next</p>
+<li><p>Discard from next</p>
 <ul>
-<li><p>don’t unguard doubleton king or break up A-K</p></li>
+<li><p>Don’t unguard doubleton king or break up A-K</p></li>
 </ul>
 </li>
-<li><p>discard lowest</p>
+<li><p>Discard lowest</p>
 <ul>
-<li><p>avoid unguarding doubleton king, while making sure that A-K doubleton
+<li><p>Avoid unguarding doubleton king, while making sure that A-K doubleton
 takes precedence (if also present)</p></li>
-<li><p>worry about off-ace vs. low trump?</p></li>
-<li><p>choose between green suit doubletons?</p></li>
+<li><p>Worry about off-ace vs. low trump?</p></li>
+<li><p>Choose between green suit doubletons?</p></li>
 </ul>
 </li>
 </ul>
@@ -1854,7 +1896,7 @@ within the data structure (failed assert on validation error)</p>
     <span class="n">my_param</span><span class="p">:</span> <span class="n">value</span>
 <span class="n">alt_profile</span><span class="p">:</span>
   <span class="n">my_section</span><span class="p">:</span>
-    <span class="n">my_param</span><span class="p">:</span> <span class="n">alt_value</span>  <span class="c1"># overwrites value from &#39;default&#39; profile</span>
+    <span class="n">my_param</span><span class="p">:</span> <span class="n">alt_value</span>  <span class="c1"># overwrites value from `default` profile</span>
 </pre></div>
 </div>
 <dl class="py method">

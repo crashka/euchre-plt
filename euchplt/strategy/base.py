@@ -12,6 +12,8 @@ from ..euchre import Bid, Trick, DealState
 #################
 
 class StrategyNotice(Enum):
+    """Notification type for the ``notify()`` call
+    """
     DEAL_COMPLETE = "Deal Complete"
 
 ############
@@ -19,7 +21,18 @@ class StrategyNotice(Enum):
 ############
 
 class Strategy:
-    """Abstract base class, cannot be instantiated directly
+    """Abstract base class, cannot be instantiated directly.  Subclasses should be
+    instantiated using ``Strategy.new(<strat_name>).``
+
+    Subclasses must implement the following methods:
+
+    - ``bid()``
+    - ``discard()``
+    - ``play_card()``
+    - ``notify()`` – *[optional]* handle notifications (e.g. ``DEAL_COMPLETE``)
+
+    The context for all calls is provided by `DealState`, which is defined as follows (in
+    euchre.py).
     """
     @classmethod
     def new(cls, strat_name: str) -> 'Strategy':
@@ -62,7 +75,7 @@ class Strategy:
         return type(self).__name__
 
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
-        """Note that `deal` contains a dict element named `player_state`, which the
+        """Note that ``deal`` contains a dict element named ``player_state``, which the
         implementation may use to persist state between calls (opaque to the calling
         module)
         """
@@ -75,17 +88,18 @@ class Strategy:
         raise NotImplementedError("Can't call abstract method")
 
     def play_card(self, deal: DealState, trick: Trick, valid_plays: list[Card]) -> Card:
-        """TODO: should probably remove `trick` as an arg (always same as `deal.cur_trick`)
+        """TODO: should probably remove ``trick`` as an arg (always same as
+        ``deal.cur_trick``)
 
-        Note that in `valid_plays`, jacks are NOT translated into bowers, and thus the
-        implementation should also NOT return bowers (`card.realcard()` can be used if
-        bowers are used as part of the analysis)
+        Note that in ``valid_plays`` (arg), jacks are NOT translated into bowers, and thus
+        the implementation should also NOT return bowers (``card.realcard()`` can be used
+        if bowers are utilized as part of the analysis and/or strategy)
         """
         raise NotImplementedError("Can't call abstract method")
 
     def notify(self, deal: DealState, notice_type: StrategyNotice) -> None:
         """Subclasses do not have to implement this.  We are currently only expecting
-        `DEAL_COMPLETE` notifications (to support "traversal" strategies for ML data
+        ``DEAL_COMPLETE`` notifications (to support "traversal" strategies for ML data
         generation).
         """
         # do nothing

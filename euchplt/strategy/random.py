@@ -12,8 +12,10 @@ from .base import Strategy
 ##################
 
 class StrategyRandom(Strategy):
-    """TODO (for the hell of it...maybe): parameterize the various magic numbers in
-    this class (i.e. thresholds for whether/when to bid, go/defend alone, etc.)!?!?
+    """Randomly pick between valid bids, discards, and card plays.  Note that there are a
+    number of magic numbers hardwired into the implementation (e.g. thresholds for whether
+    or when to bid, go/defend alone, etc.), which we may want to parameterize for some
+    visibility (this is, after all, a teaching tool).
     """
     rand_seed: Optional[int]
     random:    Random

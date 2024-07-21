@@ -19,13 +19,36 @@ class PlayPlan(Enum):
     PRESERVE_TRUMP = "Preserve_Trump"
 
 class StrategySmart(Strategy):
-    """Strategy based on rule-based scoring/strength assessments, both for
-    bidding and playing.  The rules are parameterized, so variations can be
-    specified in the config file.
+    """Strategy based on rule-based scoring/strength assessments, both for bidding and
+    playing.  The rules are parameterized, so variations can be specified in the config
+    file.
 
-    FUTURE: there is an opportunity to build a framework for optimizing the
-    various parameters, either in an absolute sense, or possibly relative to
-    different opponent profiles.
+    Example parameter values for bidding::
+
+      hand_analysis:    # keep this empty here, but may be overridden by
+                        # individual strategies
+      turn_card_value:  [10, 15, 0, 20, 25, 30, 0, 50]
+      turn_card_coeff:  [25, 25, 25, 25]
+      bid_thresh:       [35, 35, 35, 35, 35, 35, 35, 35]
+      alone_margin:     [10, 10, 10, 10, 10, 10, 10, 10]
+      def_alone_thresh: [35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35]
+
+    Brief description of bid parameters (see ``bid()`` for more information):
+
+    - ``hand_analysis`` - override base config parameters for ``HandAnalysisSmart``
+    - ``turn_card_value`` - value for turn card, indexed by rank (9-R, e.g. A = 30, above)
+    - ``turn_card_coeff`` - multiplier for ``turn_card_value``, indexed by seat position
+      (product to be added to hand strength)
+    - ``bid_thresh`` - total strength needed to bid, indexed by bid position (across 2
+      rounds)
+    - ``alone_margin`` - margin above ``bid_thresh`` needed to go alone, indexed by bid
+      positions
+    - ``def_alone_thresh`` - total strength needed to defend alone, indexed by bid
+      position
+
+    FUTURE: there is an opportunity to build a framework for optimizing the various
+    parameters, either in an absolute sense, or possibly relative to different opponent
+    profiles.
     """
     hand_analysis:    dict
     # bid parameters
@@ -33,7 +56,7 @@ class StrategySmart(Strategy):
     turn_card_coeff:  list[int]  # by pos (0-3)
     bid_thresh:       list[int]  # by pos (0-7)
     alone_margin:     list[int]  # by pos (0-7)
-    def_alone_thresh: list[int]  # by pos (0-7)
+    def_alone_thresh: list[int]  # by pos (0-10)
     # play parameters
     init_lead:        list[str]
     subseq_lead:      list[str]
@@ -61,31 +84,32 @@ class StrategySmart(Strategy):
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """General logic:
 
-        round 1:
+        Round 1
+        -------
 
-        - non-dealer:
+        **Non-dealer**
 
-          - compute hand strength for turn suit
-          - adjust for turn card (partner vs. opp)
-          - bid if strength > round1_thresh (by position)
+        - Compute hand strength for turn suit
+        - Adjust for turn card (partner vs. opp)
+        - Bid if strength > round1_thresh (by position)
 
-        - dealer:
+        **Dealer**
 
-          - compute strength for turn suit + each possible discard
-            (including turn card)
-          - bid if max(strength) > round1_thresh (dealer position)
+        - Compute strength for turn suit + each possible discard (including turn card)
+        - Bid if max(strength) > round1_thresh (dealer position)
 
-        round 2:
+        Round 2
+        -------
 
-        - all players:
+        **All players**
 
-          - compute strength for each non-turn suit
-          - bid if max(strength) > round2_thresh (by position)
+        - Compute strength for each non-turn suit
+        - Bid if max(strength) > round2_thresh (by position)
 
-        loners:
+        **Loners**
 
-        - go alone if strength exceeds threshold by specified margin parameter
-        - defend alone if strength (for contract suit) > def_alone_thresh
+        - Go alone if strength exceeds threshold by specified margin parameter
+        - Defend alone if strength > def_alone_thresh (for contract suit)
         """
         persist       = deal.player_state
         bid_pos       = deal.bid_pos
@@ -165,27 +189,27 @@ class StrategySmart(Strategy):
 
         Possible future logic (first successful tactic):
 
-        - all trump case (discard lowest)
-        - create void
+        - All trump case (discard lowest)
+        - Create void
 
-          - don't discard singleton ace (exception case?)
-          - prefer next or green suit?
-          - "always void next if loner called from pos 2"[???]
+          - Don't discard singleton ace (exception case?)
+          - Prefer next or green suit?
+          - "Always void next if loner called from pos 2"[???]
 
-        - create doubleton
+        - Create doubleton
 
-          - perhaps only do if high card in suit is actually viable (>=Q)
+          - Perhaps only do if high card in suit is actually viable (>=Q)
 
-        - discard from next
+        - Discard from next
 
-          - don't unguard doubleton king or break up A-K
+          - Don't unguard doubleton king or break up A-K
 
-        - discard lowest
+        - Discard lowest
 
-          - avoid unguarding doubleton king, while making sure that A-K doubleton
+          - Avoid unguarding doubleton king, while making sure that A-K doubleton
             takes precedence (if also present)
-          - worry about off-ace vs. low trump?
-          - choose between green suit doubletons?
+          - Worry about off-ace vs. low trump?
+          - Choose between green suit doubletons?
         """
         assert deal.turn_card in deal.hand
         turn_suit = deal.turn_card.suit
@@ -502,8 +526,8 @@ class StrategySmart(Strategy):
         #########################
 
         def apply(ruleset):
-            """REVISIT: perhaps genericize the ruleset thing, in which case
-            we would move it to `core` or `utils` module
+            """REVISIT: perhaps genericize the ruleset thing, in which case we would move
+            it to ``core`` or ``utils`` module
             """
             result = None
             for rule in ruleset:

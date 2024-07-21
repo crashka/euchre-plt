@@ -13,8 +13,8 @@ from ..euchre import GameCtxMixin, SuitCards, Hand, DealState
 ###########
 
 class SuitCtx(GameCtxMixin):
-    """Wrapper for `GameCtxMixin` for usage within the module (treating the base class as
-    abstract).  See `SUIT_CTX`.
+    """Wrapper for ``GameCtxMixin`` for usage within the module (treating the base class as
+    abstract).  See ``SUIT_CTX``.
     """
     suit: Suit
 
@@ -33,12 +33,12 @@ SUIT_CTX: dict[Suit, SuitCtx] = {s: SuitCtx(s) for s in SUITS}
 class HandAnalysis:
     """This class provides helper methods for evaluating hands, typically by extracting
     useful subsets (i.e. lists) of cards, given a trump suit context.  Counts can then be
-    easily derived using `len()`.  This class is generally only used directly in the
+    easily derived using ``len()``.  This class is generally only used directly in the
     bidding process, during which the underlying hand does not change (there is no caching
     of results).
 
     Note that these calls still work if/as the hand changes (e.g. cards are swapped and/or
-    played), thus `PlayAnalysis` contains wrapper methods which automatically pass in the
+    played), thus ``PlayAnalysis`` contains wrapper methods which automatically pass in the
     trump suit context (since it will already be known for the deal).
     """
     hand: Hand
@@ -104,7 +104,7 @@ class HandAnalysis:
         return [cards[0] for cards in suit_cards.values() if len(cards) == 1]
 
     def cards_by_level(self, trump_suit: Suit, offset_trump: bool = False) -> list[Card]:
-        """Return cards by descending level.  `offset_trump=True` sorts all trump higher
+        """Return cards by descending level.  ``offset_trump=True`` sorts all trump higher
         than all non-trump.  Note, this does NOT currently translate jacks into bowers,
         though recognizes them by effective level and always sorts them highest.
         """
@@ -119,7 +119,7 @@ class HandAnalysis:
 
 class PlayAnalysis:
     """This class provides helper methods for evaluating hands during the play process.
-    It contains wrappers for useful `HandAnalysis` methods (which will reflect the current
+    It contains wrappers for useful ``HandAnalysis`` methods (which will reflect the current
     state of the hand in the deal), as well as additional functions helpful during play.
     """
     deal:          DealState
@@ -134,39 +134,39 @@ class PlayAnalysis:
         self.hand_analysis = HandAnalysis(self.hand)
 
     def get_suit_cards(self) -> SuitCards:
-        """Wrapper method for `HandAnalysis.get_suit_cards()`
+        """Wrapper method for ``HandAnalysis.get_suit_cards()``
         """
         return self.hand_analysis.get_suit_cards(self.ctx.suit)
 
     def trump_cards(self) -> list[Card]:
-        """Wrapper method for `HandAnalysis.trump_cards()`
+        """Wrapper method for ``HandAnalysis.trump_cards()``
         """
         return self.hand_analysis.trump_cards(self.ctx.suit)
 
     def next_suit_cards(self) -> list[Card]:
-        """Wrapper method for `HandAnalysis.next_suit_cards()`
+        """Wrapper method for ``HandAnalysis.next_suit_cards()``
         """
         return self.hand_analysis.next_suit_cards(self.ctx.suit)
 
     def green_suit_cards(self) -> tuple[list[Card], ...]:
-        """Wrapper method for `HandAnalysis.green_suit_cards()`
+        """Wrapper method for ``HandAnalysis.green_suit_cards()``
         """
         return self.hand_analysis.green_suit_cards(self.ctx.suit)
 
     def off_aces(self) -> list[Card]:
-        """Wrapper method for `HandAnalysis.off_aces()`
+        """Wrapper method for ``HandAnalysis.off_aces()``
         """
         return self.hand_analysis.off_aces(self.ctx.suit)
 
     def bowers(self) -> list[Card]:
-        """Wrapper method for `HandAnalysis.bowers()`
+        """Wrapper method for ``HandAnalysis.bowers()``
         """
         return self.hand_analysis.bowers(self.ctx.suit)
 
     def follow_cards(self, lead_card: Card) -> list[Card]:
         """Return the list of cards that follow the lead card suit.  Note, this does NOT
         currently translate jacks into bowers, so cards from this list can be returned
-        directly by `play_card()`.
+        directly by ``play_card()``.
         """
         lead_suit = lead_card.effsuit(self.ctx)
         return self.hand.cards_by_suit(self.ctx, use_bowers=False)[lead_suit]
@@ -179,14 +179,14 @@ class PlayAnalysis:
     def cards_by_level(self, offset_trump: bool = False) -> list[Card]:
         """Return cards by descending level.  Note, this does NOT currently translate
         jacks into bowers (based on the HandAnalysis implementation), so cards from this
-        list can be returned directly by `play_card()`.
+        list can be returned directly by ``play_card()``.
         """
         return self.hand_analysis.cards_by_level(self.ctx.suit, offset_trump)
 
     def unplayed_by_suit(self) -> dict[Suit, list[Card]]:
         """Recast card sets as lists, so we can order them by descending level within each
         suit.  Note, this does NOT currently translate jacks into bowers, so cards from
-        this list can be returned directly by `play_card()`.
+        this list can be returned directly by ``play_card()``.
         """
         card_set_iter = self.deal.unplayed_by_suit.items()
         suit_cards = {suit: list(card_set) for suit, card_set in card_set_iter}
@@ -230,9 +230,9 @@ class PlayAnalysis:
         words, those that we need to account for.  Note, this DOES translate jacks into
         bowers, so that bower levels and ranks can be used, the return list IS sorted.
         """
-        # FIX: this is really bad, translating back and forth between set (for
-        # the `difference` function) and list (for the ordering)--and for only
-        # five freaking elements, MAX--really, really stupid!!!
+        # FIX: this is really bad, translating back and forth between set (for using
+        # `difference`) and list (for sorting)--and for only five freaking elements,
+        # MAX--really, really stupid!!!
         unplayed = set(self.trumps_unplayed())
         missing = list(unplayed.difference(self.trump_cards()))
         missing.sort(key=lambda c: c.efflevel(self.ctx), reverse=True)

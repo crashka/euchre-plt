@@ -31,7 +31,7 @@ class Config:
           my_param: value
       alt_profile:
         my_section:
-          my_param: alt_value  # overwrites value from 'default' profile
+          my_param: alt_value  # overwrites value from `default` profile
     """
     config_dir:   Optional[str]
     filepaths:    list[str]        # list of file pathnames loaded

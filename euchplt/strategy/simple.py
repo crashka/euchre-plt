@@ -11,8 +11,14 @@ from .base import Strategy
 ##################
 
 class StrategySimple(Strategy):
-    """Represents minimum logic for passable play, very basic strategy, fairly
-    conservative (though we add several `aggressive` flag options)
+    """Represents minimum logic for passable play--very basic strategy, fairly
+    conservative (though we add several options for more aggressive play).
+
+    ``aggressive`` parameter bit fields:
+    
+    - partner is winning, but play high (pre-emptive) from the third seat rather than duck
+    - take high (if possible) from second or third seat, rather than lower take (e.g. use
+      A instead of Q on a lead of 9)
 
     TODO (maybe): parameterize some of the magic numbers in this code!?!?
     """
@@ -101,7 +107,7 @@ class StrategySimple(Strategy):
         lead_card = trick.plays[0][1]
         follow_cards = analysis.follow_cards(lead_card)
 
-        # partner is winning, try and duck (unless `aggressive` third hand)
+        # partner is winning, try and duck (unless `aggressive & 0x01` third hand)
         if trick.winning_pos == deal.pos ^ 0x02:
             take_order = 1 if (self.aggressive & 0x01 and deal.play_seq == 2) else -1
             cards = follow_cards if follow_cards else by_level
@@ -112,8 +118,8 @@ class StrategySimple(Strategy):
 
         # opponents winning, take trick if possible
         cards = follow_cards if follow_cards else by_level
-        # second/third hand take low unless `aggressive` specified (fourth
-        # hand always take low)
+        # second/third hand take low unless `aggressive & 0x02` specified (fourth hand
+        # always take low)
         take_order = 1 if (self.aggressive & 0x02 and deal.play_seq < 3) else -1
         for card in cards[::take_order]:
             if card in valid_plays and card.beats(trick.winning_card, trick):

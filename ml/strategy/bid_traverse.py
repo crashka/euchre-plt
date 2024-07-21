@@ -347,6 +347,8 @@ class StrategyBidTraverse(Strategy):
         """Write feature set based on traversal on `DEAL_COMPLETE` notification,
         also ensure that child processes completed successfully
         """
+        if notice_type != StrategyNotice.DEAL_COMPLETE:
+            return
         if not self.my_bid:
             return
 
