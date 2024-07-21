@@ -52,11 +52,12 @@ visibility (this is, after all, a teaching tool).
 Represents minimum logic for passable play--very basic strategy, fairly
 conservative (though we add several options for more aggressive play).
 
-`aggressive` parameter bit fields:
+`aggressive` parameter (int) bit fields (can be OR'ed together):
 
-- partner is winning, but play high (pre-emptive) from the third seat rather than duck
-- take high (if possible) from second or third seat, rather than lower take (e.g. use
-  A instead of Q on a lead of 9)
+- `0x01` - partner is winning, but play high (pre-emptive) from the third seat rather than
+  duck
+- `0x02` - take high (if possible) from second or third seat, rather than lower take
+  (e.g. use A instead of Q on a lead of 9)
 
 TODO (maybe): parameterize some of the magic numbers in this code!?!?
 
