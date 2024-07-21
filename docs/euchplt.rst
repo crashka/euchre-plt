@@ -52,6 +52,7 @@
 
 .. automodule:: euchplt.strategy
    :imported-members:
+   :private-members:
 
 :mod:`euchplt.elo_rating` -- Elo Rating
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

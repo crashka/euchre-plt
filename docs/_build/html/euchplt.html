@@ -1716,8 +1716,156 @@ takes precedence (if also present)</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.strategy.StrategySmart.play_card">
 <span class="sig-name descname"><span class="pre">play_card</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">trick</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.Trick" title="euchplt.euchre.Trick"><span class="pre">Trick</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_plays</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></span><a class="headerlink" href="#euchplt.strategy.StrategySmart.play_card" title="Link to this definition">¶</a></dt>
-<dd><p>REVISIT: think about additional logic needed for going (or defending) alone,
+<dd><p>See <code class="docutils literal notranslate"><span class="pre">_PlayCard</span></code> for all of the code for the various play tactics.  Rulesets
+are lists of <code class="docutils literal notranslate"><span class="pre">PlayCard</span></code> methods, which are called in sequence until one returns
+a “result” (i.e. a recommended card play).</p>
+<p>REVISIT: think about additional logic needed for going (or defending) alone,
 either in dynamic adjustment of rule traversal, or specifying new rulesets!!!</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="euchplt.strategy._PlayCard">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.strategy.</span></span><span class="sig-name descname"><span class="pre">_PlayCard</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">trick</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.Trick" title="euchplt.euchre.Trick"><span class="pre">Trick</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_plays</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.strategy._PlayCard" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Helper class for “smart” card playing tactics, which are implemented as individual
+methods that return a card to play (if determined within the tactic), or <code class="docutils literal notranslate"><span class="pre">None</span></code> (if
+tactic is not appropriate, by falling through the end of the method).</p>
+<p>An instance is instantiated for each call to <code class="docutils literal notranslate"><span class="pre">StrategySmart.play_card()</span></code> using the
+same call arguments.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy._PlayCard.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">trick</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.Trick" title="euchplt.euchre.Trick"><span class="pre">Trick</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_plays</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.strategy._PlayCard.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy._PlayCard.lead_last_card">
+<span class="sig-name descname"><span class="pre">lead_last_card</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy._PlayCard.lead_last_card" title="Link to this definition">¶</a></dt>
+<dd><p>All other lead tactics degenerate into this for final card (haha)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy._PlayCard.next_call_lead">
+<span class="sig-name descname"><span class="pre">next_call_lead</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy._PlayCard.next_call_lead" title="Link to this definition">¶</a></dt>
+<dd><p>For next suit call, especially if calling with a weaker hand</p>
+<p>From <a class="reference external" href="https://ohioeuchre.com/E_next.php">https://ohioeuchre.com/E_next.php</a>:</p>
+<ul class="simple">
+<li><p>The best first lead on a next call is a small trump, this is especially
+true if you hold an off-suit Ace. By leading a small trump you stand the
+best chance of hitting your partner’s hand. Remember, the odds are that
+he will have at least one bower in his hand.</p></li>
+<li><p>Leading the right may not be the best move. Your partner may only have
+one bower in his hand and you don’t want them to clash. When you are
+holding a right/ace combination it’s usually best to lead the ace. If
+the other bower has been turned down, then it is okay to lead the right.</p></li>
+<li><p>In a hand where you only hold two small cards in next but no power, try
+leading an off suit that you think your partner may be able to trump.
+You may need the trump to make your point.</p></li>
+<li><p>If your partner calls next and leads a trump, DO NOT lead trump back.</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy._PlayCard.draw_trump">
+<span class="sig-name descname"><span class="pre">draw_trump</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy._PlayCard.draw_trump" title="Link to this definition">¶</a></dt>
+<dd><p>Draw trump if caller (strong hand), or flush out bower</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy._PlayCard.lead_off_ace">
+<span class="sig-name descname"><span class="pre">lead_off_ace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy._PlayCard.lead_off_ace" title="Link to this definition">¶</a></dt>
+<dd><p>Off-ace (short suit, or green if defending?)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy._PlayCard.lead_to_partner_call">
+<span class="sig-name descname"><span class="pre">lead_to_partner_call</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy._PlayCard.lead_to_partner_call" title="Link to this definition">¶</a></dt>
+<dd><p>No trump seen with partner as caller</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy._PlayCard.lead_to_create_void">
+<span class="sig-name descname"><span class="pre">lead_to_create_void</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy._PlayCard.lead_to_create_void" title="Link to this definition">¶</a></dt>
+<dd><p>If trump in hand, try and void a suit</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy._PlayCard.lead_suit_winner">
+<span class="sig-name descname"><span class="pre">lead_suit_winner</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy._PlayCard.lead_suit_winner" title="Link to this definition">¶</a></dt>
+<dd><p>Try to lead winner (non-trump)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy._PlayCard.lead_low_non_trump">
+<span class="sig-name descname"><span class="pre">lead_low_non_trump</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy._PlayCard.lead_low_non_trump" title="Link to this definition">¶</a></dt>
+<dd><p>If still trump in hand, lead lowest card (non-trump)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy._PlayCard.lead_low_from_long_suit">
+<span class="sig-name descname"><span class="pre">lead_low_from_long_suit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy._PlayCard.lead_low_from_long_suit" title="Link to this definition">¶</a></dt>
+<dd><p>Lead low from long suit (favor green if defending?)</p>
+<p>Note: always returns value, can be last in ruleset</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy._PlayCard.lead_random_card">
+<span class="sig-name descname"><span class="pre">lead_random_card</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy._PlayCard.lead_random_card" title="Link to this definition">¶</a></dt>
+<dd><p>This is a catch-all, though we should look at cases where this happens
+and see if there is a better rule to insert before it</p>
+<p>Note: always returns value, can be last in ruleset</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy._PlayCard.play_last_card">
+<span class="sig-name descname"><span class="pre">play_last_card</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy._PlayCard.play_last_card" title="Link to this definition">¶</a></dt>
+<dd><p>All other play tactics degenerate into this for final card (haha)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy._PlayCard.follow_suit_low">
+<span class="sig-name descname"><span class="pre">follow_suit_low</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy._PlayCard.follow_suit_low" title="Link to this definition">¶</a></dt>
+<dd><p>Follow suit low</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy._PlayCard.throw_off_to_create_void">
+<span class="sig-name descname"><span class="pre">throw_off_to_create_void</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy._PlayCard.throw_off_to_create_void" title="Link to this definition">¶</a></dt>
+<dd><p>Create void (if early in deal).  NOTE: this only matters if we’ve decided not
+to trump (e.g. to preserve for later)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy._PlayCard.throw_off_low">
+<span class="sig-name descname"><span class="pre">throw_off_low</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy._PlayCard.throw_off_low" title="Link to this definition">¶</a></dt>
+<dd><p>Throw off lowest non-trump card</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy._PlayCard.play_low_trump">
+<span class="sig-name descname"><span class="pre">play_low_trump</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy._PlayCard.play_low_trump" title="Link to this definition">¶</a></dt>
+<dd><p>Play lowest trump (assumes no non-trump remaining)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy._PlayCard.follow_suit_high">
+<span class="sig-name descname"><span class="pre">follow_suit_high</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy._PlayCard.follow_suit_high" title="Link to this definition">¶</a></dt>
+<dd><p>Follow suit (high if can lead trick, low otherwise)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy._PlayCard.trump_low">
+<span class="sig-name descname"><span class="pre">trump_low</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy._PlayCard.trump_low" title="Link to this definition">¶</a></dt>
+<dd><p>Trump (low) to lead trick</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy._PlayCard.play_random_card">
+<span class="sig-name descname"><span class="pre">play_random_card</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy._PlayCard.play_random_card" title="Link to this definition">¶</a></dt>
+<dd><p>This is a catch-all, though we should look at cases where this happens
+and see if there is a better rule to insert before it</p>
+<p>Note: always returns value, can be last in ruleset</p>
 </dd></dl>
 
 </dd></dl>
