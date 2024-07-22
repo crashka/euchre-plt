@@ -171,20 +171,20 @@ Deck = list[Card]
 mod_rand = Random()  # isolate deck shuffles from other usages of `random`
 
 def set_seed(rand_seed: int) -> None:
-    """Set seed for local (module-specific) instance of `random.Random`
+    """Set seed for the local (i.e. module-specific) instance of ``random.Random`` (see
+    ``get_deck()``)
     """
     mod_rand.seed(rand_seed)
 
 def get_deck() -> Deck:
-    """Get a shuffled deck of cards.  This function uses a local (module-specific)
-    instance of `random.Random` for isolation from the other callers of the `random`
+    """Get a shuffled deck of cards.  This function uses a local (i.e. module-specific)
+    instance of ``random.Random`` for isolation from the other callers of the ``random``
     library.  The instantiating program has the option to initialize the state of the
-    local instance using `set_seed()` for repeatability of deals.
+    local instance using ``set_seed()`` for repeatability of deals.
 
-    Later, we can support various shuffling techniques that mimic physical shuffling of
-    cards based on the collection of a previous set of tricks and buries (pretty hardcore,
+    MAYBE LATER: we can support various schemes that mimic the physical shuffling of cards
+    based on the collection of the previous set of tricks and buries (definitely hardcore,
     but perhaps a bit silly).
-
     """
     deck = [c for c in mod_rand.sample(CARDS, k=len(CARDS))]
     return deck

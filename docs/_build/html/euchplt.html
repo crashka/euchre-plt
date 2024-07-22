@@ -234,37 +234,48 @@ generated from the player names</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.card.Card.beats">
 <span class="sig-name descname"><span class="pre">beats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.GameCtxMixin" title="euchplt.euchre.GameCtxMixin"><span class="pre">GameCtxMixin</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#euchplt.card.Card.beats" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Whether the current card effectively beats <code class="docutils literal notranslate"><span class="pre">other</span></code> (i.e. with possible bower
+translations), given a specified context</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.card.Card.effcard">
 <span class="sig-name descname"><span class="pre">effcard</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.GameCtxMixin" title="euchplt.euchre.GameCtxMixin"><span class="pre">GameCtxMixin</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></span><a class="headerlink" href="#euchplt.card.Card.effcard" title="Link to this definition">¶</a></dt>
-<dd><p>Translates trump and next suit jacks to bowers, otherwise returns self</p>
+<dd><p>Translate trump and next suit jacks to bowers, given a specified context; otherwise
+return <code class="docutils literal notranslate"><span class="pre">self</span></code></p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.card.Card.efflevel">
 <span class="sig-name descname"><span class="pre">efflevel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.GameCtxMixin" title="euchplt.euchre.GameCtxMixin"><span class="pre">GameCtxMixin</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset_trump</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#euchplt.card.Card.efflevel" title="Link to this definition">¶</a></dt>
-<dd><p>Note that this also works if jacks have been replaced with <cite>Bower</cite> types
-(e.g. by <cite>Hand.cards_by_suit</cite>)</p>
+<dd><p>Return effective level of the current card, given a specified context.  If
+<code class="docutils literal notranslate"><span class="pre">offset_trump</span></code> is specified, the return value is boosted for trump suit cards such
+that all trump cards sort higher than non-trump (though the absolute level may lose
+meaning).</p>
+<p>Note that this also works if jacks have been replaced with <code class="docutils literal notranslate"><span class="pre">Bower</span></code> types (e.g. by
+<code class="docutils literal notranslate"><span class="pre">Hand.cards_by_suit()</span></code>)</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.card.Card.effsuit">
 <span class="sig-name descname"><span class="pre">effsuit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.GameCtxMixin" title="euchplt.euchre.GameCtxMixin"><span class="pre">GameCtxMixin</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a></span></span><a class="headerlink" href="#euchplt.card.Card.effsuit" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Return effective suit for the current card, given a specified context (really only
+different for the left bower)</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.card.Card.realcard">
 <span class="sig-name descname"><span class="pre">realcard</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.GameCtxMixin" title="euchplt.euchre.GameCtxMixin"><span class="pre">GameCtxMixin</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></span><a class="headerlink" href="#euchplt.card.Card.realcard" title="Link to this definition">¶</a></dt>
-<dd><p>Inverse of <cite>effcard</cite>, translates bowers back to the “real” card (i.e.
-the one in the deck)</p>
+<dd><p>Inverse of <code class="docutils literal notranslate"><span class="pre">effcard</span></code>, translate bowers back to the “real” card (i.e. the one in
+the deck), given a specified context</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.card.Card.same_as">
 <span class="sig-name descname"><span class="pre">same_as</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.GameCtxMixin" title="euchplt.euchre.GameCtxMixin"><span class="pre">GameCtxMixin</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#euchplt.card.Card.same_as" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Whether the current card is effectively the same as <code class="docutils literal notranslate"><span class="pre">other</span></code> (i.e. with possible
+bower translations), given a specified context</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -277,18 +288,19 @@ the one in the deck)</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="euchplt.card.set_seed">
 <span class="sig-prename descclassname"><span class="pre">euchplt.card.</span></span><span class="sig-name descname"><span class="pre">set_seed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rand_seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.card.set_seed" title="Link to this definition">¶</a></dt>
-<dd><p>Set seed for local (module-specific) instance of <cite>random.Random</cite></p>
+<dd><p>Set seed for the local (i.e. module-specific) instance of <code class="docutils literal notranslate"><span class="pre">random.Random</span></code> (see
+<code class="docutils literal notranslate"><span class="pre">get_deck()</span></code>)</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="euchplt.card.get_deck">
 <span class="sig-prename descclassname"><span class="pre">euchplt.card.</span></span><span class="sig-name descname"><span class="pre">get_deck</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.card.get_deck" title="Link to this definition">¶</a></dt>
-<dd><p>Get a shuffled deck of cards.  This function uses a local (module-specific)
-instance of <cite>random.Random</cite> for isolation from the other callers of the <cite>random</cite>
+<dd><p>Get a shuffled deck of cards.  This function uses a local (i.e. module-specific)
+instance of <code class="docutils literal notranslate"><span class="pre">random.Random</span></code> for isolation from the other callers of the <code class="docutils literal notranslate"><span class="pre">random</span></code>
 library.  The instantiating program has the option to initialize the state of the
-local instance using <cite>set_seed()</cite> for repeatability of deals.</p>
-<p>Later, we can support various shuffling techniques that mimic physical shuffling of
-cards based on the collection of a previous set of tricks and buries (pretty hardcore,
+local instance using <code class="docutils literal notranslate"><span class="pre">set_seed()</span></code> for repeatability of deals.</p>
+<p>MAYBE LATER: we can support various schemes that mimic the physical shuffling of cards
+based on the collection of the previous set of tricks and buries (definitely hardcore,
 but perhaps a bit silly).</p>
 </dd></dl>
 
@@ -839,18 +851,20 @@ blocks (e.g. cards), and can be imported by either the player or game-playing mo
 <dt class="sig sig-object py" id="euchplt.euchre.GameCtxMixin">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.euchre.</span></span><span class="sig-name descname"><span class="pre">GameCtxMixin</span></span><a class="headerlink" href="#euchplt.euchre.GameCtxMixin" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Performance note: we tried this before with private instance variables
-but the getter properties were actually adding sufficient overhead, since
-this context stuff is (currently) referred to WAY too much</p>
+<p>Performance note: we tried this before with private instance variables but the
+getter properties were actually adding sufficient overhead, since this context stuff
+is (currently) referred to WAY too much</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.euchre.GameCtxMixin.set_trump_suit">
 <span class="sig-name descname"><span class="pre">set_trump_suit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trump_suit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.euchre.GameCtxMixin.set_trump_suit" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Set <code class="docutils literal notranslate"><span class="pre">trump_suit</span></code> (as well as <code class="docutils literal notranslate"><span class="pre">next_suit</span></code>) for parent object</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.euchre.GameCtxMixin.set_lead_card">
 <span class="sig-name descname"><span class="pre">set_lead_card</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lead_card</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.euchre.GameCtxMixin.set_lead_card" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Set <code class="docutils literal notranslate"><span class="pre">lead_card</span></code> (as well as <code class="docutils literal notranslate"><span class="pre">lead_suit</span></code>) for parent object</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -862,6 +876,16 @@ this context stuff is (currently) referred to WAY too much</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.euchre.Hand.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cards</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.euchre.Hand.__init__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.euchre.Hand.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.euchre.Hand" title="euchplt.euchre.Hand"><span class="pre">Hand</span></a></span></span><a class="headerlink" href="#euchplt.euchre.Hand.copy" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.euchre.Hand.copy_cards">
+<span class="sig-name descname"><span class="pre">copy_cards</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.euchre.Hand.copy_cards" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -877,9 +901,9 @@ this context stuff is (currently) referred to WAY too much</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.euchre.Hand.cards_by_suit">
 <span class="sig-name descname"><span class="pre">cards_by_suit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.GameCtxMixin" title="euchplt.euchre.GameCtxMixin"><span class="pre">GameCtxMixin</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_bowers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.euchre.Hand.cards_by_suit" title="Link to this definition">¶</a></dt>
-<dd><p>The <cite>use_bowers</cite> flag indicates whether to translate trump and next suit
-jacks to the equivalent <cite>Bower</cite> representation (may be used for analysis, but
-not playing, since not recognized by the <cite>deal</cite> module)</p>
+<dd><p>The <code class="docutils literal notranslate"><span class="pre">use_bowers</span></code> flag indicates whether to translate trump and next suit
+jacks to the equivalent <code class="docutils literal notranslate"><span class="pre">Bower</span></code> representation (may be used for analysis, but
+not playing, since not recognized by the <code class="docutils literal notranslate"><span class="pre">deal</span></code> module)</p>
 </dd></dl>
 
 <dl class="py method">
@@ -906,7 +930,7 @@ not playing, since not recognized by the <cite>deal</cite> module)</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.euchre.Trick.play_card">
 <span class="sig-name descname"><span class="pre">play_card</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">card</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#euchplt.euchre.Trick.play_card" title="Link to this definition">¶</a></dt>
-<dd><p>Returns <cite>True</cite> if new winning card</p>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if new winning card</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1052,6 +1076,12 @@ is second round (3 and 7 are the dealer bid positions)</p>
 <dt class="sig sig-object py" id="euchplt.euchre.DealState.lead_pos">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lead_pos</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#euchplt.euchre.DealState.lead_pos" title="Link to this definition">¶</a></dt>
 <dd><p>Position of the lead player/hand</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="euchplt.euchre.DealState.partner_winning">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">partner_winning</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#euchplt.euchre.DealState.partner_winning" title="Link to this definition">¶</a></dt>
+<dd><p>Note: this also works when <code class="docutils literal notranslate"><span class="pre">winning_pos</span> <span class="pre">==</span> <span class="pre">None</span></code></p>
 </dd></dl>
 
 <dl class="py property">

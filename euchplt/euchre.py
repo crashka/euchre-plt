@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """This module contains game-/domain-specific stuff on top of the (more) generic building
 blocks (e.g. cards), and can be imported by either the player or game-playing modules
 """
@@ -15,9 +16,9 @@ from .card import find_card, find_bower
 ################
 
 class GameCtxMixin:
-    """Performance note: we tried this before with private instance variables
-    but the getter properties were actually adding sufficient overhead, since
-    this context stuff is (currently) referred to WAY too much
+    """Performance note: we tried this before with private instance variables but the
+    getter properties were actually adding sufficient overhead, since this context stuff
+    is (currently) referred to WAY too much
     """
     trump_suit: Suit = None
     next_suit:  Suit = None
@@ -25,7 +26,7 @@ class GameCtxMixin:
     lead_suit:  Suit = None
 
     def set_trump_suit(self, trump_suit: Suit) -> None:
-        """
+        """Set ``trump_suit`` (as well as ``next_suit``) for parent object
         """
         if self.trump_suit:
             raise LogicError(f"Cannot change trump_suit for {type(self).__name__}")
@@ -33,16 +34,16 @@ class GameCtxMixin:
         self.next_suit = trump_suit.next_suit()
 
     def set_lead_card(self, lead_card: Card) -> None:
-        """
+        """Set ``lead_card`` (as well as ``lead_suit``) for parent object
         """
         if self.lead_card:
             raise LogicError(f"Cannot change lead_card for {type(self).__name__}")
         self.lead_card = lead_card
         self.lead_suit = lead_card.effsuit(self)
 
-################
-# augment Suit #
-################
+#####################
+# Suit augmentation #
+#####################
 
 def next_suit(self) -> Suit:
     """Next relative to current suit (i.e. assuming it is trump)
@@ -57,13 +58,18 @@ def green_suits(self) -> tuple[Suit, Suit]:
 setattr(Suit, 'next_suit', next_suit)
 setattr(Suit, 'green_suits', green_suits)
 
-################
-# augment Card #
-################
+#####################
+# Card augmentation #
+#####################
 
 def efflevel(self, ctx: GameCtxMixin, offset_trump: bool = False) -> int:
-    """Note that this also works if jacks have been replaced with `Bower` types
-    (e.g. by `Hand.cards_by_suit`)
+    """Return effective level of the current card, given a specified context.  If
+    ``offset_trump`` is specified, the return value is boosted for trump suit cards such
+    that all trump cards sort higher than non-trump (though the absolute level may lose
+    meaning).
+
+    Note that this also works if jacks have been replaced with ``Bower`` types (e.g. by
+    ``Hand.cards_by_suit()``)
     """
     level = None
     if ctx.trump_suit is None:
@@ -87,7 +93,8 @@ def efflevel(self, ctx: GameCtxMixin, offset_trump: bool = False) -> int:
     return level
 
 def effsuit(self, ctx: GameCtxMixin) -> Suit:
-    """
+    """Return effective suit for the current card, given a specified context (really only
+    different for the left bower)
     """
     if ctx.trump_suit is None:
         raise LogicError("Trump suit not set")
@@ -98,7 +105,8 @@ def effsuit(self, ctx: GameCtxMixin) -> Suit:
     return self.suit
 
 def effcard(self, ctx: GameCtxMixin) -> Card:
-    """Translates trump and next suit jacks to bowers, otherwise returns self
+    """Translate trump and next suit jacks to bowers, given a specified context; otherwise
+    return ``self``
     """
     bower = None
     if ctx.trump_suit is None:
@@ -111,8 +119,8 @@ def effcard(self, ctx: GameCtxMixin) -> Card:
     return bower or self
 
 def realcard(self, ctx: GameCtxMixin) -> Card:
-    """Inverse of `effcard`, translates bowers back to the "real" card (i.e.
-    the one in the deck)
+    """Inverse of ``effcard``, translate bowers back to the "real" card (i.e. the one in
+    the deck), given a specified context
     """
     if self.rank not in BOWER_RANKS:
         return self
@@ -127,12 +135,14 @@ def realcard(self, ctx: GameCtxMixin) -> Card:
     raise LogicError(f"Don't know how to get realcard for {self}")
 
 def same_as(self, other: Card, ctx: GameCtxMixin) -> bool:
-    """
+    """Whether the current card is effectively the same as ``other`` (i.e. with possible
+    bower translations), given a specified context
     """
     return self.effcard(ctx) == other.effcard(ctx)
 
 def beats(self, other: Card, ctx: GameCtxMixin) -> bool:
-    """
+    """Whether the current card effectively beats ``other`` (i.e. with possible bower
+    translations), given a specified context
     """
     if ctx.lead_card is None:
         raise LogicError("Lead card not set")
@@ -175,13 +185,11 @@ class Hand:
     """Behaves as list[Card] in iterable contexts
     """
     cards:   list[Card]
-    # index for list is `use_bowers` flag (0 or 1), outer dict key is
-    # trump suit, inner dict represents cards by suit
+    # index for list is `use_bowers` flag (0 or 1), outer dict key is trump suit, inner
+    # dict represents cards by suit
     by_suit: list[dict[Suit, dict[Suit, list[Card]]]]
 
     def __init__(self, cards: list[Card]):
-        """
-        """
         self.cards = cards
         self.by_suit = [{suit: None for suit in SUITS} for _ in range(2)]
 
@@ -198,9 +206,13 @@ class Hand:
         return '  '.join(str(c) for c in self.cards)
 
     def copy(self) -> 'Hand':
+        """
+        """
         return Hand(self.cards.copy())
 
     def copy_cards(self) -> list[Card]:
+        """
+        """
         return self.cards.copy()
 
     def append_card(self, card: Card, ctx: GameCtxMixin = None) -> None:
@@ -228,9 +240,10 @@ class Hand:
         return self.cards.remove(card)
 
     def cards_by_suit(self, ctx: GameCtxMixin, use_bowers: bool = False) -> SuitCards:
-        """The `use_bowers` flag indicates whether to translate trump and next suit
-        jacks to the equivalent `Bower` representation (may be used for analysis, but
-        not playing, since not recognized by the `deal` module)
+        """The ``use_bowers`` flag indicates whether to translate trump and next suit
+        jacks to the equivalent ``Bower`` representation (may be used for analysis, but
+        not playing, since not recognized by the ``deal`` module)
+
         """
         if not self.by_suit[use_bowers][ctx.trump_suit]:
             self.by_suit[use_bowers][ctx.trump_suit] = {suit: [] for suit in SUITS}
@@ -290,7 +303,7 @@ class Trick(GameCtxMixin):
         return ' '.join(str(p[1]) for p in self.plays)
 
     def play_card(self, pos: int, card: Card) -> bool:
-        """Returns `True` if new winning card
+        """Returns ``True`` if new winning card
         """
         if self.cards[pos]:
             raise LogicError(f"Position {pos} played twice")
@@ -450,7 +463,8 @@ class DealState(NamedTuple):
 
     @property
     def partner_winning(self) -> bool:
-        # note, this also works when `winning_pos == None`
+        """Note: this also works when ``winning_pos == None``
+        """
         return self.cur_trick.winning_pos == self.pos ^ 0x02
 
     @property
