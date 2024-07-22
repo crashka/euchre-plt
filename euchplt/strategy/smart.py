@@ -185,7 +185,7 @@ class _PlayCard:
     def lead_low_from_long_suit(self) -> Optional[Card]:
         """Lead low from long suit (favor green if defending?)
 
-        Note: always returns value, can be last in ruleset
+        Note: always returns value, can be last in a ruleset
         """
         suit_cards: list[list[Card]] = list(self.analysis.get_suit_cards().values())
         # cards already sorted (desc) within each suit
@@ -198,7 +198,7 @@ class _PlayCard:
         """This is a catch-all, though we should look at cases where this happens
         and see if there is a better rule to insert before it
 
-        Note: always returns value, can be last in ruleset
+        Note: always returns value, can be last in a ruleset
         """
         log.debug("Lead random card")
         return random.choice(self.valid_plays)
@@ -312,7 +312,7 @@ class _PlayCard:
         """This is a catch-all, though we should look at cases where this happens
         and see if there is a better rule to insert before it
 
-        Note: always returns value, can be last in ruleset
+        Note: always returns value, can be last in a ruleset
         """
         log.debug("Play random card")
         return random.choice(self.valid_plays)
@@ -331,6 +331,9 @@ class StrategySmart(Strategy):
     """Strategy based on rule-based scoring/strength assessments, both for bidding and
     playing.  The rules are parameterized, so variations can be specified in the config
     file.
+
+    Bidding
+    -------
 
     Example parameter values for bidding::
 
@@ -357,7 +360,48 @@ class StrategySmart(Strategy):
 
     FUTURE: there is an opportunity to build a framework for optimizing the various
     parameters, either in an absolute sense, or possibly relative to different opponent
-    profiles.
+    profiles.  In the mean time, see ``tune_strategy_smart()`` as a tool to aid in manual
+    tuning.
+
+    Playing
+    -------
+
+    Playing strategy is implemented using a number of individual play "tactics", or card
+    selection criteria applicable to a particular circumstance and/or objective, which may
+    or may not pertain to the current deal context.  These tactics are organized into
+    "rulesets", which are lists of method calls that are tried in sequence until one of
+    them returns a result (i.e. a card to play).  There are distinct rulesets for the
+    following play situations within a deal:
+
+    - Initial lead (first trick)
+    - Subsequent leads
+    - Partner winning (current trick)
+    - Opponent winning (current trick)
+
+    The rulesets are defined in the base_config.yml file (and overridable for individual
+    strategies in strategies.yml).  Here is an excerpt from the base configuration::
+
+      subseq_lead:
+        - lead_last_card
+        - draw_trump
+        - lead_off_ace
+        - lead_to_partner_call
+        - lead_suit_winner
+        - lead_to_create_void
+        - lead_low_non_trump
+        - lead_low_from_long_suit
+      part_winning:
+        - play_last_card
+        - follow_suit_low
+        - throw_off_to_create_void
+        - throw_off_low
+        - play_low_trump
+        - play_random_card
+
+    The methods that implement the play tactics are contained (and documented) in the
+    ``_PlayCard`` class.  This class also maintains a "play plan" (with tags such as
+    ``DRAW_TRUMP`` or ``PRESERVE_TRUMP``) that can be dynamically managed and helps
+    direct the execution within the tactics.
     """
     hand_analysis:    dict
     ruleset:          dict[str, list[Callable]]

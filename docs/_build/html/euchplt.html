@@ -1612,6 +1612,8 @@ than duck</p></li>
 <p>Strategy based on rule-based scoring/strength assessments, both for bidding and
 playing.  The rules are parameterized, so variations can be specified in the config
 file.</p>
+<section id="bidding">
+<h3>Bidding<a class="headerlink" href="#bidding" title="Link to this heading">¶</a></h3>
 <p>Example parameter values for bidding:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hand_analysis</span><span class="p">:</span>    <span class="c1"># keep this empty here, but may be overridden by</span>
                   <span class="c1"># individual strategies</span>
@@ -1637,7 +1639,47 @@ position</p></li>
 </ul>
 <p>FUTURE: there is an opportunity to build a framework for optimizing the various
 parameters, either in an absolute sense, or possibly relative to different opponent
-profiles.</p>
+profiles.  In the mean time, see <code class="docutils literal notranslate"><span class="pre">tune_strategy_smart()</span></code> as a tool to aid in manual
+tuning.</p>
+</section>
+<section id="playing">
+<h3>Playing<a class="headerlink" href="#playing" title="Link to this heading">¶</a></h3>
+<p>Playing strategy is implemented using a number of individual play “tactics”, or card
+selection criteria applicable to a particular circumstance and/or objective, which may
+or may not pertain to the current deal context.  These tactics are organized into
+“rulesets”, which are lists of method calls that are tried in sequence until one of
+them returns a result (i.e. a card to play).  There are distinct rulesets for the
+following play situations within a deal:</p>
+<ul class="simple">
+<li><p>Initial lead (first trick)</p></li>
+<li><p>Subsequent leads</p></li>
+<li><p>Partner winning (current trick)</p></li>
+<li><p>Opponent winning (current trick)</p></li>
+</ul>
+<p>The rulesets are defined in the base_config.yml file (and overridable for individual
+strategies in strategies.yml).  Here is an excerpt from the base configuration:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">subseq_lead</span><span class="p">:</span>
+  <span class="o">-</span> <span class="n">lead_last_card</span>
+  <span class="o">-</span> <span class="n">draw_trump</span>
+  <span class="o">-</span> <span class="n">lead_off_ace</span>
+  <span class="o">-</span> <span class="n">lead_to_partner_call</span>
+  <span class="o">-</span> <span class="n">lead_suit_winner</span>
+  <span class="o">-</span> <span class="n">lead_to_create_void</span>
+  <span class="o">-</span> <span class="n">lead_low_non_trump</span>
+  <span class="o">-</span> <span class="n">lead_low_from_long_suit</span>
+<span class="n">part_winning</span><span class="p">:</span>
+  <span class="o">-</span> <span class="n">play_last_card</span>
+  <span class="o">-</span> <span class="n">follow_suit_low</span>
+  <span class="o">-</span> <span class="n">throw_off_to_create_void</span>
+  <span class="o">-</span> <span class="n">throw_off_low</span>
+  <span class="o">-</span> <span class="n">play_low_trump</span>
+  <span class="o">-</span> <span class="n">play_random_card</span>
+</pre></div>
+</div>
+<p>The methods that implement the play tactics are contained (and documented) in the
+<code class="docutils literal notranslate"><span class="pre">_PlayCard</span></code> class.  This class also maintains a “play plan” (with tags such as
+<code class="docutils literal notranslate"><span class="pre">DRAW_TRUMP</span></code> or <code class="docutils literal notranslate"><span class="pre">PRESERVE_TRUMP</span></code>) that can be dynamically managed and helps
+direct the execution within the tactics.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.strategy.StrategySmart.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.strategy.StrategySmart.__init__" title="Link to this definition">¶</a></dt>
@@ -1649,7 +1691,7 @@ profiles.</p>
 <span class="sig-name descname"><span class="pre">bid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">def_bid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.euchre.Bid" title="euchplt.euchre.Bid"><span class="pre">Bid</span></a></span></span><a class="headerlink" href="#euchplt.strategy.StrategySmart.bid" title="Link to this definition">¶</a></dt>
 <dd><p>General logic:</p>
 <section id="round-1">
-<h3>Round 1<a class="headerlink" href="#round-1" title="Link to this heading">¶</a></h3>
+<h4>Round 1<a class="headerlink" href="#round-1" title="Link to this heading">¶</a></h4>
 <p><strong>Non-dealer</strong></p>
 <ul class="simple">
 <li><p>Compute hand strength for turn suit</p></li>
@@ -1663,7 +1705,7 @@ profiles.</p>
 </ul>
 </section>
 <section id="round-2">
-<h3>Round 2<a class="headerlink" href="#round-2" title="Link to this heading">¶</a></h3>
+<h4>Round 2<a class="headerlink" href="#round-2" title="Link to this heading">¶</a></h4>
 <p><strong>All players</strong></p>
 <ul class="simple">
 <li><p>Compute strength for each non-turn suit</p></li>
@@ -1723,6 +1765,7 @@ a “result” (i.e. a recommended card play).</p>
 either in dynamic adjustment of rule traversal, or specifying new rulesets!!!</p>
 </dd></dl>
 
+</section>
 </dd></dl>
 
 <dl class="py class">
@@ -1806,7 +1849,7 @@ You may need the trump to make your point.</p></li>
 <dt class="sig sig-object py" id="euchplt.strategy._PlayCard.lead_low_from_long_suit">
 <span class="sig-name descname"><span class="pre">lead_low_from_long_suit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy._PlayCard.lead_low_from_long_suit" title="Link to this definition">¶</a></dt>
 <dd><p>Lead low from long suit (favor green if defending?)</p>
-<p>Note: always returns value, can be last in ruleset</p>
+<p>Note: always returns value, can be last in a ruleset</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1814,7 +1857,7 @@ You may need the trump to make your point.</p></li>
 <span class="sig-name descname"><span class="pre">lead_random_card</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy._PlayCard.lead_random_card" title="Link to this definition">¶</a></dt>
 <dd><p>This is a catch-all, though we should look at cases where this happens
 and see if there is a better rule to insert before it</p>
-<p>Note: always returns value, can be last in ruleset</p>
+<p>Note: always returns value, can be last in a ruleset</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1865,7 +1908,7 @@ to trump (e.g. to preserve for later)</p>
 <span class="sig-name descname"><span class="pre">play_random_card</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy._PlayCard.play_random_card" title="Link to this definition">¶</a></dt>
 <dd><p>This is a catch-all, though we should look at cases where this happens
 and see if there is a better rule to insert before it</p>
-<p>Note: always returns value, can be last in ruleset</p>
+<p>Note: always returns value, can be last in a ruleset</p>
 </dd></dl>
 
 </dd></dl>
@@ -1878,7 +1921,7 @@ and see if there is a better rule to insert before it</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="euchplt.strategy.tune_strategy_smart">
-<span class="sig-prename descclassname"><span class="pre">euchplt.strategy.</span></span><span class="sig-name descname"><span class="pre">tune_strategy_smart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#euchplt.strategy.tune_strategy_smart" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">euchplt.strategy.</span></span><span class="sig-name descname"><span class="pre">tune_strategy_smart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#euchplt.strategy.tune_strategy_smart" title="Link to this definition">¶</a></dt>
 <dd><p>Run through a deck of cards evaluating the strength of each hand “dealt”,
 iterating over the four suits as trump.  This is used for manual inspection
 to help tune the <cite>HandAnalysisSmart</cite> parameters and biddable thresholds.</p>
@@ -1895,7 +1938,7 @@ parameters implied by the end-user input.</p>
 <p>Usage: strategy.py &lt;func_name&gt; [&lt;arg&gt; …]</p>
 <p>Functions/usage:</p>
 <ul class="simple">
-<li><p>tune_strategy_smart [&lt;rand_seed&gt;]</p></li>
+<li><p>tune_strategy_smart [card_seed=&lt;int&gt;]</p></li>
 </ul>
 </dd></dl>
 

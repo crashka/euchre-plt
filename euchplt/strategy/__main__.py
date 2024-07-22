@@ -5,12 +5,13 @@ import sys
 import random
 import os
 
+from ..utils import parse_argv
 from ..core import log, dbg_hand
-from ..card import SUITS, get_deck
+from ..card import SUITS, get_deck, set_seed as set_card_seed
 from ..euchre import Hand
 from .smart import HandAnalysisSmart
 
-def tune_strategy_smart(*args) -> int:
+def tune_strategy_smart(*args, **kwargs) -> int:
     """Run through a deck of cards evaluating the strength of each hand "dealt",
     iterating over the four suits as trump.  This is used for manual inspection
     to help tune the `HandAnalysisSmart` parameters and biddable thresholds.
@@ -21,11 +22,11 @@ def tune_strategy_smart(*args) -> int:
     parameters implied by the end-user input.
     """
     HAND_CARDS = 5
-    rand_seed = int(args[0]) if args else os.getpid()
-    random.seed(rand_seed)
+    card_seed  = kwargs.get('card_seed') or os.getpid()  # for get_deck() PRNG
+    set_card_seed(card_seed)
 
     log.addHandler(dbg_hand)
-    log.info(f"random.seed({seed})")
+    log.info(f"set_card_seed({card_seed})")
 
     deck = get_deck()
     while len(deck) >= HAND_CARDS:
@@ -49,7 +50,7 @@ def main() -> int:
 
     Functions/usage:
 
-    - tune_strategy_smart [<rand_seed>]
+    - tune_strategy_smart [card_seed=<int>]
     """
     if len(sys.argv) < 2:
         print(f"Utility function not specified", file=sys.stderr)
@@ -59,8 +60,9 @@ def main() -> int:
         return -1
 
     util_func = globals()[sys.argv[1]]
-    util_args = sys.argv[2:]
-    return util_func(*util_args)
+    args, kwargs = parse_argv(sys.argv[2:])
+
+    return util_func(*args, **kwargs)
 
 if __name__ == '__main__':
     sys.exit(main())

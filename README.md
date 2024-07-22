@@ -27,7 +27,7 @@ purposes above:
 ## Setup
 
 Run the following to install the required libraries into your virtual environment (only
-need to do once):
+need to do this once):
 
 ```bash
 $ pip install -r requirements.txt
