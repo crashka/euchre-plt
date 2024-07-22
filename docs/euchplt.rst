@@ -40,6 +40,8 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: euchplt.euchre
+   :exclude-members: next_suit, green_suits, efflevel, effsuit,
+                     effcard, realcard, same_as, beats
 
 :mod:`euchplt.analysis` -- Analysis
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -62,3 +62,14 @@ autodoc_default_options = {
     'special-members':  '__init__',
     'show-inheritance': True
 }
+
+# -- Post-Processing ---------------------------------------------------------
+
+import collections
+
+def process_docstring(app, what, name, obj, options, lines):
+    if type(obj) is collections._tuplegetter:
+        lines.clear()
+
+def setup(app):
+    app.connect('autodoc-process-docstring', process_docstring)
