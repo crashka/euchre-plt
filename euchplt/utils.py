@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from collections.abc import Iterable, Sequence
-from typing import Union, Optional
+from typing import Optional
 from numbers import Number
 import os.path
 import logging
@@ -37,7 +37,7 @@ class Config:
     filepaths:    list[str]        # list of file pathnames loaded
     profile_data: dict[str, dict]  # config indexed by profile (including 'default')
 
-    def __init__(self, files: Union[str, Iterable[str]], config_dir: str = None):
+    def __init__(self, files: str | Iterable[str], config_dir: str = None):
         """Note that `files` can be specified as an iterable, or a comma-separated
         list of file names (no spaces)
         """
@@ -174,7 +174,7 @@ def parse_argv(argv: list[str]) -> tuple[list, dict]:
     and returns a tuple of `args` and `kwargs`.  For both `args` and `kwargs`, we
     attempt to cast the value to the proper type (e.g. int, float, bool, or None).
     """
-    def typecast(val: str) -> Union[str, Number, bool]:
+    def typecast(val: str) -> str | Number | bool:
         if val.isdecimal():
             return int(val)
         if val.isnumeric():

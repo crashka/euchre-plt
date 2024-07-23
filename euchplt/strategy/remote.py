@@ -9,7 +9,7 @@ from ..euchre import Bid, PASS_BID, Trick, DealState
 from .base import Strategy
 
 ##################
-# StrategyRandom #
+# StrategyRemote #
 ##################
 
 class EpReq(Enum):

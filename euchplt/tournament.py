@@ -5,7 +5,7 @@ import sys
 from enum import Enum
 from itertools import chain
 from collections.abc import Mapping, Iterator, Iterable, Callable
-from typing import Optional, Union, TypeVar, TextIO
+from typing import Optional, TypeVar, TextIO
 from numbers import Number
 import random
 import csv
@@ -50,7 +50,7 @@ class TournStatXtra(Enum):
     def __str__(self):
         return self.value
 
-TournStat = Union[TournStatXtra, MatchStatXtra, GameStat]
+TournStat = TournStatXtra | MatchStatXtra | GameStat
 def TournStatIter() -> Iterator: return chain(TournStatXtra, MatchStatXtra, GameStat)
 
 # the following represents mapping for *base* stats (computed stats NOT included)
@@ -87,7 +87,7 @@ class CompStat(Enum):
     def __str__(self):
         return self.value
 
-AllStat = Union[TournStatXtra, MatchStatXtra, GameStat, CompStat]
+AllStat = TournStatXtra | MatchStatXtra | GameStat | CompStat
 def AllStatIter() -> Iterator: return chain(TournStatXtra, MatchStatXtra, GameStat, CompStat)
 
 CS = CompStat
@@ -221,7 +221,7 @@ class Tournament:
         tourn_params.update(kwargs)
         return tourn_class(tourn_name, teams, **tourn_params)
 
-    def __init__(self, name: str, teams: Union[Iterable[str], Iterable[Team]], **kwargs):
+    def __init__(self, name: str, teams: Iterable[str] | Iterable[Team], **kwargs):
         """Tournament teams can either be specified by name (in the config file) or
         instantiated `Team` objects (format must be consistent within the iterable)
         """
@@ -574,7 +574,7 @@ class RoundRobin(Tournament):
     elim_pct:      int
     reset_elo:     bool
     elo_update:    TournUnit
-    elo_params:    dict[str, Union[str, Number]]
+    elo_params:    dict[str, str | Number]
 
     # state, etc.
     elim_num:      int        # number to eliminate per cycle
@@ -606,7 +606,7 @@ class RoundRobin(Tournament):
             yield matchups(field)
             list_tail = rotate(list_tail)
 
-    def __init__(self, name: str, teams: Union[Iterable[str], Iterable[Team]], **kwargs):
+    def __init__(self, name: str, teams: Iterable[str] | Iterable[Team], **kwargs):
         """
         """
         super().__init__(name, teams, **kwargs)
@@ -710,7 +710,7 @@ class ChallengeLadder(Tournament):
     seeded:        bool
     reset_elo:     bool
     elo_update:    TournUnit
-    elo_params:    dict[str, Union[str, Number]]
+    elo_params:    dict[str, str | Number]
 
     # state, etc.
     ladder:        list[str]
@@ -718,7 +718,7 @@ class ChallengeLadder(Tournament):
     round_score:   dict[str, int]        # matches, indexed by team name
     round_winners: list[str]
 
-    def __init__(self, name: str, teams: Union[Iterable[str], Iterable[Team]], **kwargs):
+    def __init__(self, name: str, teams: Iterable[str] | Iterable[Team], **kwargs):
         """
         """
         super().__init__(name, teams, **kwargs)

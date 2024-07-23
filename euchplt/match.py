@@ -5,7 +5,7 @@ import sys
 from enum import Enum
 from itertools import chain
 from collections.abc import Iterator, Iterable
-from typing import Optional, Union, TextIO
+from typing import Optional, TextIO
 
 from .core import DEBUG, LogicError
 from .team import Team
@@ -25,7 +25,7 @@ class MatchStatXtra(Enum):
     def __str__(self):
         return self.value
 
-MatchStat = Union[MatchStatXtra, GameStat]
+MatchStat = MatchStatXtra | GameStat
 def MatchStatIter() -> Iterator: return chain(MatchStatXtra, GameStat)
 
 #########

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from collections.abc import Iterable
-from typing import Union
 
 from .core import cfg, ConfigError
 from .player import Player
@@ -25,7 +24,7 @@ class Team:
     team_strategy: str
     players:       list[Player]
 
-    def __init__(self, team_def: Union[str, Iterable[Player]]):
+    def __init__(self, team_def: str | Iterable[Player]):
         """
         """
         if isinstance(team_def, str):
