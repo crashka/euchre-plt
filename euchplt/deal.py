@@ -3,7 +3,7 @@
 
 import sys
 from enum import Enum
-from typing import Optional, TextIO
+from typing import TextIO
 
 from .utils import parse_argv
 from .core import DEBUG, LogicError, ImplementationError
@@ -38,18 +38,18 @@ class Deal(GameCtxMixin):
     players:          list[Player]    # by position (0 = first bid, 3 = dealer)
     deck:             Deck
     hands:            list[Hand]      # by position (active)
-    turn_card:        Optional[Card]
+    turn_card:        Card | None
     buries:           list[Card]
     bids:             list[Bid]
-    discard:          Optional[Card]
+    discard:          Card | None
     tricks:           list[Trick]
-    contract:         Optional[Bid]
-    caller_pos:       Optional[int]
-    go_alone:         Optional[bool]
-    def_alone:        Optional[bool]  # only used if `go_alone`
-    def_pos:          Optional[int]   # only used if `def_alone`
+    contract:         Bid | None
+    caller_pos:       int | None
+    go_alone:         bool | None
+    def_alone:        bool | None     # only used if `go_alone`
+    def_pos:          int | None      # only used if `def_alone`
     cards_dealt:      list[Hand]      # by position (for posterity)
-    played_by_pos:    list[Hand]        # by order of play for a position
+    played_by_pos:    list[Hand]      # by order of play for a position
     played_by_suit:   dict[Suit, Hand]  # by order of play within a suit
     unplayed_by_suit: dict[Suit, set[Card]]  # using sets within a suit
     tricks_won:       list[int]       # by position, same for both partners

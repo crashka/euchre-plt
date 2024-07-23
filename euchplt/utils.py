@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from collections.abc import Iterable, Sequence
-from typing import Optional
 from numbers import Number
 import os.path
 import logging
@@ -33,7 +32,7 @@ class Config:
         my_section:
           my_param: alt_value  # overwrites value from `default` profile
     """
-    config_dir:   Optional[str]
+    config_dir:   str | None
     filepaths:    list[str]        # list of file pathnames loaded
     profile_data: dict[str, dict]  # config indexed by profile (including 'default')
 

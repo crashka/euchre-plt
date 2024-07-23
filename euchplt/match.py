@@ -5,7 +5,7 @@ import sys
 from enum import Enum
 from itertools import chain
 from collections.abc import Iterator, Iterable
-from typing import Optional, TextIO
+from typing import TextIO
 
 from .core import DEBUG, LogicError
 from .team import Team
@@ -46,7 +46,7 @@ class Match(object):
     score:     list[int]                   # (games) indexed as `teams`
     stats:     list[dict[MatchStat, int]]  # each stat indexed as `teams`
     pos_stats: list[dict[MatchStat, list[int]]]  # tabulate stats by call_pos
-    winner:    Optional[tuple[int, Team]]  # tuple(idx, team)
+    winner:    tuple[int, Team] | None     # tuple(idx, team)
 
     def __init__(self, teams: Iterable[Team], **kwargs):
         """

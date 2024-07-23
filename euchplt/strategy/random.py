@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from typing import Optional
 from random import Random
 
 from ..card import SUITS, Card
@@ -17,7 +16,7 @@ class StrategyRandom(Strategy):
     or when to bid, go/defend alone, etc.), which we may want to parameterize for some
     visibility (this is, after all, a teaching tool).
     """
-    rand_seed: Optional[int]
+    rand_seed: int | None
     random:    Random
 
     def __init__(self, **kwargs):

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from enum import Enum
-from typing import ClassVar, Optional
+from typing import ClassVar
 from collections.abc import Callable
 import random
 import inspect
@@ -57,14 +57,14 @@ class _PlayCard:
     # lead card plays #
     ###################
 
-    def lead_last_card(self) -> Optional[Card]:
+    def lead_last_card(self) -> Card | None:
         """All other lead tactics degenerate into this for final card (haha)
         """
         if len(self.deal.hand) == 1:
             log.debug("Lead last card")
             return self.deal.hand.cards[0]
 
-    def next_call_lead(self) -> Optional[Card]:
+    def next_call_lead(self) -> Card | None:
         """For next suit call, especially if calling with a weaker hand
 
         From https://ohioeuchre.com/E_next.php:
@@ -99,7 +99,7 @@ class _PlayCard:
                         self.play_plan.add(PlayPlan.DRAW_TRUMP)
                         return suit_cards[0][-1]
 
-    def draw_trump(self) -> Optional[Card]:
+    def draw_trump(self) -> Card | None:
         """Draw trump if caller (strong hand), or flush out bower
         """
         # perf note: defer call to `trumps_missing()`
@@ -117,7 +117,7 @@ class _PlayCard:
                 log.debug("Draw trump (or flush out bower)")
                 return self.trump_cards[0]
 
-    def lead_off_ace(self) -> Optional[Card]:
+    def lead_off_ace(self) -> Card | None:
         """Off-ace (short suit, or green if defending?)
         """
         if off_aces := self.analysis.off_aces():
@@ -130,7 +130,7 @@ class _PlayCard:
                 log.debug("Lead off-ace (random choice)")
                 return random.choice(off_aces)
 
-    def lead_to_partner_call(self) -> Optional[Card]:
+    def lead_to_partner_call(self) -> Card | None:
         """No trump seen with partner as caller
         """
         if self.deal.is_partner_caller:
@@ -151,7 +151,7 @@ class _PlayCard:
                         log.debug("Lead singleton to void suit (random choice)")
                         return random.choice(self.singleton_cards)
 
-    def lead_to_create_void(self) -> Optional[Card]:
+    def lead_to_create_void(self) -> Card | None:
         """If trump in hand, try and void a suit
         """
         if self.trump_cards and self.singleton_cards:
@@ -164,7 +164,7 @@ class _PlayCard:
                 log.debug("Lead singleton to void suit (random choice)")
                 return random.choice(self.singleton_cards)
 
-    def lead_suit_winner(self) -> Optional[Card]:
+    def lead_suit_winner(self) -> Card | None:
         """Try to lead winner (non-trump)
         """
         if my_winners := self.analysis.my_winners():
@@ -173,7 +173,7 @@ class _PlayCard:
             # off-ace rule)???  Should also examine remaining cards in suit!!!
             return my_winners[0] if self.deal.trick_num <= 3 else my_winners[-1]
 
-    def lead_low_non_trump(self) -> Optional[Card]:
+    def lead_low_non_trump(self) -> Card | None:
         """If still trump in hand, lead lowest card (non-trump)
         """
         if self.trump_cards and len(self.trump_cards) < len(self.deal.hand):
@@ -182,7 +182,7 @@ class _PlayCard:
             log.debug("Lead lowest non-trump")
             return by_level[-1]
 
-    def lead_low_from_long_suit(self) -> Optional[Card]:
+    def lead_low_from_long_suit(self) -> Card | None:
         """Lead low from long suit (favor green if defending?)
 
         Note: always returns value, can be last in a ruleset
@@ -194,7 +194,7 @@ class _PlayCard:
         log.debug("Lead low from longest suit")
         return suit_cards[0][0]
 
-    def lead_random_card(self) -> Optional[Card]:
+    def lead_random_card(self) -> Card | None:
         """This is a catch-all, though we should look at cases where this happens
         and see if there is a better rule to insert before it
 
@@ -207,14 +207,14 @@ class _PlayCard:
     # follow card plays #
     #####################
 
-    def play_last_card(self) -> Optional[Card]:
+    def play_last_card(self) -> Card | None:
         """All other play tactics degenerate into this for final card (haha)
         """
         if len(self.deal.hand) == 1:
             log.debug("Play last card")
             return self.deal.hand.cards[0]
 
-    def follow_suit_low(self) -> Optional[Card]:
+    def follow_suit_low(self) -> Card | None:
         """Follow suit low
         """
         lead_card = self.deal.cur_trick.lead_card
@@ -223,7 +223,7 @@ class _PlayCard:
             log.debug("Follow suit low")
             return follow_cards[-1]
 
-    def throw_off_to_create_void(self) -> Optional[Card]:
+    def throw_off_to_create_void(self) -> Card | None:
         """Create void (if early in deal).  NOTE: this only matters if we've decided not
         to trump (e.g. to preserve for later)
         """
@@ -238,7 +238,7 @@ class _PlayCard:
                 log.debug("Throw off singleton to void suit (lowest)")
                 return self.singleton_cards[-1]
 
-    def throw_off_low(self) -> Optional[Card]:
+    def throw_off_low(self) -> Card | None:
         """Throw off lowest non-trump card
         """
         if len(self.trump_cards) < len(self.deal.hand):
@@ -247,7 +247,7 @@ class _PlayCard:
             log.debug("Throw-off lowest non-trump")
             return by_level[-1]
 
-    def play_low_trump(self) -> Optional[Card]:
+    def play_low_trump(self) -> Card | None:
         """Play lowest trump (assumes no non-trump remaining)
         """
         if self.trump_cards and len(self.trump_cards) == len(self.deal.hand):
@@ -255,7 +255,7 @@ class _PlayCard:
             log.debug("Play lowest trump")
             return self.trump_cards[-1]
 
-    def follow_suit_high(self) -> Optional[Card]:
+    def follow_suit_high(self) -> Card | None:
         """Follow suit (high if can lead trick, low otherwise)
         """
         lead_card = self.deal.cur_trick.lead_card
@@ -278,7 +278,7 @@ class _PlayCard:
             log.debug("Follow suit low (can't beat)")
             return follow_cards[-1]
 
-    def trump_low(self) -> Optional[Card]:
+    def trump_low(self) -> Card | None:
         """Trump (low) to lead trick
         """
         if self.trump_cards:
@@ -308,7 +308,7 @@ class _PlayCard:
                     log.debug("Play last trump, to lead trick")
                     return self.trump_cards[0]
 
-    def play_random_card(self) -> Optional[Card]:
+    def play_random_card(self) -> Card | None:
         """This is a catch-all, though we should look at cases where this happens
         and see if there is a better rule to insert before it
 

@@ -5,7 +5,7 @@ blocks (e.g. cards), and can be imported by either the player or game-playing mo
 """
 
 from enum import Enum
-from typing import Optional, NamedTuple
+from typing import NamedTuple
 
 from .core import LogicError
 from .card import ALL_RANKS, BOWER_RANKS, SUITS, Suit, Card, jack, right, left
@@ -282,10 +282,10 @@ Play = tuple[int, Card]  # (pos, card)
 class Trick(GameCtxMixin):
     """
     """
-    plays:        list[Play]            # sequential
-    cards:        list[Optional[Card]]  # indexed by position
-    winning_card: Optional[Card]
-    winning_pos:  Optional[int]
+    plays:        list[Play]         # sequential
+    cards:        list[Card | None]  # indexed by position
+    winning_card: Card | None
+    winning_pos:  int | None
 
     def __init__(self, parent_ctx: GameCtxMixin):
         """
@@ -374,14 +374,14 @@ class DealState(NamedTuple):
     """
     pos:              int
     hand:             Hand
-    turn_card:        Optional[Card]
+    turn_card:        Card | None
     bids:             list[Bid]
     tricks:           list[Trick]
-    contract:         Optional[Bid]
-    caller_pos:       Optional[int]
-    go_alone:         Optional[bool]
-    def_alone:        Optional[bool]
-    def_pos:          Optional[int]
+    contract:         Bid | None
+    caller_pos:       int | None
+    go_alone:         bool | None
+    def_alone:        bool | None
+    def_pos:          int | None
     played_by_suit:   dict[Suit, Hand]
     unplayed_by_suit: dict[Suit, set[Card]]
     tricks_won:       list[int]
@@ -475,7 +475,7 @@ class DealState(NamedTuple):
         return self.cur_trick.lead_trumped()
 
     @property
-    def my_tricks_won(self) -> Optional[int]:
+    def my_tricks_won(self) -> int | None:
         """Only valid after deal is complete and score has been tabulated.
         """
         if not self.tricks_won:
@@ -483,7 +483,7 @@ class DealState(NamedTuple):
         return self.tricks_won[self.pos]
 
     @property
-    def my_points(self) -> Optional[int]:
+    def my_points(self) -> int | None:
         """Only valid after deal is complete and score has been tabulated.  In case
         of losing the deal (i.e. zero points), return negative of opponent points.
         """

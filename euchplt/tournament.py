@@ -5,7 +5,7 @@ import sys
 from enum import Enum
 from itertools import chain
 from collections.abc import Mapping, Iterator, Iterable, Callable
-from typing import Optional, TypeVar, TextIO
+from typing import TypeVar, TextIO
 from numbers import Number
 import random
 import csv
@@ -174,7 +174,7 @@ class Tournament:
     # params/config
     name:           str
     teams:          dict[str, Team]  # indexed by team name
-    match_games:    Optional[int]    # num games needed to win match
+    match_games:    int | None       # num games needed to win match
     # NOTE the different naming convention for position-related stats
     # stuff here, compared to Game and Match classes (should probably
     # make it all consistent at some point)!!!
@@ -190,13 +190,13 @@ class Tournament:
     team_score_opp: dict[str, dict[str, list[Number]]]     # same as previous, per opponent team
     team_stats:     dict[str, dict[TournStat, int]]        # indexed as `teams`
     team_pos_stats: dict[str, dict[TournStat, list[int]]]  # tabulate stats by call_pos
-    winner:         Optional[tuple[str, ...]]
-    results:        Optional[list[str]]
+    winner:         tuple[str, ...] | None
+    results:        list[str] | None
     # elimination, leaderboard, and elo stuff managed by subclasses
     eliminated:     set[str]                 # team names
     leaderboards:   list[Leaderboard]
-    lb_base:        Optional[Leaderboard]
-    elo_rating:     Optional[EloRating]
+    lb_base:        Leaderboard | None
+    elo_rating:     EloRating | None
 
     @classmethod
     def new(cls, tourn_name: str, **kwargs) -> 'Tournament':
@@ -559,7 +559,7 @@ DFLT_PASSES     = 1
 DFLT_ELO_UPDATE = 'PASS'
 
 T = TypeVar('T')
-TO = Optional[T]
+TO = T | None
 
 class RoundRobin(Tournament):
     """This is a modified round robin format wherein multiple passes through the

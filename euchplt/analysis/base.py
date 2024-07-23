@@ -3,8 +3,6 @@
 """See __init__.py for module-level documentation
 """
 
-from typing import Optional
-
 from ..card import Suit, SUITS, Card, ace, Bower
 from ..euchre import GameCtxMixin, SuitCards, Hand, DealState
 
@@ -194,7 +192,7 @@ class PlayAnalysis:
             cards.sort(key=lambda c: c.efflevel(self.ctx), reverse=True)
         return suit_cards
 
-    def suit_winners(self) -> dict[Suit, Optional[Card]]:
+    def suit_winners(self) -> dict[Suit, Card | None]:
         """Return the highest outstanding card for each suit, or None if no cards
         remaining.
         """

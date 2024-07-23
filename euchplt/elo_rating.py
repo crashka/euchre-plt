@@ -3,7 +3,7 @@
 
 import sys
 from collections.abc import Iterable
-from typing import Optional, TextIO
+from typing import TextIO
 import shelve
 
 from .core import DEBUG, DataFile, ArchiveDataFile
@@ -49,7 +49,7 @@ class EloRating:
         # seed history with initial ratings
         self.ratings_hist = {t.name: [self.team_ratings[t.name]] for t in teams}
 
-    def load(self, teams: Optional[Iterable[Team]] = None) -> dict[str, float]:
+    def load(self, teams: Iterable[Team] | None = None) -> dict[str, float]:
         """Loads Elo ratings from the database; return ratings for specified teams
         only (initializing them, if not yet existing), or the entire database (with
         no initializations) if `teams` is not passed in.

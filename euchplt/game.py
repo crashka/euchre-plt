@@ -4,7 +4,7 @@
 import sys
 from enum import Enum
 from collections.abc import Iterable
-from typing import Optional, TextIO
+from typing import TextIO
 import random
 
 from .core import DEBUG, LogicError
@@ -81,7 +81,7 @@ class Game(object):
     score:     list[int]                   # (points) indexed as `teams`
     stats:     list[dict[GameStat, int]]   # each stat indexed as `teams`
     pos_stats: list[dict[GameStat, list[int]]]  # tabulate stats by call_pos
-    winner:    Optional[tuple[int, Team]]  # tuple(idx, team)
+    winner:    tuple[int, Team] | None     # tuple(idx, team)
 
     def __init__(self, teams: Iterable[Team], **kwargs):
         """
