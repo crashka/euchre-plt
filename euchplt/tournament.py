@@ -934,6 +934,7 @@ def run_tournament(*args, **kwargs) -> int:
         # in the main tournament (even if not matching configured list)
         teams = {name: seed_round.teams[name] for name in seed_round.results}
         tourn_args['teams'] = teams
+        tourn_args['seeded'] = True
         tourn_args['reset_elo'] = False
         print("----- Main Tournament -----")
     if profiler:

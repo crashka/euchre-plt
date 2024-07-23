@@ -1866,6 +1866,108 @@ and see if there is a better rule to insert before it</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.strategy.</span></span><span class="sig-name descname"><span class="pre">StrategyRemote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.strategy.StrategyRemote" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#euchplt.strategy.Strategy" title="euchplt.strategy.base.Strategy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Strategy</span></code></a></p>
+<p>Invocation of remote strategies through the <a class="reference external" href="https://github.com/crashka/EuchreEndpoint">EuchreEndpoint</a> interface</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>See base class</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.bid">
+<span class="sig-name descname"><span class="pre">bid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">def_bid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.euchre.Bid" title="euchplt.euchre.Bid"><span class="pre">Bid</span></a></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.bid" title="Link to this definition">¶</a></dt>
+<dd><p>See base class</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.discard">
+<span class="sig-name descname"><span class="pre">discard</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.discard" title="Link to this definition">¶</a></dt>
+<dd><p>See base class</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.play_card">
+<span class="sig-name descname"><span class="pre">play_card</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">trick</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.Trick" title="euchplt.euchre.Trick"><span class="pre">Trick</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_plays</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.play_card" title="Link to this definition">¶</a></dt>
+<dd><p>See base class</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.get_token">
+<span class="sig-name descname"><span class="pre">get_token</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.get_token" title="Link to this definition">¶</a></dt>
+<dd><p>Return unique session token tied to this <code class="docutils literal notranslate"><span class="pre">Strategy</span></code> instance (currently
+computed as hex digit representation of <cite>id(self)</cite>)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.request">
+<span class="sig-name descname"><span class="pre">request</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">req</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">EpReq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">EpPath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">EpStatus</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">EpStatus</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">EpStatus</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">addl_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.request" title="Link to this definition">¶</a></dt>
+<dd><p>Wrapper for requests to server; a few comments on method arguments:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> - if specified as a single value, it will be passed into the request
+and validated in the response; if specified as a tuple, the two values will be
+individually used in the request and validated in the response, respectively</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">addl_args</span></code> - in addition to <code class="docutils literal notranslate"><span class="pre">token</span></code> and <code class="docutils literal notranslate"><span class="pre">status</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">validate_args</span></code> - list of args to validate on output; if <code class="docutils literal notranslate"><span class="pre">None</span></code>, then all
+<code class="docutils literal notranslate"><span class="pre">addl_args</span></code> entries are validated</p></li>
+</ul>
+<p>Note that “validating” args means ensuring that the value in the response matches
+that in the request (as specified by the API)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.new_session">
+<span class="sig-name descname"><span class="pre">new_session</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.new_session" title="Link to this definition">¶</a></dt>
+<dd><p>Start new session on remote server</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.session_complete">
+<span class="sig-name descname"><span class="pre">session_complete</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.session_complete" title="Link to this definition">¶</a></dt>
+<dd><p>Notify remote server that session is complete</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.new_game">
+<span class="sig-name descname"><span class="pre">new_game</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.new_game" title="Link to this definition">¶</a></dt>
+<dd><p>Start new game on remote server</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.game_complete">
+<span class="sig-name descname"><span class="pre">game_complete</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.game_complete" title="Link to this definition">¶</a></dt>
+<dd><p>Notify remote server that game is complete</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.new_deal">
+<span class="sig-name descname"><span class="pre">new_deal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.new_deal" title="Link to this definition">¶</a></dt>
+<dd><p>Start new deal on remote server</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.deal_complete">
+<span class="sig-name descname"><span class="pre">deal_complete</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.deal_complete" title="Link to this definition">¶</a></dt>
+<dd><p>Notify remote server that deal is complete</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.new_trick">
+<span class="sig-name descname"><span class="pre">new_trick</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.new_trick" title="Link to this definition">¶</a></dt>
+<dd><p>Notify remote server that trick is complete</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.trick_complete">
+<span class="sig-name descname"><span class="pre">trick_complete</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.trick_complete" title="Link to this definition">¶</a></dt>
+<dd><p>Notify remote server that trick is complete</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="euchplt.strategy.StrategyML">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.strategy.</span></span><span class="sig-name descname"><span class="pre">StrategyML</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.strategy.StrategyML" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#euchplt.strategy.Strategy" title="euchplt.strategy.base.Strategy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Strategy</span></code></a></p>

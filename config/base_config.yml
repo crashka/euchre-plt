@@ -66,6 +66,9 @@ default:
         - throw_off_to_create_void
         - throw_off_low
         - play_random_card
+    StrategyRemote:
+      server_url:       http://localhost:8080
+      http_headers:     {}
 
   base_tourn_params:
     RoundRobin:

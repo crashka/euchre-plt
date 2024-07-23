@@ -24,7 +24,7 @@ class StrategySimple(Strategy):
     TODO (maybe): parameterize some of the magic numbers in this code!?!?
     """
     # this is actually a bitfield, see individual switches below
-    aggressive: int = 0x0
+    aggressive: int
 
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """See base class

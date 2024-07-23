@@ -401,7 +401,7 @@ class Deal(GameCtxMixin):
 # main #
 ########
 
-from .strategy import StrategyRandom, StrategySimple, StrategySmart
+from .strategy import *
 
 def main() -> int:
     """Built-in driver to run through a simple/sample deal
@@ -425,9 +425,9 @@ def main() -> int:
         print_result = set([DealAttr[t] for t in result_tags])
         num_print    = kwargs.pop('num_print', None) or num_print
 
-    players = [Player("Player 0", StrategyRandom(rand_seed=12345)),
+    players = [Player("Player 0", StrategySimple()),
                Player("Player 1", StrategySmart()),
-               Player("Player 2", StrategyRandom(rand_seed=98765)),
+               Player("Player 2", StrategySimple()),
                Player("Player 3", StrategySmart())]
 
     for _ in range(ndeals):
@@ -441,7 +441,7 @@ def main() -> int:
                 deal.print()
             continue
         deal.play_cards()
-        if not print_result or deal.result == print_result:
+        if not print_result or print_result <= deal.result:
             if ndeals > 1:
                 print("\n--- New Deal ---")
             deal.print(verbose=1)
