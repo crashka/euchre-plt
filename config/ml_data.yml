@@ -20,7 +20,7 @@ default:
       module_path:       ml.strategy.bid_traverse
       base_class:        StrategyBidTraverse
       strategy_params:
-        play_strat:      Charlie 1
+        play_strat:      Smart 1
         discard_strat:
         bid_prune_strat:
         hand_analysis:
@@ -28,7 +28,7 @@ default:
       module_path:       ml.strategy.bid_traverse
       base_class:        StrategyBidTraverse
       strategy_params:
-        play_strat:      Charlie 1
+        play_strat:      Smart 1
         discard_strat:
         bid_prune_strat: Bid Prune 2
         hand_analysis:
@@ -42,17 +42,17 @@ default:
       module_path:       ml.strategy.play_traverse
       base_class:        StrategyPlayTraverse
       strategy_params:
-        bid_strat:       Charlie 1
+        bid_strat:       Smart 1
         discard_strat:
-        base_play_strat: Charlie 1
+        base_play_strat: Smart 1
         hand_analysis:
     Play Model 2:
       module_path:       ml.strategy.play_traverse
       base_class:        StrategyPlayTraverse
       strategy_params:
-        bid_strat:       Charlie 6
+        bid_strat:       Smart 6
         discard_strat:
-        base_play_strat: Charlie 6
+        base_play_strat: Smart 6
         hand_analysis:
 
   players:

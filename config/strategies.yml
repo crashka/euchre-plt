@@ -1,37 +1,37 @@
 ---
 default:
   strategies:
-    Alfa 1:
+    Random 1:
       comments:         "base StrategyRandom configuration"
       module_path:      euchplt.strategy
       base_class:       StrategyRandom
-    Bravo 1:
+    Simple 1:
       comments:         "base StrategySimple configuration"
       module_path:      euchplt.strategy
       base_class:       StrategySimple
-    Bravo 2:
+    Simple 2:
       comments:         "aggressive play for StrategySimple"
       module_path:      euchplt.strategy
       base_class:       StrategySimple
       strategy_params:
         aggressive:       0x01
-    Bravo 3:
+    Simple 3:
       comments:         "aggressive play for StrategySimple"
       module_path:      euchplt.strategy
       base_class:       StrategySimple
       strategy_params:
         aggressive:       0x02
-    Bravo 4:
+    Simple 4:
       comments:         "aggressive play for StrategySimple"
       module_path:      euchplt.strategy
       base_class:       StrategySimple
       strategy_params:
         aggressive:       0x03
-    Charlie 1:
+    Smart 1:
       comments:         "base StrategySmart configuration"
       module_path:      euchplt.strategy
       base_class:       StrategySmart
-    Charlie 2:
+    Smart 2:
       comments:         "raise all bid thresholds"
       module_path:      euchplt.strategy
       base_class:       StrategySmart
@@ -39,7 +39,7 @@ default:
         hand_analysis:
           # overrides for HandAnalysisSmart base params
         bid_thresh:       [38, 38, 38, 38, 38, 38, 38, 38]
-    Charlie 3:
+    Smart 3:
       comments:         "lower all bid thresholds"
       module_path:      euchplt.strategy
       base_class:       StrategySmart
@@ -47,16 +47,16 @@ default:
         hand_analysis:
           # overrides for HandAnalysisSmart base params
         bid_thresh:       [32, 32, 32, 32, 32, 32, 32, 32]
-    Charlie 4:
-      comments:         "lower threshold for dealer position and def_alone bidding"
+    Smart 4:
+      comments:         "further lower threshold for dealer position and alone_margin"
       module_path:      euchplt.strategy
       base_class:       StrategySmart
       strategy_params:
         hand_analysis:
           # overrides for HandAnalysisSmart base params
-        bid_thresh:       [35, 35, 35, 30, 35, 35, 35, 30]
-        def_alone_thresh: [30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30]
-    Charlie 5:
+        bid_thresh:       [32, 32, 32, 28, 32, 32, 32, 28]
+        alone_margin:     [8, 8, 8, 8, 8, 8, 8, 8]
+    Smart 5:
       comments:         "base config with play adjustment"
       module_path:      euchplt.strategy
       base_class:       StrategySmart
@@ -71,15 +71,15 @@ default:
           - lead_to_create_void
           - lead_low_non_trump
           - lead_low_from_long_suit
-    Charlie 6:
-      comments:         "Charlie 4 with play adjustment"
+    Smart 6:
+      comments:         "Smart 4 with play adjustment"
       module_path:      euchplt.strategy
       base_class:       StrategySmart
       strategy_params:
         hand_analysis:
           # overrides for HandAnalysisSmart base params
-        bid_thresh:       [35, 35, 35, 30, 35, 35, 35, 30]
-        def_alone_thresh: [30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30]
+        bid_thresh:       [32, 32, 32, 28, 32, 32, 32, 28]
+        alone_margin:     [8, 8, 8, 8, 8, 8, 8, 8]
         subseq_lead:
           - lead_last_card
           - draw_trump

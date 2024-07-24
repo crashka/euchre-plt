@@ -88,9 +88,8 @@ bowers are used as part of the analysis)</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.player.Player.notify">
-<span class="sig-name descname"><span class="pre">notify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">notice_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.player.PlayerNotice" title="euchplt.player.PlayerNotice"><span class="pre">PlayerNotice</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.player.Player.notify" title="Link to this definition">¶</a></dt>
-<dd><p>TEMP: for now, we are only expecting <cite>DEAL_COMPLETE</cite>–LATER we will think
-about the other notifications needed to support remote players/strategies!!!</p>
+<span class="sig-name descname"><span class="pre">notify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">notice</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.player.PlayerNotice" title="euchplt.player.PlayerNotice"><span class="pre">PlayerNotice</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.player.Player.notify" title="Link to this definition">¶</a></dt>
+<dd><p>Pass notifications on to underlying strategies</p>
 </dd></dl>
 
 </dd></dl>
@@ -1475,9 +1474,10 @@ if bowers are utilized as part of the analysis and/or strategy)</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.strategy.Strategy.notify">
 <span class="sig-name descname"><span class="pre">notify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">notice_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.strategy.StrategyNotice" title="euchplt.strategy.base.StrategyNotice"><span class="pre">StrategyNotice</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.Strategy.notify" title="Link to this definition">¶</a></dt>
-<dd><p>Subclasses do not have to implement this.  We are currently only expecting
-<code class="docutils literal notranslate"><span class="pre">DEAL_COMPLETE</span></code> notifications (to support “traversal” strategies for ML data
-generation).</p>
+<dd><p>Subclasses do not have to implement this (or call <code class="docutils literal notranslate"><span class="pre">super()</span></code> for it); only
+specialty strategies need to know when intermediary milestones are hit (e.g. to
+notify servers representing <code class="docutils literal notranslate"><span class="pre">StrategyRemote</span></code> players, or to support “traversal”
+strategies for ML data generation).</p>
 </dd></dl>
 
 </dd></dl>
@@ -1891,6 +1891,12 @@ and see if there is a better rule to insert before it</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.play_card">
 <span class="sig-name descname"><span class="pre">play_card</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">trick</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.Trick" title="euchplt.euchre.Trick"><span class="pre">Trick</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_plays</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.play_card" title="Link to this definition">¶</a></dt>
+<dd><p>See base class</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.notify">
+<span class="sig-name descname"><span class="pre">notify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">notice_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.strategy.StrategyNotice" title="euchplt.strategy.base.StrategyNotice"><span class="pre">StrategyNotice</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.notify" title="Link to this definition">¶</a></dt>
 <dd><p>See base class</p>
 </dd></dl>
 

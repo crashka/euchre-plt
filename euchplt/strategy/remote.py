@@ -6,11 +6,11 @@ from requests import Session, HTTPError
 
 from ..card import Card
 from ..euchre import Bid, PASS_BID, Trick, DealState
-from .base import Strategy
+from .base import Strategy, StrategyNotice
 
-##################
-# StrategyRemote #
-##################
+#########
+# Enums #
+#########
 
 class EpReq(Enum):
     """Note: the value for each member must correpond to a valid request type
@@ -35,6 +35,10 @@ class EpStatus(Enum):
 # a couple of helpful aliases
 EpActivate = (EpStatus.NEW, EpStatus.ACTIVE)
 EpStatusT = EpStatus | tuple[EpStatus, EpStatus]
+
+##################
+# StrategyRemote #
+##################
 
 class StrategyRemote(Strategy):
     """Invocation of remote strategies through the `EuchreEndpoint`_ interface
@@ -98,6 +102,13 @@ class StrategyRemote(Strategy):
         """See base class
         """
         return valid_plays[0]
+
+    def notify(self, deal: DealState, notice_type: StrategyNotice) -> None:
+        """See base class
+        """
+        # TEMP: do nothing for now (LATER, this will be needed to trigger external
+        # notifications)!!!
+        pass
 
     def get_token(self) -> str:
         """Return unique session token tied to this ``Strategy`` instance (currently

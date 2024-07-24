@@ -98,9 +98,10 @@ class Strategy:
         raise NotImplementedError("Can't call abstract method")
 
     def notify(self, deal: DealState, notice_type: StrategyNotice) -> None:
-        """Subclasses do not have to implement this.  We are currently only expecting
-        ``DEAL_COMPLETE`` notifications (to support "traversal" strategies for ML data
-        generation).
+        """Subclasses do not have to implement this (or call ``super()`` for it); only
+        specialty strategies need to know when intermediary milestones are hit (e.g. to
+        notify servers representing ``StrategyRemote`` players, or to support "traversal"
+        strategies for ML data generation).
         """
         # do nothing
-        return
+        pass

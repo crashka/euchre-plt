@@ -151,6 +151,10 @@ class Deal(GameCtxMixin):
             return self.hands[pos].copy_cards()
         return self.hands[pos].playable_cards(trick)
 
+    def notify_players(self, notice: PlayerNotice) -> None:
+        for pos, player in enumerate(self.players):
+            player.notify(self.deal_state(pos), notice)
+
     def tabulate(self, trick: Trick) -> None:
         """
         """
@@ -293,6 +297,7 @@ class Deal(GameCtxMixin):
                     break
                 # otherwise keep looping...
 
+        self.notify_players(PlayerNotice.BID_COMPLETE)
         return self.contract
 
     def play_cards(self) -> None:
@@ -323,10 +328,10 @@ class Deal(GameCtxMixin):
                 self.unplayed_by_suit[card.effsuit(self)].remove(card)
             self.tabulate(trick)
             lead_pos = trick.winning_pos
+            self.notify_players(PlayerNotice.TRICK_COMPLETE)
 
         self.compute_score()
-        for pos, player in enumerate(self.players):
-            player.notify(self.deal_state(pos), PlayerNotice.DEAL_COMPLETE)
+        self.notify_players(PlayerNotice.DEAL_COMPLETE)
 
     def print(self, file: TextIO = sys.stdout, verbose: int = 0) -> None:
         """Setting the `verbose` flag (or DEBUG mode) will print out details

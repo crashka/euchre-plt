@@ -155,8 +155,8 @@ class Match(object):
 def main() -> int:
     """Built-in driver to run through a simple/sample match
     """
-    teams = [Team("Team 02"),
-             Team("Team 06")]
+    teams = [Team("Simple Team 1"),
+             Team("Smart Team 1")]
 
     match = Match(teams)
     match.play()

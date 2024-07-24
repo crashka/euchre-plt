@@ -15,22 +15,26 @@ default:
           d_value:         500
           k_factor:        6
       teams:
-        - Team 02
-        - Team 03
-        - Team 04
-        - Team 05
-        - Team 06
-        - Team 07
-        - Team 08
-        - Team 09
-        - Team 10
-        - Team 11
-        - Team 12
-        - Team 13
-        - Team 14
-        - Team 15
-        - Team 16
-        - Team 17
+        - Simple Team 1
+        - Simple Team 1b
+        - Simple Team 2
+        - Simple Team 2b
+        - Simple Team 3
+        - Simple Team 3b
+        - Simple Team 4
+        - Simple Team 4b
+        - Smart Team 1
+        - Smart Team 1b
+        - Smart Team 2
+        - Smart Team 2b
+        - Smart Team 3
+        - Smart Team 3b
+        - Smart Team 4
+        - Smart Team 4b
+        - Smart Team 5
+        - Smart Team 5b
+        - Smart Team 6
+        - Smart Team 6b
     Tourney B:
       tourn_class:     RoundRobin
       tourn_params:
@@ -66,14 +70,16 @@ default:
           d_value:         600
           k_factor:        8
       teams:
-        - Team 02
-        - Team 04
-        - Team 06
-        - Team 08
-        - Team 10
-        - Team 12
-        - Team 14
-        - Team 16
+        - Simple Team 1
+        - Simple Team 2
+        - Simple Team 3
+        - Simple Team 4
+        - Smart Team 1
+        - Smart Team 2
+        - Smart Team 3
+        - Smart Team 4
+        - Smart Team 5
+        - Smart Team 6
     Seed D:
       tourn_class:     RoundRobin
       tourn_params:
@@ -86,22 +92,26 @@ default:
           d_value:         500
           k_factor:        6
       teams:
-        - Team 02
-        - Team 03
-        - Team 04
-        - Team 05
-        - Team 06
-        - Team 07
-        - Team 08
-        - Team 09
-        - Team 10
-        - Team 11
-        - Team 12
-        - Team 13
-        - Team 14
-        - Team 15
-        - Team 16
-        - Team 17
+        - Simple Team 1
+        - Simple Team 1b
+        - Simple Team 2
+        - Simple Team 2b
+        - Simple Team 3
+        - Simple Team 3b
+        - Simple Team 4
+        - Simple Team 4b
+        - Smart Team 1
+        - Smart Team 1b
+        - Smart Team 2
+        - Smart Team 2b
+        - Smart Team 3
+        - Smart Team 3b
+        - Smart Team 4
+        - Smart Team 4b
+        - Smart Team 5
+        - Smart Team 5b
+        - Smart Team 6
+        - Smart Team 6b
     Tourney D:
       tourn_class:     ChallengeLadder
       tourn_params:
@@ -115,22 +125,26 @@ default:
           d_value:         500
           k_factor:        6
       teams:
-        - Team 02
-        - Team 03
-        - Team 04
-        - Team 05
-        - Team 06
-        - Team 07
-        - Team 08
-        - Team 09
-        - Team 10
-        - Team 11
-        - Team 12
-        - Team 13
-        - Team 14
-        - Team 15
-        - Team 16
-        - Team 17
+        - Simple Team 1
+        - Simple Team 1b
+        - Simple Team 2
+        - Simple Team 2b
+        - Simple Team 3
+        - Simple Team 3b
+        - Simple Team 4
+        - Simple Team 4b
+        - Smart Team 1
+        - Smart Team 1b
+        - Smart Team 2
+        - Smart Team 2b
+        - Smart Team 3
+        - Smart Team 3b
+        - Smart Team 4
+        - Smart Team 4b
+        - Smart Team 5
+        - Smart Team 5b
+        - Smart Team 6
+        - Smart Team 6b
     test:
       comments:        "Short quick profile, doesn't exercise elim_passes"
       tourn_class:     RoundRobin
@@ -140,8 +154,8 @@ default:
         elim_passes:     1
         elim_pct:        50
       teams:
-        - Team 06
-        - Team 08
+        - Smart Team 1
+        - Smart Team 2
     prof_random:
       comments:        "Using the base config for StrategyRandom"
       tourn_class:     RoundRobin
@@ -149,8 +163,8 @@ default:
         match_games:     10
         passes:          20
       teams:
-        - Team 00
-        - Team 01
+        - Random Team 1
+        - Random Team 1b
     prof_simple:
       comments:        "Using the base config for StrategySimple"
       tourn_class:     RoundRobin
@@ -158,8 +172,8 @@ default:
         match_games:     10
         passes:          20
       teams:
-        - Team 02
-        - Team 03
+        - Simple Team 1
+        - Simple Team 1b
     prof_smart:
       comments:        "Using the base config for StrategySmart"
       tourn_class:     RoundRobin
@@ -167,8 +181,8 @@ default:
         match_games:     10
         passes:          10
       teams:
-        - Team 06
-        - Team 07
+        - Smart Team 1
+        - Smart Team 1b
     demo:
       tourn_class:     RoundRobin
       tourn_params:
@@ -181,11 +195,13 @@ default:
           d_value:         600
           k_factor:        8
       teams:
-        - Team 02
-        - Team 04
-        - Team 06
-        - Team 08
-        - Team 10
-        - Team 12
-        - Team 14
-        - Team 16
+        - Simple Team 1
+        - Simple Team 2
+        - Simple Team 3
+        - Simple Team 4
+        - Smart Team 1
+        - Smart Team 2
+        - Smart Team 3
+        - Smart Team 4
+        - Smart Team 5
+        - Smart Team 6

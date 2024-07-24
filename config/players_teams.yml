@@ -1,61 +1,93 @@
 ---
 default:
   players:
-    Player 00:
-      strategy:        Alfa 1
-    Player 01:
-      strategy:        Alfa 1
-    Player 02:
-      strategy:        Bravo 1
-    Player 03:
-      strategy:        Bravo 1
-    Player 04:
-      strategy:        Bravo 2
-    Player 05:
-      strategy:        Bravo 2
-    Player 06:
-      strategy:        Charlie 1
-    Player 07:
-      strategy:        Charlie 1
-    Player 08:
-      strategy:        Charlie 2
-    Player 09:
-      strategy:        Charlie 2
+    Random Player 1a:
+      strategy:        Random 1
+    Random Player 1b:
+      strategy:        Random 1
+    Simple Player 1a:
+      strategy:        Simple 1
+    Simple Player 1b:
+      strategy:        Simple 1
+    Simple Player 2a:
+      strategy:        Simple 2
+    Simple Player 2b:
+      strategy:        Simple 2
+    Simple Player 3a:
+      strategy:        Simple 3
+    Simple Player 3b:
+      strategy:        Simple 3
+    Simple Player 4a:
+      strategy:        Simple 4
+    Simple Player 4b:
+      strategy:        Simple 4
+    Smart Player 1a:
+      strategy:        Smart 1
+    Smart Player 1b:
+      strategy:        Smart 1
+    Smart Player 2a:
+      strategy:        Smart 2
+    Smart Player 2b:
+      strategy:        Smart 2
+    Smart Player 3a:
+      strategy:        Smart 3
+    Smart Player 3b:
+      strategy:        Smart 3
+    Smart Player 4a:
+      strategy:        Smart 4
+    Smart Player 4b:
+      strategy:        Smart 4
+    Smart Player 5a:
+      strategy:        Smart 5
+    Smart Player 5b:
+      strategy:        Smart 5
+    Smart Player 6a:
+      strategy:        Smart 6
+    Smart Player 6b:
+      strategy:        Smart 6
 
   teams:
-    Team 00:
-      strategy:        Alfa 1
-    Team 01:
-      strategy:        Alfa 1
-    Team 02:
-      strategy:        Bravo 1
-    Team 03:
-      strategy:        Bravo 1
-    Team 04:
-      strategy:        Bravo 2
-    Team 05:
-      strategy:        Bravo 2
-    Team 06:
-      strategy:        Charlie 1
-    Team 07:
-      strategy:        Charlie 1
-    Team 08:
-      strategy:        Charlie 2
-    Team 09:
-      strategy:        Charlie 2
-    Team 10:
-      strategy:        Charlie 3
-    Team 11:
-      strategy:        Charlie 3
-    Team 12:
-      strategy:        Charlie 4
-    Team 13:
-      strategy:        Charlie 4
-    Team 14:
-      strategy:        Charlie 5
-    Team 15:
-      strategy:        Charlie 5
-    Team 16:
-      strategy:        Charlie 6
-    Team 17:
-      strategy:        Charlie 6
+    Random Team 1:
+      strategy:        Random 1
+    Random Team 1b:
+      strategy:        Random 1
+    Simple Team 1:
+      strategy:        Simple 1
+    Simple Team 1b:
+      strategy:        Simple 1
+    Simple Team 2:
+      strategy:        Simple 2
+    Simple Team 2b:
+      strategy:        Simple 2
+    Simple Team 3:
+      strategy:        Simple 3
+    Simple Team 3b:
+      strategy:        Simple 3
+    Simple Team 4:
+      strategy:        Simple 4
+    Simple Team 4b:
+      strategy:        Simple 4
+    Smart Team 1:
+      strategy:        Smart 1
+    Smart Team 1b:
+      strategy:        Smart 1
+    Smart Team 2:
+      strategy:        Smart 2
+    Smart Team 2b:
+      strategy:        Smart 2
+    Smart Team 3:
+      strategy:        Smart 3
+    Smart Team 3b:
+      strategy:        Smart 3
+    Smart Team 4:
+      strategy:        Smart 4
+    Smart Team 4b:
+      strategy:        Smart 4
+    Smart Team 5:
+      strategy:        Smart 5
+    Smart Team 5b:
+      strategy:        Smart 5
+    Smart Team 6:
+      strategy:        Smart 6
+    Smart Team 6b:
+      strategy:        Smart 6

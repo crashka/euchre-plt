@@ -14,7 +14,11 @@ from .strategy import Strategy, StrategyNotice
 #################
 
 class PlayerNotice(Enum):
-    DEAL_COMPLETE = "Deal Complete"
+    BID_COMPLETE   = "Bid Complete"
+    TRICK_COMPLETE = "Trick Complete"
+    DEAL_COMPLETE  = "Deal Complete"
+    GAME_COMPLETE  = "Game Complete"
+    MATCH_COMPLETE = "Match Complete"
 
 ##########
 # Player #
@@ -85,12 +89,10 @@ class Player:
         """
         return self.strategy.play_card(deal, trick, valid_plays)
 
-    def notify(self, deal: DealState, notice_type: PlayerNotice) -> None:
-        """TEMP: for now, we are only expecting `DEAL_COMPLETE`--LATER we will think
-        about the other notifications needed to support remote players/strategies!!!
+    def notify(self, deal: DealState, notice: PlayerNotice) -> None:
+        """Pass notifications on to underlying strategies
         """
-        assert notice_type == PlayerNotice.DEAL_COMPLETE
-        return self.strategy.notify(deal, StrategyNotice.DEAL_COMPLETE)
+        return self.strategy.notify(deal, notice)
 
 ###############
 # PlayerHuman #

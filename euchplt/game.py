@@ -282,12 +282,8 @@ class Game(object):
 def main() -> int:
     """Built-in driver to run through a simple/sample game
     """
-    players     = [Player("Player 02"),
-                   Player("Player 03"),
-                   Player("Player 06"),
-                   Player("Player 07")]
-    teams       = [Team([players[0], players[1]]),
-                   Team([players[2], players[3]])]
+    teams       = [Team("Simple Team 1"),
+                   Team("Smart Team 1")]
 
     game = Game(teams)
     game.play()

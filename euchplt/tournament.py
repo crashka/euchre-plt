@@ -482,7 +482,7 @@ class Tournament:
         label_str = f"{label} " if label else ""
         print(f"{label_str}Leaderboard:")
         stats_header = '\t'.join([f"{s.value:10}" for s in LBStat if s in LB_PRINT_STATS])
-        print(f"  {'Team':10}\t{stats_header}")
+        print(f"  {'Team':15}\t{stats_header}")
 
         for name, lb_stats in self.leaderboards[-1].items():
             stat_vals = []
@@ -494,7 +494,7 @@ class Tournament:
                 else:
                     stat_vals.append(f"{str(lb_stats[stat]):10}")
             stats_str = '\t'.join(stat_vals)
-            print(f"  {name:10}\t{stats_str}", file=file)
+            print(f"  {name:15}\t{stats_str}", file=file)
 
     def stats_header(self) -> list[str]:
         """Header fields must correspond to the keys for `iter_stats()` yield
