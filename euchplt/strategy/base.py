@@ -35,7 +35,7 @@ class Strategy:
     euchre.py).
     """
     @classmethod
-    def new(cls, strat_name: str) -> 'Strategy':
+    def new(cls, strat_name: str, **kwargs) -> 'Strategy':
         """Return instantiated Strategy object based on configured strategy, identified
         by name; note that the named strategy entry may override base parameter values
         specified for the underlying implementation class
@@ -56,6 +56,12 @@ class Strategy:
             strat_class = globals()[class_name]
         if not issubclass(strat_class, cls):
             raise ConfigError(f"'{strat_class.__name__}' not subclass of '{cls.__name__}'")
+
+        for key, value in kwargs.items():
+            # NOTE: this is a shallow override--caller has to guard against non-empty
+            # lists/dicts with sparse or empty entries!
+            if value:
+                strat_params[key] = value
 
         return strat_class(**strat_params)
 

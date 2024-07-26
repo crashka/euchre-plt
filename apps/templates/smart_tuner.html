@@ -3,105 +3,93 @@
 
 <head>
   <title>Smart Tuner</title>
+
+  <script src="/static/jquery-3.7.1.min.js"></script>
+  <script>
+   $(document).on('change','.sel_strategy', function() {
+     var value = $(this).val();
+     var curpage = window.location.origin + window.location.pathname;
+     window.location.href = curpage + "?strategy=" + encodeURIComponent(value);
+   });
+  </script>
+
+  <style>
+   div.section {
+     margin-top: 1rem;
+   }
+   div.subsection {
+     margin-top: 0.5rem;
+   }
+   span.sect_label {
+     font-size: larger;
+     font-weight: bold;
+   }
+   .sel_strategy {
+     width: 10rem;
+   }
+   table {
+   }
+   .tbl_params {
+     margin-top: 0.75rem;
+   }
+   .tbl_results {
+     margin-top: 0.25rem;
+   }
+   .col_lbl {
+     width: 10rem;
+   }
+   .col_lbl_short {
+     width: 5rem;
+   }
+   .col_num {
+     width: 4.5rem;
+   }
+   .col_txt_short {
+     width: 3rem;
+   }
+   .col_spc {
+     width: 2rem;
+   }
+   .td_lbl {
+     text-align: right;
+   }
+   .td_num {
+     text-align: center;
+   }
+   .td_txt {
+     text-align: center;
+   }
+   .td_spc {
+   }
+   input[type="number"] {
+     width: 3rem;
+     text-align: center;
+   }
+   input.txt_gen {
+     width: 3rem;
+     text-align: center;
+   }
+   input.txt_card {
+     width: 3rem;
+     margin-left: 0.5rem;
+     text-align: center;
+   }
+   input::-webkit-outer-spin-button,
+   input::-webkit-inner-spin-button {
+     -webkit-appearance: none;
+     margin: 0;
+   }
+  </style>
 </head>
-
-<style>
- div.section {
-   margin-top: 1rem;
- }
-
- div.subsection {
-   margin-top: 0.5rem;
- }
-
- span.sect_label {
-   font-size: larger;
-   font-weight: bold;
- }
-
- .sel_txt {
-   width: 10rem;
- }
-
- table {
-
- }
-
- .tbl_params {
-   margin-top: 0.75rem;
- }
-
- .tbl_results {
-   margin-top: 0.25rem;
- }
-
- .col_lbl {
-   width: 10rem;
- }
-
- .col_lbl_short {
-   width: 5rem;
- }
-
- .col_num {
-   width: 4.5rem;
- }
-
- .col_txt_short {
-   width: 3rem;
- }
-
- .col_spc {
-   width: 2rem;
- }
-
- .td_lbl {
-   text-align: right;
- }
-
- .td_num {
-   text-align: center;
- }
-
- .td_txt {
-   text-align: center;
- }
-
- .td_spc {
-
- }
-
- input[type="number"] {
-   width: 3rem;
-   text-align: center;
- }
-
- input.txt_gen {
-   width: 3rem;
-   text-align: center;
- }
-
- input.txt_card {
-   width: 3rem;
-   margin-left: 0.5rem;
-   text-align: center;
- }
-
- input::-webkit-outer-spin-button,
- input::-webkit-inner-spin-button {
-   -webkit-appearance: none;
-   margin: 0;
- }
-</style>
 
 <body>
   <form action="" method="post">
     <div class="section">
       <span>Pick strategy:</span>
-      <select name="strategy" class="sel_txt">
-        {% if form %}
+      <select name="strategy" class="sel_strategy">
+        {% if strategy %}
           {% for strat in strategies %}
-            {% if strat == form.strategy %}
+            {% if strat == strategy %}
         <option value="{{strat}}" selected>{{strat}}</option>
             {% else %}
         <option value="{{strat}}">{{strat}}</option>
@@ -146,7 +134,7 @@
         </tr>
         <tr>
           <td class="td_lbl">Trump values:</td>
-          {% if form %}
+          {% if anly %}
             {% for val in anly.trump_values %}
           <td class="td_num"><input name="tv_{{loop.index0}}" type="number" value={{val}}></td>
             {% endfor %}
@@ -160,7 +148,7 @@
         </tr>
         <tr>
           <td class="td_lbl">Suit values:</td>
-          {% if form %}
+          {% if anly %}
             {% for val in anly.suit_values %}
           <td class="td_num"><input name="sv_{{loop.index0}}" type="number" value={{val}}></td>
             {% endfor %}
@@ -184,6 +172,8 @@
           <col class="col_num">
           <col class="col_num">
           <col class="col_num">
+          <col class="col_num">
+          <col class="col_num">
           <col class="col_spc">
           <col class="col_num">
         </colgroup>
@@ -196,49 +186,57 @@
           <th>4</th>
           <th>5</th>
           <th></th>
-          <th>Coeff</th>
+          <th></th>
+          <th></th>
+          <th></th>
         </tr>
         <tr>
           <td class="td_lbl">Num trump scores:</td>
-          {% if form %}
+          {% if anly %}
             {% for val in anly.num_trump_scores %}
           <td class="td_num"><input name="nts_{{loop.index0}}" type="number" value={{val}}></td>
             {% endfor %}
           {% else %}
             {% for idx in range(6) %}
           <td class="td_num"><input name="nts_{{idx}}" type="number"></td>
-            {% endfor %}
+          {% endfor %}
           {% endif %}
+          <td class="td_spc"></td>
+          <td class="td_spc"></td>
           <td class="td_spc"></td>
           <td class="td_num"><input name="coeff_2" type="number" value="{{coeff[2]}}"></td>
         </tr>
         <tr>
           <td class="td_lbl">Num off-aces scores:</td>
-          {% if form %}
-            {% for val in anly.off_aces_scores %}
+          {% if anly %}
+          {% for val in anly.off_aces_scores %}
           <td class="td_num"><input name="nas_{{loop.index0}}" type="number" value={{val}}></td>
-            {% endfor %}
+          {% endfor %}
           {% else %}
-            {% for idx in range(4) %}
+          {% for idx in range(4) %}
           <td class="td_num"><input name="nas_{{idx}}" type="number"></td>
-            {% endfor %}
+          {% endfor %}
           {% endif %}
-          <td class="td_num"></td>
-          <td class="td_num"></td>
+          <td class="td_spc"></td>
+          <td class="td_spc"></td>
+          <td class="td_spc"></td>
+          <td class="td_spc"></td>
           <td class="td_spc"></td>
           <td class="td_num"><input name="coeff_3" type="number" value="{{coeff[3]}}"></td>
         </tr>
         <tr>
           <td class="td_lbl">Num voids scores:</td>
-          {% if form %}
-            {% for val in anly.voids_scores %}
+          {% if anly %}
+          {% for val in anly.voids_scores %}
           <td class="td_num"><input name="nvs_{{loop.index0}}" type="number" value={{val}}></td>
-            {% endfor %}
+          {% endfor %}
           {% else %}
-            {% for idx in range(4) %}
+          {% for idx in range(4) %}
           <td class="td_num"><input name="nvs_{{idx}}" type="number"></td>
-            {% endfor %}
+          {% endfor %}
           {% endif %}
+          <td class="td_spc"></td>
+          <td class="td_spc"></td>
           <td class="td_spc"></td>
           <td class="td_spc"></td>
           <td class="td_spc"></td>
@@ -276,7 +274,7 @@
         </tr>
         <tr>
           <td class="td_lbl">Turn card value:</td>
-          {% if form %}
+          {% if strg %}
             {% for val in strg.turn_card_value %}
           <td class="td_num"><input name="tcv_{{loop.index0}}" type="number" value={{val}}></td>
             {% endfor %}
@@ -288,7 +286,7 @@
         </tr>
         <tr>
           <td class="td_lbl">Turn card coeff:</td>
-          {% if form %}
+          {% if strg %}
             {% for val in strg.turn_card_coeff %}
           <td class="td_num"><input name="tcc_{{loop.index0}}" type="number" value={{val}}></td>
             {% endfor %}
@@ -304,7 +302,7 @@
         </tr>
         <tr>
           <td class="td_lbl">Bid thresh:</td>
-          {% if form %}
+          {% if strg %}
             {% for val in strg.bid_thresh %}
           <td class="td_num"><input name="bt_{{loop.index0}}" type="number" value={{val}}></td>
             {% endfor %}
@@ -316,7 +314,7 @@
         </tr>
         <tr>
           <td class="td_lbl">Alone margin:</td>
-          {% if form %}
+          {% if strg %}
             {% for val in strg.alone_margin %}
           <td class="td_num"><input name="am_{{loop.index0}}" type="number" value={{val}}></td>
             {% endfor %}
@@ -328,7 +326,7 @@
         </tr>
         <tr>
           <td class="td_lbl">Def alone thresh:</td>
-          {% if form %}
+          {% if strg %}
             {% for val in strg.def_alone_thresh %}
           <td class="td_num"><input name="dat_{{loop.index0}}" type="number" value={{val}}></td>
             {% endfor %}
@@ -345,12 +343,12 @@
       <div class="subsection">
         <span>Hand:</span>
         {% for card in hand %}
-        <input type="text" name="hand_{{loop.index0}}" class="txt_card" value="{{card}}" readonly>
+        <input type="text" name="hand_{{loop.index0}}" class="txt_card" value="{{card.tag}}" readonly>
         {% endfor %}
       </div>
       <div class="subsection">
         <span>Turn card:</span>
-        <input type="text" name="turn_card" class="txt_card" value="{{turn}}" readonly>
+        <input type="text" name="turn_card" class="txt_card" value="{{turn.tag}}" readonly>
       </div>
       <div class="subsection">
         <span>Round: 1</span>
