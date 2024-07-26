@@ -33,7 +33,11 @@ def index():
     context = {
         'title':      APP_NAME,
         'form':       None,
-        'strategies': strategies
+        'strategies': strategies,
+        # hacks to simplify the template
+        'coeff':      [''] * 5,
+        'hand':       [''] * 5,
+        'turn':       ''
     }
     return render_template("smart_tuner.html", **context)
 
@@ -58,28 +62,16 @@ def evaluate(form: dict) -> str:
     """
     deck = get_deck()
     hand = deck[:5]
-    
+    turn_card = deck[5]
+
     if 'strategy' not in form:
         abort(500, "Strategy not selected")
     strat_name = form['strategy']
     assert strat_name
     strg = Strategy.new(strat_name)
     anly = HandAnalysisSmart(hand, **strg.hand_analysis)
-
-    """
-    trump_values:     [0, 0, 0, 1, 2, 4, 7, 10]
-    suit_values:      [0, 0, 0, 2, 7, 10]
-
-    num_trump_scores: [0.0, 0.2, 0.3, 0.65, 0.9, 1.0]
-    off_aces_scores:  [0.0, 0.25, 0.6, 1.0]
-    voids_scores:     [0.0, 0.3, 0.7, 1.0]
-
-    turn_card_value:  [10, 15, 0, 20, 25, 30, 0, 50]
-    turn_card_coeff:  [25, 25, 25, 25]
-    bid_thresh:       [35, 35, 35, 35, 35, 35, 35, 35]
-    alone_margin:     [10, 10, 10, 10, 10, 10, 10, 10]
-    def_alone_thresh: [35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35]
-    """
+    # REVISIT: this is a little tenuous, depends on consistent ordering!!!
+    coeff = [v for k, v in anly.scoring_coeff.items()]
 
     context = {
         'title':      APP_NAME,
@@ -87,8 +79,10 @@ def evaluate(form: dict) -> str:
         'strategies': strategies,
         'anly':       anly,
         'strg':       strg,
+        'coeff':      coeff,
         # FIX: need to do better than use "tag" to communicate card values!!!
-        'hand':       [str(card) for card in hand]
+        'hand':       [str(card) for card in hand],
+        'turn':       str(turn_card)
     }
 
     return render_template(APP_TEMPLATE, **context)
