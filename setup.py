@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 setup(
     name='euchre-plt',
     version='0.1',
-    packages=find_packages(include=['euchplt', 'ml']),
+    packages=find_packages(include=['euchplt', 'ml', 'apps']),
     url='',
     license='',
     author='crash',
@@ -20,7 +20,8 @@ setup(
             'strategy = euchplt.strategy.__main__:main',
             'tournament = euchplt.tournament:main',
             'bid_data = ml.bid_data:main',
-            'play_data = ml.play_data:main'
+            'play_data = ml.play_data:main',
+            'smart_tuner = apps.smart_tuner:main'
         ],
     }
 )

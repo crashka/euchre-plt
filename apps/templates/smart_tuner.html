@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Smart Tuner</title>
+</head>
+
+<style>
+ div.section {
+   margin-top: 1rem;
+ }
+ 
+ div.subsection {
+   margin-top: 0.5rem;
+ }
+ 
+ span.sect_label {
+   font-size: larger;
+   font-weight: bold;
+ }
+ 
+ .sel_txt {
+   width: 10rem;
+ }
+ 
+ table {
+
+ }
+
+ .tbl_params {
+   margin-top: 0.75rem;
+ }
+
+ .tbl_results {
+   margin-top: 0.25rem;
+ }
+
+ .col_lbl {
+   width: 10rem;
+ }  
+
+ .col_lbl_short {
+   width: 5rem;
+ }  
+
+ .col_num {
+   width: 4.5rem;
+ }  
+
+ .col_txt_short {
+   width: 3rem;
+ }  
+
+ .col_spc {
+   width: 2rem;
+ }
+
+ .td_lbl {
+   text-align: right;
+ }
+
+ .td_num {
+   text-align: center;
+ }
+
+ .td_txt {
+   text-align: center;
+ }
+
+ .td_spc {
+
+ }
+
+ input[type="number"] {
+   width: 3rem;
+   text-align: center;
+ }
+
+ input.txt_gen {
+   width: 3rem;
+   text-align: center;
+ }
+
+ input.txt_card {
+   width: 3rem;
+   margin-left: 0.5rem;
+   text-align: center;
+ }
+
+ input::-webkit-outer-spin-button,
+ input::-webkit-inner-spin-button {
+   -webkit-appearance: none;
+   margin: 0;
+ }
+</style>
+
+<body>
+  <form action="" method="post">
+    <div class="section">
+      <span>Pick strategy:</span>
+      <select name="strategy" class="sel_txt">
+        {% if form %}
+          {% for strat in strategies %}
+            {% if strat == form.strategy %}
+        <option value="{{strat}}" selected>{{strat}}</option>
+            {% else %}
+        <option value="{{strat}}">{{strat}}</option>
+            {% endif %}
+          {% endfor %}
+        {% else %}
+        <option value="" disabled selected></option>
+          {% for strat in strategies %}
+        <option value="{{strat}}">{{strat}}</option>
+          {% endfor %}
+        {% endif %}
+      </select>
+    </div>      
+    <div class="section">
+      <span class="sect_label">Hand Analysis</span>
+      <table class="tbl_params">
+        <colgroup>
+          <col class="col_lbl">
+          <col class="col_num">
+          <col class="col_num">
+          <col class="col_num">
+          <col class="col_num">
+          <col class="col_num">
+          <col class="col_num">
+          <col class="col_num">
+          <col class="col_num">
+          <col class="col_spc">
+          <col class="col_num">
+        </colgroup>
+        <tr>
+          <th></th>
+          <th>9</th>
+          <th>10</th>
+          <th>J</th>
+          <th>Q</th>
+          <th>K</th>
+          <th>A</th>
+          <th>L</th>
+          <th>R</th>
+          <th></th>
+          <th>Coeff</th>
+        </tr>
+        <tr>
+          <td class="td_lbl">Trump values:</td>
+          {% if form %}
+            {% for val in anly.trump_values %}
+          <td class="td_num"><input name="tv_{{loop.index0}}" type="number" value={{val}}></td>
+            {% endfor %}
+          {% else %}
+            {% for idx in range(8) %}
+          <td class="td_num"><input name="tv_{{idx}}" type="number"></td>
+            {% endfor %}
+          {% endif %}
+          <td class="td_spc"></td>
+          <td class="td_num"><input name="coeff_0" type="number"></td>
+        </tr>
+        <tr>
+          <td class="td_lbl">Suit values:</td>
+          <td class="td_num"><input name="sv_0" type="number"></td>
+          <td class="td_num"><input name="sv_1" type="number"></td>
+          <td class="td_num"><input name="sv_2" type="number"></td>
+          <td class="td_num"><input name="sv_3" type="number"></td>
+          <td class="td_num"><input name="sv_4" type="number"></td>
+          <td class="td_num"><input name="sv_5" type="number"></td>
+          <td class="td_spc"></td>
+          <td class="td_spc"></td>
+          <td class="td_spc"></td>
+          <td class="td_num"><input name="coeff_1" type="number"></td>
+        </tr>
+      </table>
+      <table class="tbl_params">
+        <colgroup>
+          <col class="col_lbl">
+          <col class="col_num">
+          <col class="col_num">
+          <col class="col_num">
+          <col class="col_num">
+          <col class="col_num">
+          <col class="col_num">
+          <col class="col_spc">
+          <col class="col_num">
+        </colgroup>
+        <tr>
+          <th></th>
+          <th>0</th>
+          <th>1</th>
+          <th>2</th>
+          <th>3</th>
+          <th>4</th>
+          <th>5</th>
+          <th></th>
+          <th>Coeff</th>
+        </tr>
+        <tr>
+          <td class="td_lbl">Num trump scores:</td>
+          <td class="td_num"><input name="nts_0" type="number"></td>
+          <td class="td_num"><input name="nts_1" type="number"></td>
+          <td class="td_num"><input name="nts_2" type="number"></td>
+          <td class="td_num"><input name="nts_3" type="number"></td>
+          <td class="td_num"><input name="nts_4" type="number"></td>
+          <td class="td_num"><input name="nts_5" type="number"></td>
+          <td class="td_spc"></td>
+          <td class="td_num"><input name="coeff_2" type="number"></td>
+        </tr>
+        <tr>
+          <td class="td_lbl">Num off-aces scores:</td>
+          <td class="td_num"><input name="nas_0" type="number"></td>
+          <td class="td_num"><input name="nas_1" type="number"></td>
+          <td class="td_num"><input name="nas_2" type="number"></td>
+          <td class="td_num"><input name="nas_3" type="number"></td>
+          <td class="td_num"></td>
+          <td class="td_num"></td>
+          <td class="td_spc"></td>
+          <td class="td_num"><input name="coeff_3" type="number"></td>
+        </tr>
+        <tr>
+          <td class="td_lbl">Num voids scores:</td>
+          <td class="td_num"><input name="nvs_0" type="number"></td>
+          <td class="td_num"><input name="nvs_1" type="number"></td>
+          <td class="td_num"><input name="nvs_2" type="number"></td>
+          <td class="td_num"><input name="nvs_3" type="number"></td>
+          <td class="td_spc"></td>
+          <td class="td_spc"></td>
+          <td class="td_spc"></td>
+          <td class="td_num"><input name="coeff_4" type="number"></td>
+        </tr>
+      </table>
+    </div>
+    <div class="section">
+      <span class="sect_label">Strategy</span>
+      <table class="tbl_params">
+        <colgroup>
+          <col class="col_lbl">
+          <col class="col_num">
+          <col class="col_num">
+          <col class="col_num">
+          <col class="col_num">
+          <col class="col_num">
+          <col class="col_num">
+          <col class="col_num">
+          <col class="col_num">
+        </colgroup>
+        <tr>
+          <th></th>
+          <th>0</th>
+          <th>1</th>
+          <th>2</th>
+          <th>3</th>
+          <th>4</th>
+          <th>5</th>
+          <th>6</th>
+          <th>7</th>
+        </tr>
+        <tr>
+          <td class="td_lbl">Turn card value:</td>
+          <td class="td_num"><input name="tcv_0" type="number"></td>
+          <td class="td_num"><input name="tcv_1" type="number"></td>
+          <td class="td_num"><input name="tcv_2" type="number"></td>
+          <td class="td_num"><input name="tcv_3" type="number"></td>
+          <td class="td_num"><input name="tcv_4" type="number"></td>
+          <td class="td_num"><input name="tcv_5" type="number"></td>
+          <td class="td_num"><input name="tcv_6" type="number"></td>
+          <td class="td_num"><input name="tcv_7" type="number"></td>
+        </tr>
+        <tr>
+          <td class="td_lbl">Turn card coeff:</td>
+          <td class="td_num"><input name="tcc_0" type="number"></td>
+          <td class="td_num"><input name="tcc_1" type="number"></td>
+          <td class="td_num"><input name="tcc_2" type="number"></td>
+          <td class="td_num"><input name="tcc_3" type="number"></td>
+          <td class="td_num"></td>
+          <td class="td_num"></td>
+          <td class="td_num"></td>
+          <td class="td_num"></td>
+        </tr>
+        <tr>
+          <td class="td_lbl">Bid thresh:</td>
+          <td class="td_num"><input name="bt_0" type="number"></td>
+          <td class="td_num"><input name="bt_1" type="number"></td>
+          <td class="td_num"><input name="bt_2" type="number"></td>
+          <td class="td_num"><input name="bt_3" type="number"></td>
+          <td class="td_num"><input name="bt_4" type="number"></td>
+          <td class="td_num"><input name="bt_5" type="number"></td>
+          <td class="td_num"><input name="bt_6" type="number"></td>
+          <td class="td_num"><input name="bt_7" type="number"></td>
+        </tr>
+        <tr>
+          <td class="td_lbl">Alone margin:</td>
+          <td class="td_num"><input name="am_0" type="number"></td>
+          <td class="td_num"><input name="am_1" type="number"></td>
+          <td class="td_num"><input name="am_2" type="number"></td>
+          <td class="td_num"><input name="am_3" type="number"></td>
+          <td class="td_num"><input name="am_4" type="number"></td>
+          <td class="td_num"><input name="am_5" type="number"></td>
+          <td class="td_num"><input name="am_6" type="number"></td>
+          <td class="td_num"><input name="am_7" type="number"></td>
+        </tr>
+        <tr>
+          <td class="td_lbl">Def alone thresh:</td>
+          <td class="td_num"><input name="dat_0" type="number"></td>
+          <td class="td_num"><input name="dat_1" type="number"></td>
+          <td class="td_num"><input name="dat_2" type="number"></td>
+          <td class="td_num"><input name="dat_3" type="number"></td>
+          <td class="td_num"><input name="dat_4" type="number"></td>
+          <td class="td_num"><input name="dat_5" type="number"></td>
+          <td class="td_num"><input name="dat_6" type="number"></td>
+          <td class="td_num"><input name="dat_7" type="number"></td>
+        </tr>
+      </table>
+    </div>
+    <div class="section">
+      <span class="sect_label">Deal Info</span>
+      <div class="subsection">
+        <span>Hand:</span>
+        {% if form %}
+          {% for card in hand %}
+        <input type="text" name="hand_{{loop.index0}}" class="txt_card" value="{{card}}" readonly>
+          {% endfor %}
+        {% else %}
+          {% for idx in range(5) %}
+        <input type="text" name="hand_{{idx}}" class="txt_card" readonly>
+          {% endfor %}
+        {% endif %}
+      </div>
+      <div class="subsection">
+        <span>Turn card:</span>
+        <input type="text" name="turn_card" class="txt_card" readonly>
+      </div>
+      <div class="subsection">
+        <span>Round: 1</span>
+        <input type="radio" name="round" value="1">
+        <span>2</span>
+        <input type="radio" name="round" value="2">
+      </div>
+      <div class="subsection">
+        <span>Dealer pos:</span>
+        <table class="pos_layout">
+          <tr><td></td><td><input type="radio" name="dealer_pos" value="1"></td><td></td></tr>
+          <tr><td><input type="radio" name="dealer_pos" value="0"></td><td></td><td><input type="radio" name="dealer_pos" value="2"></td></tr>
+          <tr><td></td><td><input type="radio" name="dealer_pos" value="3"></td><td></td></tr>
+          <tr><td></td><td>(you)</td><td></td></tr>
+        </table>
+      </div>
+      <div class="subsection">
+        <button type="submit" name="submit_func" value="new_hand">New Hand</button>
+        <button type="submit" name="submit_func" value="evaluate">Evaluate Strategy</button>
+      </div>
+    </div>
+  </form>
+  <div class="section">
+    <span class="sect_label">Results</span>
+    <div class="subsection">
+      <span>Discard:</span>
+      <input type="text" class="txt_card" readonly>
+      <span>Hand strength:</span>
+      <input type="number" readonly>
+      <span>Turn card strength:</span>
+      <input type="number" readonly>
+    </div>
+    <div class="subsection">
+      <span>Bidding</span>
+      <table class="tbl_results">
+        <colgroup>
+          <col class="col_lbl_short">
+          <col class="col_txt_short">
+          <col class="col_txt_short">
+          <col class="col_txt_short">
+          <col class="col_txt_short">
+          <col class="col_txt_short">
+          <col class="col_txt_short">
+          <col class="col_txt_short">
+          <col class="col_txt_short">
+        </colgroup>
+        <tr>
+          <th></th>
+          <th>0</th>
+          <th>1</th>
+          <th>2</th>
+          <th>3</th>
+          <th>4</th>
+          <th>5</th>
+          <th>6</th>
+          <th>7</th>
+        </tr>
+        <tr>
+          <td class="td_lbl">Call Suit:</td>
+          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
+          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
+          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
+          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
+          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
+          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
+          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
+          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
+        </tr>
+        <tr>
+          <td class="td_lbl">Go Alone?</td>
+          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
+          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
+          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
+          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
+          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
+          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
+          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
+          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
+        </tr>
+      </table>
+    </div>
+    <div class="subsection">
+      <span>Bidding (strategy baseline)</span>
+      <table class="tbl_results">
+        <colgroup>
+          <col class="col_lbl_short">
+          <col class="col_txt_short">
+          <col class="col_txt_short">
+          <col class="col_txt_short">
+          <col class="col_txt_short">
+          <col class="col_txt_short">
+          <col class="col_txt_short">
+          <col class="col_txt_short">
+          <col class="col_txt_short">
+        </colgroup>
+        <tr>
+          <th></th>
+          <th>0</th>
+          <th>1</th>
+          <th>2</th>
+          <th>3</th>
+          <th>4</th>
+          <th>5</th>
+          <th>6</th>
+          <th>7</th>
+        </tr>
+        <tr>
+          <td class="td_lbl">Call Suit:</td>
+          <td class="td_txt"><span class="txt_gen"></span></td>
+          <td class="td_txt"><span class="txt_gen"></span></td>
+          <td class="td_txt"><span class="txt_gen"></span></td>
+          <td class="td_txt"><span class="txt_gen"></span></td>
+          <td class="td_txt"><span class="txt_gen"></span></td>
+          <td class="td_txt"><span class="txt_gen"></span></td>
+          <td class="td_txt"><span class="txt_gen"></span></td>
+          <td class="td_txt"><span class="txt_gen"></span></td>
+        </tr>
+        <tr>
+          <td class="td_lbl">Go Alone?</td>
+          <td class="td_txt"><span class="txt_gen"></span></td>
+          <td class="td_txt"><span class="txt_gen"></span></td>
+          <td class="td_txt"><span class="txt_gen"></span></td>
+          <td class="td_txt"><span class="txt_gen"></span></td>
+          <td class="td_txt"><span class="txt_gen"></span></td>
+          <td class="td_txt"><span class="txt_gen"></span></td>
+          <td class="td_txt"><span class="txt_gen"></span></td>
+          <td class="td_txt"><span class="txt_gen"></span></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</body>
+
+</html>
