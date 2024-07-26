@@ -157,6 +157,11 @@ del card_list
 BOWERS = tuple(bower_list)
 del bower_list
 
+def get_card(idx: int | str) -> Card:
+    """Accepts string representation of the index (e.g. coming from a form)
+    """
+    return CARDS[int(idx)]
+
 def find_card(rank: Rank, suit: Suit) -> Card:
     return CARDS[rank.idx * len(SUITS) + suit.idx]
 

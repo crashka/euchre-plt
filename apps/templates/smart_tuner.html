@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>Smart Tuner</title>
+  <title>{{title}}</title>
 
   <script src="/static/jquery-3.7.1.min.js"></script>
   <script>
@@ -26,8 +26,6 @@
    }
    .sel_strategy {
      width: 10rem;
-   }
-   table {
    }
    .tbl_params {
      margin-top: 0.75rem;
@@ -59,8 +57,6 @@
    .td_txt {
      text-align: center;
    }
-   .td_spc {
-   }
    input[type="number"] {
      width: 3rem;
      text-align: center;
@@ -70,8 +66,13 @@
      text-align: center;
    }
    input.txt_card {
+     display: none;
+   }
+   .spn_card,
+   .spn_suit {
      width: 3rem;
      margin-left: 0.5rem;
+     font-size: larger;
      text-align: center;
    }
    input::-webkit-outer-spin-button,
@@ -343,12 +344,14 @@
       <div class="subsection">
         <span>Hand:</span>
         {% for card in hand %}
-        <input type="text" name="hand_{{loop.index0}}" class="txt_card" value="{{card.tag}}" readonly>
+        <input type="text" name="hand_{{loop.index0}}" class="txt_card" value="{{card.idx}}" readonly>
+        <span class="spn_card">{{card.tag}}</span>
         {% endfor %}
       </div>
       <div class="subsection">
         <span>Turn card:</span>
-        <input type="text" name="turn_card" class="txt_card" value="{{turn.tag}}" readonly>
+        <input type="text" name="turn_card" class="txt_card" value="{{turn.idx}}" readonly>
+        <span class="spn_card">{{turn.tag}}</span>
       </div>
       <div class="subsection">
         <span>Round: 1</span>

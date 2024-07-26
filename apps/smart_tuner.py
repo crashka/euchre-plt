@@ -11,7 +11,7 @@ from numbers import Number
 from flask import Flask, request, render_template, abort
 
 from euchplt.core import cfg
-from euchplt.card import Card, get_deck
+from euchplt.card import Card, CARDS, get_card, get_deck
 from euchplt.euchre import Hand
 from euchplt.strategy import Strategy
 from euchplt.analysis import HandAnalysisSmart
@@ -31,7 +31,7 @@ strategy_list = cfg.config('strategies')
 strategies    = [k for k, v in strategy_list.items()
                  if v['base_class'] == BASE_CLASS]
 
-StratParams   = tuple[Strategy, HandAnalysisSmart, list[Number]]
+StrgComps     = tuple[Strategy, HandAnalysisSmart, list[Number]]
 NULL_CARD     = Card(-1, None, None, '', '', -1, -1)  # hacky
 NULL_HAND     = Hand([NULL_CARD] * 5)
 
@@ -59,17 +59,26 @@ class Context(NamedTuple):
     hand:       Hand
     turn:       Card
 
-def get_strat_comps(strat_name: str, hand: Hand, **kwargs) -> StratParams:
-    """Get strategy and analysis components for the current hand
+def get_strg_comps(strg_name: str, hand: Hand, **kwargs) -> StrgComps:
+    """Get strategy and analysis components for the specified hand
 
-    Note: ``coeff`` is returned as a convenience (doing it here to make sure it is only
-    done in one place, since it is a little dicey right now)
+    Note: ``coeff`` list is returned as a convenience (doing it here to make sure it is
+    only done in one place, since it is a little dicey right now)
     """
-    strg = Strategy.new(strat_name, **kwargs)
+    strg = Strategy.new(strg_name, **kwargs)
     anly = HandAnalysisSmart(hand, **strg.hand_analysis)
-    # REVISIT: this is a little tenuous, depends on consistent ordering!!!
+    # REVISIT: this is a little tenuous, depends on consistent ordering between config,
+    # `coeff_names` (above), and Python dict management!!!
     coeff = [v for k, v in anly.scoring_coeff.items()]
     return (strg, anly, coeff)
+
+def get_hand() -> tuple[Hand, Card]:
+    """Return a new randomly generated hand and turn card
+    """
+    deck = get_deck()
+    hand = Hand(deck[:5])
+    turn = deck[20]
+    return hand, turn
 
 @app.get("/")
 def index():
@@ -83,7 +92,8 @@ def index():
 
     strategy = request.args.get('strategy')
     if strategy:
-        strg, anly, coeff = get_strat_comps(strategy, hand)
+        hand, turn = get_hand()
+        strg, anly, coeff = get_strg_comps(strategy, hand)
 
     context = {
         'title':      APP_NAME,
@@ -112,28 +122,31 @@ def submit():
 def new_hand(form: dict) -> str:
     """Generate a new hand, the call ``evaluate()`` (using all existing parameters values)
     """
-    return evaluate(form)
+    hand, turn = get_hand()
+    return evaluate(form, hand, turn)
 
-def evaluate(form: dict) -> str:
+def evaluate(form: dict, hand: Hand = None, turn: Card = None) -> str:
     """Compute the hand strength and determine bidding for the current strategy and deal
     context
+
+    Will continue using the hand and turn card from ``form`` if not passed in (e.g. new
+    hand requested)
     """
     if 'strategy' not in form:
-        abort(500, "Strategy not selected")
+        abort(500, "Empty or invalid strategy specified")
     strategy = form['strategy']
-    assert strategy
 
-    deck = get_deck()
-    hand = Hand(deck[:5])
-    turn_card = deck[5]
+    if not hand:
+        hand = [get_card(form[f'hand_{n}']) for n in range(5)]
+        turn = get_card(form['turn_card'])
 
-    trump_values     = [form[f"tv_{n}"] for n in range(8)]
-    suit_values      = [form[f"sv_{n}"] for n in range(6)]
-    num_trump_scores = [form[f"nts_{n}"] for n in range(6)]
-    off_aces_scores  = [form[f"nas_{n}"] for n in range(4)]
-    voids_scores     = [form[f"nvs_{n}"] for n in range(4)]
-    coeff_values     = [form[f"coeff_{n}"] for n in range(5)]
-    # see REVISIT in `get_strat_comps()`!
+    trump_values     = [form[f'tv_{n}'] for n in range(8)]
+    suit_values      = [form[f'sv_{n}'] for n in range(6)]
+    num_trump_scores = [form[f'nts_{n}'] for n in range(6)]
+    off_aces_scores  = [form[f'nas_{n}'] for n in range(4)]
+    voids_scores     = [form[f'nvs_{n}'] for n in range(4)]
+    coeff_values     = [form[f'coeff_{n}'] for n in range(5)]
+    # see REVISIT in `get_strg_comps()`!
     scoring_coeff    = dict(zip(coeff_names, coeff_values))
     hand_analysis    = {
         'trump_values'    : trump_values,
@@ -144,12 +157,12 @@ def evaluate(form: dict) -> str:
         'scoring_coeff'   : scoring_coeff
     }
 
-    turn_card_value  = [form[f"tcv_{n}"] for n in range(8)]
-    turn_card_coeff  = [form[f"tcc_{n}"] for n in range(4)]
-    bid_thresh       = [form[f"bt_{n}"] for n in range(8)]
-    alone_margin     = [form[f"am_{n}"] for n in range(8)]
-    def_alone_thresh = [form[f"dat_{n}"] for n in range(8)]
-    strategy_config  = {
+    turn_card_value  = [form[f'tcv_{n}'] for n in range(8)]
+    turn_card_coeff  = [form[f'tcc_{n}'] for n in range(4)]
+    bid_thresh       = [form[f'bt_{n}'] for n in range(8)]
+    alone_margin     = [form[f'am_{n}'] for n in range(8)]
+    def_alone_thresh = [form[f'dat_{n}'] for n in range(8)]
+    strg_config  = {
         'turn_card_value' : turn_card_value,
         'turn_card_coeff' : turn_card_coeff,
         'bid_thresh'      : bid_thresh,
@@ -158,8 +171,8 @@ def evaluate(form: dict) -> str:
         'hand_analysis'   : hand_analysis
     }
 
-    strg, anly, coeff       = get_strat_comps(strategy, hand, **strategy_config)
-    base_strg, base_anly, _ = get_strat_comps(strategy, hand)
+    strg, anly, coeff       = get_strg_comps(strategy, hand, **strg_config)
+    base_strg, base_anly, _ = get_strg_comps(strategy, hand)
 
     context = {
         'title':      APP_NAME,
@@ -171,9 +184,8 @@ def evaluate(form: dict) -> str:
         'base_anly':  base_anly,
         'base_strg':  base_strg,
         'hand':       hand,
-        'turn':       turn_card
+        'turn':       turn
     }
-
     return render_template(APP_TEMPLATE, **context)
 
 if __name__ == "__main__":
