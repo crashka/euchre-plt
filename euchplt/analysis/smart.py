@@ -3,7 +3,7 @@
 from ..core import ConfigError, cfg, log
 from ..card import SUITS, Suit, Rank, Card
 from ..euchre import Hand
-from .base import SUIT_CTX, HandAnalysis
+from .base import HandAnalysis
 
 #####################
 # HandAnalysisSmart #
@@ -105,15 +105,17 @@ class HandAnalysisSmart(HandAnalysis):
             tot_value += value_arr[card.rank.idx]
         return tot_value / sum(value_arr)
 
-    def hand_strength(self, trump_suit: Suit) -> float:
+    def hand_strength(self, trump_suit: Suit, comp_vals: dict = None) -> float:
         """Return the overall hand strength score given a trump suit context, based on
         parameters and multiplier coefficients specified for the instance (base config
-        plus constructor overrides).
+        plus constructor overrides).  If ``comp_vals`` is specified (as a dict), the
+        contribution from the individual components will be written to it.
         """
         # KINDA HACKY: local variables need to align with keys in `self.scoring_coeff`
         # (enforced by the assert in the loop, below)
         trump_score = None
         suit_scores = []  # no need to track associated suits, for now
+        sub_strengths = {}
 
         for suit in SUITS:
             if suit == trump_suit:
@@ -137,14 +139,10 @@ class HandAnalysisSmart(HandAnalysis):
             raw_value = locals()[score]
             assert isinstance(raw_value, float)
             score_value = locals()[score] * coeff
+            sub_strengths[score] = score_value
             log.debug(f"  {score:15}: {score_value:6.2f} ({raw_value:.2f} * {coeff:d})")
             strength += score_value
         log.debug(f"{'hand_strength':15}: {strength:6.2f}")
+        if isinstance(comp_vals, dict):
+            comp_vals.update(sub_strengths)
         return strength
-
-    def turn_card_rank(self, turn_card: Card) -> Rank:
-        """SUPER-HACKY: this doesn't really belong here, need to figure out a nicer way of
-        doing this (needed by ``StrategySmart.bid()``)!!!
-        """
-        ctx = SUIT_CTX[turn_card.suit]
-        return turn_card.effcard(ctx).rank

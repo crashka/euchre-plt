@@ -75,6 +75,9 @@
      font-size: larger;
      text-align: center;
    }
+   button[value="evaluate"] {
+     font-weight: bolder;
+   }
    input::-webkit-outer-spin-button,
    input::-webkit-inner-spin-button {
      -webkit-appearance: none;
@@ -89,18 +92,18 @@
       <span>Pick strategy:</span>
       <select name="strategy" class="sel_strategy">
         {% if strategy %}
-          {% for strat in strategies %}
-            {% if strat == strategy %}
+        {% for strat in strategies %}
+        {% if strat == strategy %}
         <option value="{{strat}}" selected>{{strat}}</option>
-            {% else %}
+        {% else %}
         <option value="{{strat}}">{{strat}}</option>
-            {% endif %}
-          {% endfor %}
+        {% endif %}
+        {% endfor %}
         {% else %}
         <option value="" disabled selected></option>
-          {% for strat in strategies %}
+        {% for strat in strategies %}
         <option value="{{strat}}">{{strat}}</option>
-          {% endfor %}
+        {% endfor %}
         {% endif %}
       </select>
     </div>
@@ -136,13 +139,13 @@
         <tr>
           <td class="td_lbl">Trump values:</td>
           {% if anly %}
-            {% for val in anly.trump_values %}
+          {% for val in anly.trump_values %}
           <td class="td_num"><input name="tv_{{loop.index0}}" type="number" value={{val}}></td>
-            {% endfor %}
+          {% endfor %}
           {% else %}
-            {% for idx in range(8) %}
+          {% for idx in range(8) %}
           <td class="td_num"><input name="tv_{{idx}}" type="number"></td>
-            {% endfor %}
+          {% endfor %}
           {% endif %}
           <td class="td_spc"></td>
           <td class="td_num"><input name="coeff_0" type="number" value="{{coeff[0]}}"></td>
@@ -150,13 +153,13 @@
         <tr>
           <td class="td_lbl">Suit values:</td>
           {% if anly %}
-            {% for val in anly.suit_values %}
+          {% for val in anly.suit_values %}
           <td class="td_num"><input name="sv_{{loop.index0}}" type="number" value={{val}}></td>
-            {% endfor %}
+          {% endfor %}
           {% else %}
-            {% for idx in range(6) %}
+          {% for idx in range(6) %}
           <td class="td_num"><input name="sv_{{idx}}" type="number"></td>
-            {% endfor %}
+          {% endfor %}
           {% endif %}
           <td class="td_spc"></td>
           <td class="td_spc"></td>
@@ -194,12 +197,12 @@
         <tr>
           <td class="td_lbl">Num trump scores:</td>
           {% if anly %}
-            {% for val in anly.num_trump_scores %}
-          <td class="td_num"><input name="nts_{{loop.index0}}" type="number" value={{val}}></td>
-            {% endfor %}
+          {% for val in anly.num_trump_scores %}
+          <td class="td_num"><input name="nts_{{loop.index0}}" type="number" step=".01" value={{val}}></td>
+          {% endfor %}
           {% else %}
-            {% for idx in range(6) %}
-          <td class="td_num"><input name="nts_{{idx}}" type="number"></td>
+          {% for idx in range(6) %}
+          <td class="td_num"><input name="nts_{{idx}}" type="number" step=".01"></td>
           {% endfor %}
           {% endif %}
           <td class="td_spc"></td>
@@ -211,11 +214,11 @@
           <td class="td_lbl">Num off-aces scores:</td>
           {% if anly %}
           {% for val in anly.off_aces_scores %}
-          <td class="td_num"><input name="nas_{{loop.index0}}" type="number" value={{val}}></td>
+          <td class="td_num"><input name="nas_{{loop.index0}}" type="number" step=".01" value={{val}}></td>
           {% endfor %}
           {% else %}
           {% for idx in range(4) %}
-          <td class="td_num"><input name="nas_{{idx}}" type="number"></td>
+          <td class="td_num"><input name="nas_{{idx}}" type="number" step=".01"></td>
           {% endfor %}
           {% endif %}
           <td class="td_spc"></td>
@@ -229,11 +232,11 @@
           <td class="td_lbl">Num voids scores:</td>
           {% if anly %}
           {% for val in anly.voids_scores %}
-          <td class="td_num"><input name="nvs_{{loop.index0}}" type="number" value={{val}}></td>
+          <td class="td_num"><input name="nvs_{{loop.index0}}" type="number" step=".01" value={{val}}></td>
           {% endfor %}
           {% else %}
           {% for idx in range(4) %}
-          <td class="td_num"><input name="nvs_{{idx}}" type="number"></td>
+          <td class="td_num"><input name="nvs_{{idx}}" type="number" step=".01"></td>
           {% endfor %}
           {% endif %}
           <td class="td_spc"></td>
@@ -276,25 +279,25 @@
         <tr>
           <td class="td_lbl">Turn card value:</td>
           {% if strg %}
-            {% for val in strg.turn_card_value %}
+          {% for val in strg.turn_card_value %}
           <td class="td_num"><input name="tcv_{{loop.index0}}" type="number" value={{val}}></td>
-            {% endfor %}
+          {% endfor %}
           {% else %}
-            {% for idx in range(8) %}
+          {% for idx in range(8) %}
           <td class="td_num"><input name="tcv_{{idx}}" type="number"></td>
-            {% endfor %}
+          {% endfor %}
           {% endif %}
         </tr>
         <tr>
           <td class="td_lbl">Turn card coeff:</td>
           {% if strg %}
-            {% for val in strg.turn_card_coeff %}
+          {% for val in strg.turn_card_coeff %}
           <td class="td_num"><input name="tcc_{{loop.index0}}" type="number" value={{val}}></td>
-            {% endfor %}
+          {% endfor %}
           {% else %}
-            {% for idx in range(4) %}
+          {% for idx in range(4) %}
           <td class="td_num"><input name="tcc_{{idx}}" type="number"></td>
-            {% endfor %}
+          {% endfor %}
           {% endif %}
           <td class="td_num"></td>
           <td class="td_num"></td>
@@ -304,37 +307,37 @@
         <tr>
           <td class="td_lbl">Bid thresh:</td>
           {% if strg %}
-            {% for val in strg.bid_thresh %}
+          {% for val in strg.bid_thresh %}
           <td class="td_num"><input name="bt_{{loop.index0}}" type="number" value={{val}}></td>
-            {% endfor %}
+          {% endfor %}
           {% else %}
-            {% for idx in range(8) %}
+          {% for idx in range(8) %}
           <td class="td_num"><input name="bt_{{idx}}" type="number"></td>
-            {% endfor %}
+          {% endfor %}
           {% endif %}
         </tr>
         <tr>
           <td class="td_lbl">Alone margin:</td>
           {% if strg %}
-            {% for val in strg.alone_margin %}
+          {% for val in strg.alone_margin %}
           <td class="td_num"><input name="am_{{loop.index0}}" type="number" value={{val}}></td>
-            {% endfor %}
+          {% endfor %}
           {% else %}
-            {% for idx in range(8) %}
+          {% for idx in range(8) %}
           <td class="td_num"><input name="am_{{idx}}" type="number"></td>
-            {% endfor %}
+          {% endfor %}
           {% endif %}
         </tr>
         <tr>
           <td class="td_lbl">Def alone thresh:</td>
           {% if strg %}
-            {% for val in strg.def_alone_thresh %}
+          {% for val in strg.def_alone_thresh %}
           <td class="td_num"><input name="dat_{{loop.index0}}" type="number" value={{val}}></td>
-            {% endfor %}
+          {% endfor %}
           {% else %}
-            {% for idx in range(11) %}
+          {% for idx in range(11) %}
           <td class="td_num"><input name="dat_{{idx}}" type="number"></td>
-            {% endfor %}
+          {% endfor %}
           {% endif %}
         </tr>
       </table>
@@ -354,21 +357,8 @@
         <span class="spn_card">{{turn.tag}}</span>
       </div>
       <div class="subsection">
-        <span>Round: 1</span>
-        <input type="radio" name="round" value="1">
-        <span>2</span>
-        <input type="radio" name="round" value="2">
-      </div>
-      <div class="subsection">
-        <span>Dealer pos:</span>
-        <table class="pos_layout">
-          <tr><td></td><td><input type="radio" name="dealer_pos" value="1"></td><td></td></tr>
-          <tr><td><input type="radio" name="dealer_pos" value="0"></td><td></td><td><input type="radio" name="dealer_pos" value="2"></td></tr>
-          <tr><td></td><td><input type="radio" name="dealer_pos" value="3"></td><td></td></tr>
-          <tr><td></td><td>(you)</td><td></td></tr>
-        </table>
-      </div>
-      <div class="subsection">
+        <button type="submit" name="submit_func" value="revert_params">Revert Params</button>
+        <button type="submit" name="submit_func" value="export_params">Export Params</button>
         <button type="submit" name="submit_func" value="new_hand">New Hand</button>
         <button type="submit" name="submit_func" value="evaluate">Evaluate Strategy</button>
       </div>
@@ -376,14 +366,6 @@
   </form>
   <div class="section">
     <span class="sect_label">Results</span>
-    <div class="subsection">
-      <span>Discard:</span>
-      <input type="text" class="txt_card" readonly>
-      <span>Hand strength:</span>
-      <input type="number" readonly>
-      <span>Turn card strength:</span>
-      <input type="number" readonly>
-    </div>
     <div class="subsection">
       <span>Bidding</span>
       <table class="tbl_results">

@@ -13,7 +13,7 @@
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="ml – ML" href="ml.html" />
+    <link rel="next" title="apps – Apps" href="apps.html" />
     <link rel="prev" title="Welcome to Euchre Platform’s documentation!" href="index.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -282,6 +282,12 @@ bower translations), given a specified context</p>
 <dt class="sig sig-object py" id="euchplt.card.Bower">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.card.</span></span><span class="sig-name descname"><span class="pre">Bower</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rank</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Rank" title="euchplt.card.Rank"><span class="pre">Rank</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">suit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sortkey</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.card.Bower" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><code class="xref py py-class docutils literal notranslate"><span class="pre">Card</span></code></a></p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="euchplt.card.get_card">
+<span class="sig-prename descclassname"><span class="pre">euchplt.card.</span></span><span class="sig-name descname"><span class="pre">get_card</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></span><a class="headerlink" href="#euchplt.card.get_card" title="Link to this definition">¶</a></dt>
+<dd><p>Accepts string representation of the index (e.g. coming from a form)</p>
 </dd></dl>
 
 <dl class="py function">
@@ -1395,17 +1401,11 @@ replaced by BOWER cards (rank of <code class="docutils literal notranslate"><spa
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.analysis.HandAnalysisSmart.hand_strength">
-<span class="sig-name descname"><span class="pre">hand_strength</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trump_suit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#euchplt.analysis.HandAnalysisSmart.hand_strength" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">hand_strength</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trump_suit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">comp_vals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#euchplt.analysis.HandAnalysisSmart.hand_strength" title="Link to this definition">¶</a></dt>
 <dd><p>Return the overall hand strength score given a trump suit context, based on
 parameters and multiplier coefficients specified for the instance (base config
-plus constructor overrides).</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="euchplt.analysis.HandAnalysisSmart.turn_card_rank">
-<span class="sig-name descname"><span class="pre">turn_card_rank</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">turn_card</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Rank" title="euchplt.card.Rank"><span class="pre">Rank</span></a></span></span><a class="headerlink" href="#euchplt.analysis.HandAnalysisSmart.turn_card_rank" title="Link to this definition">¶</a></dt>
-<dd><p>SUPER-HACKY: this doesn’t really belong here, need to figure out a nicer way of
-doing this (needed by <code class="docutils literal notranslate"><span class="pre">StrategySmart.bid()</span></code>)!!!</p>
+plus constructor overrides).  If <code class="docutils literal notranslate"><span class="pre">comp_vals</span></code> is specified (as a dict), the
+contribution from the individual components will be written to it.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1433,7 +1433,7 @@ instantiated using <code class="docutils literal notranslate"><span class="pre">
 euchre.py).</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.strategy.Strategy.new">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">new</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strat_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.strategy.Strategy" title="euchplt.strategy.base.Strategy"><span class="pre">Strategy</span></a></span></span><a class="headerlink" href="#euchplt.strategy.Strategy.new" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">new</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strat_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.strategy.Strategy" title="euchplt.strategy.base.Strategy"><span class="pre">Strategy</span></a></span></span><a class="headerlink" href="#euchplt.strategy.Strategy.new" title="Link to this definition">¶</a></dt>
 <dd><p>Return instantiated Strategy object based on configured strategy, identified
 by name; note that the named strategy entry may override base parameter values
 specified for the underlying implementation class</p>
@@ -1636,6 +1636,24 @@ direct the execution within the tactics.</p>
 <dt class="sig sig-object py" id="euchplt.strategy.StrategySmart.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.strategy.StrategySmart.__init__" title="Link to this definition">¶</a></dt>
 <dd><p>See base class</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy.StrategySmart.turn_card_rank">
+<span class="sig-name descname"><span class="pre">turn_card_rank</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">turn_card</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Rank" title="euchplt.card.Rank"><span class="pre">Rank</span></a></span></span><a class="headerlink" href="#euchplt.strategy.StrategySmart.turn_card_rank" title="Link to this definition">¶</a></dt>
+<dd><p>HACKY: this doesn’t really belong here, but we need <code class="docutils literal notranslate"><span class="pre">rank.idx</span></code> for the turn
+card (used as index into config file params) even though it shouldn’t really be
+visible externally.  But this is better than polluting the <code class="docutils literal notranslate"><span class="pre">Card</span></code> interface.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy.StrategySmart.get_turn_strength">
+<span class="sig-name descname"><span class="pre">get_turn_strength</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bid_pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategySmart.get_turn_strength" title="Link to this definition">¶</a></dt>
+<dd><p>Get the strength contribution (or penalty!) for the turn card (scaled to the
+overall hand strength), given the current deal context.  Value is positive or
+negative depending on whether partner or opponent (respectively) is the dealer.
+Note that this call is only valid for first round bidding from a non-dealer
+position.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2265,6 +2283,7 @@ attempt to cast the value to the proper type (e.g. int, float, bool, or None).</
 <li class="toctree-l2"><a class="reference internal" href="#module-euchplt.utils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">euchplt.utils</span></code> – Utils</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="apps.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">apps</span></code> – Apps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ml.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ml</span></code> – ML</a></li>
 </ul>
 
@@ -2273,7 +2292,7 @@ attempt to cast the value to the proper type (e.g. int, float, bool, or None).</
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
       <li>Previous: <a href="index.html" title="previous chapter">Welcome to Euchre Platform’s documentation!</a></li>
-      <li>Next: <a href="ml.html" title="next chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ml</span></code> – ML</a></li>
+      <li>Next: <a href="apps.html" title="next chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">apps</span></code> – Apps</a></li>
   </ul></li>
 </ul>
 </div>

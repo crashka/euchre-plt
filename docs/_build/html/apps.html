@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>apps – Apps &#8212; Euchre Platform  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="ml – ML" href="ml.html" />
+    <link rel="prev" title="euchplt – Platform" href="euchplt.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="apps-apps">
+<h1><code class="xref py py-mod docutils literal notranslate"><span class="pre">apps</span></code> – Apps<a class="headerlink" href="#apps-apps" title="Link to this heading">¶</a></h1>
+<section id="module-apps.smart_tuner">
+<span id="apps-smart-tuner-smart-tuner"></span><h2><a class="reference internal" href="#module-apps.smart_tuner" title="apps.smart_tuner"><code class="xref py py-mod docutils literal notranslate"><span class="pre">apps.smart_tuner</span></code></a> – Smart Tuner<a class="headerlink" href="#module-apps.smart_tuner" title="Link to this heading">¶</a></h2>
+<p>Simple form-based web app to evaluate bidding strategies for <code class="docutils literal notranslate"><span class="pre">StrategySmart</span></code>; useful
+for manually testing/tweaking the various parameters, coefficients, and thresholds</p>
+<p>To Do list:</p>
+<ul class="simple">
+<li><p>Sort cards in hand for display</p></li>
+<li><p>Highlight params/coeffs that are changed from the base config</p></li>
+<li><p>Ajax</p></li>
+</ul>
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.smart_tuner.Bidding">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">Bidding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strength</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_strgths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Number</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">discard</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_hand</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.euchre.Hand" title="euchplt.euchre.Hand"><span class="pre">Hand</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">margin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.euchre.Bid" title="euchplt.euchre.Bid"><span class="pre">Bid</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apps.smart_tuner.Bidding" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">NamedTuple</span></code></p>
+<p>Encapsulated bidding information for each hand and bidding position</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.smart_tuner.Bidding.strength">
+<span class="sig-name descname"><span class="pre">strength</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Number</span></em><a class="headerlink" href="#apps.smart_tuner.Bidding.strength" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.smart_tuner.Bidding.sub_strgths">
+<span class="sig-name descname"><span class="pre">sub_strgths</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Number</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apps.smart_tuner.Bidding.sub_strgths" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.smart_tuner.Bidding.discard">
+<span class="sig-name descname"><span class="pre">discard</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="euchplt.html#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></em><a class="headerlink" href="#apps.smart_tuner.Bidding.discard" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.smart_tuner.Bidding.new_hand">
+<span class="sig-name descname"><span class="pre">new_hand</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="euchplt.html#euchplt.euchre.Hand" title="euchplt.euchre.Hand"><span class="pre">Hand</span></a></em><a class="headerlink" href="#apps.smart_tuner.Bidding.new_hand" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.smart_tuner.Bidding.margin">
+<span class="sig-name descname"><span class="pre">margin</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Number</span></em><a class="headerlink" href="#apps.smart_tuner.Bidding.margin" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.smart_tuner.Bidding.bid">
+<span class="sig-name descname"><span class="pre">bid</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="euchplt.html#euchplt.euchre.Bid" title="euchplt.euchre.Bid"><span class="pre">Bid</span></a></em><a class="headerlink" href="#apps.smart_tuner.Bidding.bid" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.smart_tuner.Context">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">Context</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategies</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anly</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.analysis.HandAnalysisSmart" title="euchplt.analysis.smart.HandAnalysisSmart"><span class="pre">HandAnalysisSmart</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">strg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.strategy.Strategy" title="euchplt.strategy.base.Strategy"><span class="pre">Strategy</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">coeff</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Number</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hand</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.euchre.Hand" title="euchplt.euchre.Hand"><span class="pre">Hand</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">turn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#apps.smart_tuner.Bidding" title="apps.smart_tuner.Bidding"><span class="pre">Bidding</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_bids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#apps.smart_tuner.Bidding" title="apps.smart_tuner.Bidding"><span class="pre">Bidding</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apps.smart_tuner.Context" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">NamedTuple</span></code></p>
+<p>Context members referenced by the Jinja template</p>
+<p>Note: we may not use this directly, but at least it serves as a reference</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.smart_tuner.Context.title">
+<span class="sig-name descname"><span class="pre">title</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#apps.smart_tuner.Context.title" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.smart_tuner.Context.strategy">
+<span class="sig-name descname"><span class="pre">strategy</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#apps.smart_tuner.Context.strategy" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.smart_tuner.Context.strategies">
+<span class="sig-name descname"><span class="pre">strategies</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apps.smart_tuner.Context.strategies" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.smart_tuner.Context.anly">
+<span class="sig-name descname"><span class="pre">anly</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="euchplt.html#euchplt.analysis.HandAnalysisSmart" title="euchplt.analysis.smart.HandAnalysisSmart"><span class="pre">HandAnalysisSmart</span></a></em><a class="headerlink" href="#apps.smart_tuner.Context.anly" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.smart_tuner.Context.strg">
+<span class="sig-name descname"><span class="pre">strg</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="euchplt.html#euchplt.strategy.Strategy" title="euchplt.strategy.base.Strategy"><span class="pre">Strategy</span></a></em><a class="headerlink" href="#apps.smart_tuner.Context.strg" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.smart_tuner.Context.coeff">
+<span class="sig-name descname"><span class="pre">coeff</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Number</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apps.smart_tuner.Context.coeff" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.smart_tuner.Context.hand">
+<span class="sig-name descname"><span class="pre">hand</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="euchplt.html#euchplt.euchre.Hand" title="euchplt.euchre.Hand"><span class="pre">Hand</span></a></em><a class="headerlink" href="#apps.smart_tuner.Context.hand" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.smart_tuner.Context.turn">
+<span class="sig-name descname"><span class="pre">turn</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="euchplt.html#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></em><a class="headerlink" href="#apps.smart_tuner.Context.turn" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.smart_tuner.Context.bids">
+<span class="sig-name descname"><span class="pre">bids</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#apps.smart_tuner.Bidding" title="apps.smart_tuner.Bidding"><span class="pre">Bidding</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apps.smart_tuner.Context.bids" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.smart_tuner.Context.base_bids">
+<span class="sig-name descname"><span class="pre">base_bids</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#apps.smart_tuner.Bidding" title="apps.smart_tuner.Bidding"><span class="pre">Bidding</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apps.smart_tuner.Context.base_bids" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.smart_tuner.get_strg_comps">
+<span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">get_strg_comps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strg_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hand</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.euchre.Hand" title="euchplt.euchre.Hand"><span class="pre">Hand</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="euchplt.html#euchplt.strategy.Strategy" title="euchplt.strategy.base.Strategy"><span class="pre">Strategy</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="euchplt.html#euchplt.analysis.HandAnalysisSmart" title="euchplt.analysis.smart.HandAnalysisSmart"><span class="pre">HandAnalysisSmart</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Number</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#apps.smart_tuner.get_strg_comps" title="Link to this definition">¶</a></dt>
+<dd><p>Get strategy and analysis components for the specified hand</p>
+<p>Note: <code class="docutils literal notranslate"><span class="pre">coeff</span></code> list is returned as a convenience (doing it here to make sure it is
+only done in one place, since it is a little dicey right now)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.smart_tuner.get_hand">
+<span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">get_hand</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="euchplt.html#euchplt.euchre.Hand" title="euchplt.euchre.Hand"><span class="pre">Hand</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="euchplt.html#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#apps.smart_tuner.get_hand" title="Link to this definition">¶</a></dt>
+<dd><p>Return a new randomly generated hand and turn card</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.smart_tuner.index">
+<span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">index</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apps.smart_tuner.index" title="Link to this definition">¶</a></dt>
+<dd><p>Return an empty form</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.smart_tuner.submit">
+<span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">submit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apps.smart_tuner.submit" title="Link to this definition">¶</a></dt>
+<dd><p>Process submitted form, switch on <code class="docutils literal notranslate"><span class="pre">submit_func</span></code> equals either <code class="docutils literal notranslate"><span class="pre">new_hand</span></code> or
+<code class="docutils literal notranslate"><span class="pre">evaluate</span></code></p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.smart_tuner.new_hand">
+<span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">new_hand</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">form</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#apps.smart_tuner.new_hand" title="Link to this definition">¶</a></dt>
+<dd><p>Generate a new hand, the call <code class="docutils literal notranslate"><span class="pre">evaluate()</span></code> (using all existing parameters values)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.smart_tuner.evaluate">
+<span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">form</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hand</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.euchre.Hand" title="euchplt.euchre.Hand"><span class="pre">Hand</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">turn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#apps.smart_tuner.evaluate" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the hand strength and determine bidding for the current strategy and deal
+context</p>
+<p>Will continue using the hand and turn card from <code class="docutils literal notranslate"><span class="pre">form</span></code> if not passed in (e.g. new
+hand requested)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.smart_tuner.get_bidding">
+<span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">get_bidding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.strategy.Strategy" title="euchplt.strategy.base.Strategy"><span class="pre">Strategy</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">hand</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.euchre.Hand" title="euchplt.euchre.Hand"><span class="pre">Hand</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">turn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#apps.smart_tuner.Bidding" title="apps.smart_tuner.Bidding"><span class="pre">Bidding</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#apps.smart_tuner.get_bidding" title="Link to this definition">¶</a></dt>
+<dd><p>Return list of <code class="docutils literal notranslate"><span class="pre">Bidding</span></code> information, one element for each bid position</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Euchre Platform</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="euchplt.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">euchplt</span></code> – Platform</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">apps</span></code> – Apps</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-apps.smart_tuner"><code class="xref py py-mod docutils literal notranslate"><span class="pre">apps.smart_tuner</span></code> – Smart Tuner</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ml.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ml</span></code> – ML</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="euchplt.html" title="previous chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">euchplt</span></code> – Platform</a></li>
+      <li>Next: <a href="ml.html" title="next chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ml</span></code> – ML</a></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2022, Crash.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="_sources/apps.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

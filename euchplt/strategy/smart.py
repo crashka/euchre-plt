@@ -7,9 +7,9 @@ import random
 import inspect
 
 from ..core import ConfigError, LogicError, log
-from ..card import SUITS, Card, right, ace
-from ..euchre import Bid, PASS_BID, NULL_BID, defend_suit, Trick, DealState
-from ..analysis import HandAnalysisSmart, PlayAnalysis
+from ..card import Rank, SUITS, Card, right, ace
+from ..euchre import Hand, Bid, PASS_BID, NULL_BID, defend_suit, Trick, DealState
+from ..analysis import SUIT_CTX, HandAnalysisSmart, PlayAnalysis
 from .base import Strategy
 
 #############
@@ -443,6 +443,26 @@ class StrategySmart(Strategy):
         self.ruleset['part_winning'] = [meths[rule] for rule in self.part_winning]
         self.ruleset['opp_winning']  = [meths[rule] for rule in self.opp_winning]
 
+    def turn_card_rank(self, turn_card: Card) -> Rank:
+        """HACKY: this doesn't really belong here, but we need ``rank.idx`` for the turn
+        card (used as index into config file params) even though it shouldn't really be
+        visible externally.  But this is better than polluting the ``Card`` interface.
+        """
+        ctx = SUIT_CTX[turn_card.suit]
+        return turn_card.effcard(ctx).rank
+
+    def get_turn_strength(self, deal: DealState, bid_pos: int) -> float:
+        """Get the strength contribution (or penalty!) for the turn card (scaled to the
+        overall hand strength), given the current deal context.  Value is positive or
+        negative depending on whether partner or opponent (respectively) is the dealer.
+        Note that this call is only valid for first round bidding from a non-dealer
+        position.
+        """
+        turn_rank = self.turn_card_rank(deal.turn_card)
+        turn_value = self.turn_card_value[turn_rank.idx] / sum(self.turn_card_value)
+        turn_strength = turn_value * self.turn_card_coeff[bid_pos]
+        return turn_strength * (1.0 if deal.is_partner_dealer else -1.0)
+
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """General logic:
 
@@ -479,7 +499,10 @@ class StrategySmart(Strategy):
         bid_suit      = None
         strength      = None
         thresh_margin = None
+        turn_strength = None
+        new_hand      = None
         alone         = False
+        sub_strgths   = {}
 
         if def_bid:
             if deal.is_partner_caller:
@@ -492,30 +515,31 @@ class StrategySmart(Strategy):
                 log.debug(f"Defending on hand strength of {strength:.2f}")
             return Bid(defend_suit, alone)
 
+        # only regular call bidding from here on down (see early exit above)
         if deal.bid_round == 1:
             if deal.is_dealer:
-                strengths: list[tuple[Card, float]] = []
+                # for each possible discard: (card, hard, strength, sub_strgths)
+                strengths: list[tuple[Card, Hand, float, dict]] = []
                 for card in deal.hand:
-                    hand = deal.hand.copy()
-                    hand.remove_card(card)
-                    hand.append_card(deal.turn_card)
-                    analysis = HandAnalysisSmart(hand, **self.hand_analysis)
-                    strengths.append((card, analysis.hand_strength(turn_suit)))
-                strengths.sort(key=lambda t: t[1], reverse=True)
-                if strengths[0][1] > self.bid_thresh[bid_pos]:
-                    discard, strength = strengths[0]
+                    tmp_hand = deal.hand.copy()
+                    tmp_hand.remove_card(card)
+                    tmp_hand.append_card(deal.turn_card)
+                    tmp_sub_strgths = {}
+                    analysis = HandAnalysisSmart(tmp_hand, **self.hand_analysis)
+                    tmp_strength = analysis.hand_strength(turn_suit, tmp_sub_strgths)
+                    strengths.append((card, tmp_hand, tmp_strength, tmp_sub_strgths))
+                strengths.sort(key=lambda t: t[2], reverse=True)
+                if strengths[0][2] > self.bid_thresh[bid_pos]:
+                    discard, new_hand, strength, sub_strgths = strengths[0]
                     thresh_margin = strength - self.bid_thresh[bid_pos]
                     bid_suit = turn_suit
                     persist['discard'] = discard
                     log.debug(f"Dealer bidding based on discard of {strengths[0][0]}")
             else:
                 analysis = HandAnalysisSmart(deal.hand, **self.hand_analysis)
-                strength = analysis.hand_strength(turn_suit)
-                # make adjustment for turn card (up/down for partner/opp.)
-                turn_rank = analysis.turn_card_rank(deal.turn_card)
-                turn_value = self.turn_card_value[turn_rank.idx] / sum(self.turn_card_value)
-                turn_strength = turn_value * self.turn_card_coeff[bid_pos]
-                strength += turn_strength * (1.0 if deal.is_partner_dealer else -1.0)
+                strength = analysis.hand_strength(turn_suit, sub_strgths)
+                # this call takes dealer position into account (partner or opponent)
+                turn_strength = self.get_turn_strength(deal, bid_pos)
                 log.debug(f"{'turn card adj':15}: "
                          f"{'+' if deal.is_partner_dealer else '-'}{turn_strength:.2f}")
                 log.debug(f"{'adj_strength':15}: {strength:6.2f}")
@@ -528,7 +552,7 @@ class StrategySmart(Strategy):
             for suit in SUITS:
                 if suit == turn_suit:
                     continue
-                strength = analysis.hand_strength(suit)
+                strength = analysis.hand_strength(suit, sub_strgths)
                 if strength > self.bid_thresh[bid_pos]:
                     thresh_margin = strength - self.bid_thresh[bid_pos]
                     bid_suit = suit
@@ -538,6 +562,12 @@ class StrategySmart(Strategy):
             assert thresh_margin is not None
             persist['strength'] = strength
             persist['thresh_margin'] = thresh_margin
+            if turn_strength is not None:
+                persist['turn_strength'] = turn_strength
+            if sub_strgths:
+                persist['sub_strgths'] = sub_strgths
+            if new_hand:
+                persist['new_hand'] = new_hand
             log.debug(f"Bidding on hand strength of {strength:.2f}")
             if thresh_margin > self.alone_margin[bid_pos]:
                 alone = True
@@ -585,9 +615,9 @@ class StrategySmart(Strategy):
             # logic as documented above
             strengths: list[tuple[Card, float]] = []
             for card in deal.hand:
-                hand = deal.hand.copy()
-                hand.remove_card(card)
-                analysis = HandAnalysisSmart(hand, **self.hand_analysis)
+                tmp_hand = deal.hand.copy()
+                tmp_hand.remove_card(card)
+                analysis = HandAnalysisSmart(tmp_hand, **self.hand_analysis)
                 strengths.append((card, analysis.hand_strength(turn_suit)))
             strengths.sort(key=lambda t: t[1], reverse=True)
             discard, strength = strengths[0]

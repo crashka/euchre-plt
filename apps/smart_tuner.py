@@ -3,6 +3,12 @@
 
 """Simple form-based web app to evaluate bidding strategies for ``StrategySmart``; useful
 for manually testing/tweaking the various parameters, coefficients, and thresholds
+
+To Do list:
+
+- Sort cards in hand for display
+- Highlight params/coeffs that are changed from the base config
+- Ajax
 """
 
 from typing import NamedTuple
@@ -50,10 +56,12 @@ coeff_names   = [
 class Bidding(NamedTuple):
     """Encapsulated bidding information for each hand and bidding position
     """
-    discard:  list[Card]  # only for position 3
-    strength: Number      # aggregate
-    margin:   Number
-    bid:      Bid
+    strength:    Number  # aggregate
+    sub_strgths: dict[str, Number]  # indexed by score name
+    discard:     Card    # only for position 3
+    new_hand:    Hand    # only for position 3
+    margin:      Number
+    bid:         Bid
 
 class Context(NamedTuple):
     """Context members referenced by the Jinja template
@@ -66,8 +74,6 @@ class Context(NamedTuple):
     anly:       HandAnalysisSmart
     strg:       Strategy
     coeff:      list[Number]
-    base_anly:  HandAnalysisSmart
-    base_strg:  Strategy
     hand:       Hand
     turn:       Card
     bids:       list[Bidding]
@@ -116,8 +122,6 @@ def index():
         'anly':       anly,
         'strg':       strg,
         'coeff':      coeff,
-        'base_anly':  None,
-        'base_strg':  None,
         'hand':       hand,
         'turn':       turn,
         'bids':       None,
@@ -189,6 +193,9 @@ def evaluate(form: dict, hand: Hand = None, turn: Card = None) -> str:
 
     strg, anly, coeff       = get_strg_comps(strategy, hand, **strg_config)
     base_strg, base_anly, _ = get_strg_comps(strategy, hand)
+    # TODO: it would be cool to do a diff of the parameters, etc. so we could highlight
+    # the ones that have been modified, and show the associated changes in hand strength
+    # values as well!!!
 
     bids      = get_bidding(strg, hand, turn)
     base_bids = get_bidding(base_strg, hand, turn)
@@ -200,8 +207,6 @@ def evaluate(form: dict, hand: Hand = None, turn: Card = None) -> str:
         'anly':       anly,
         'strg':       strg,
         'coeff':      coeff,
-        'base_anly':  base_anly,
-        'base_strg':  base_strg,
         'hand':       hand,
         'turn':       turn,
         'bids':       bids,
@@ -210,7 +215,7 @@ def evaluate(form: dict, hand: Hand = None, turn: Card = None) -> str:
     return render_template(APP_TEMPLATE, **context)
 
 def get_bidding(strg: Strategy, hand: Hand, turn: Card) -> list[Bidding]:
-    """Return list of `Bidding` information, one element for each bid position
+    """Return list of ``Bidding`` information, one element for each bid position
     """
     ret = []
 
@@ -219,10 +224,17 @@ def get_bidding(strg: Strategy, hand: Hand, turn: Card) -> list[Bidding]:
         bid_pos = pos % NUM_PLAYERS
         persist = {}  # addl output values from `bid()` call
 
+        # construct minimum functional faux deal state (only bidding fields, and
+        # `persist`, needed)
         deal = DealState(bid_pos, hand, turn, bids, *NONES, persist)
         bid = strg.bid(deal)
-        ret.append(Bidding(persist.get('discard'), persist.get('strength'),
-                           persist.get('thresh_margin'), bid))
+        ret.append(Bidding(persist.get('strength'),
+                           persist.get('sub_strgths'),
+                           persist.get('discard'),
+                           persist.get('new_hand'),
+                           persist.get('thresh_margin'),
+                           bid))
+        pass  # for debugging
 
     return ret
 

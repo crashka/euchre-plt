@@ -13,6 +13,7 @@ Modules
    :maxdepth: 2
 
    euchplt
+   apps
    ml
 
 Indexes and Tables
