@@ -4,15 +4,6 @@
 <head>
   <title>{{title}}</title>
 
-  <script src="/static/jquery-3.7.1.min.js"></script>
-  <script>
-   $(document).on('change','.sel_strategy', function() {
-     var value = $(this).val();
-     var curpage = window.location.origin + window.location.pathname;
-     window.location.href = curpage + "?strategy=" + encodeURIComponent(value);
-   });
-  </script>
-
   <style>
    div.section {
      margin-top: 1rem;
@@ -465,6 +456,23 @@
       </table>
     </div>
   </div>
+
+  <script src="/static/jquery-3.7.1.min.js"></script>
+  <script>
+    $(document).on('change','.sel_strategy', function() {
+    var value = $(this).val();
+    var curpage = window.location.origin + window.location.pathname;
+    window.location.href = curpage + "?strategy=" + encodeURIComponent(value);
+    });
+
+    $("span:contains('\u2665')").css({
+    color: function() { return 'red'; }
+    });
+
+    $("span:contains('\u2666')").css({
+    color: function() { return 'red'; }
+    });
+  </script>
 </body>
 
 </html>

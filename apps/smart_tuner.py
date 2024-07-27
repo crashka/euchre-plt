@@ -7,8 +7,8 @@ for manually testing/tweaking the various parameters, coefficients, and threshol
 To Do list:
 
 - Sort cards in hand for display
-- Highlight params/coeffs that are changed from the base config
-- Ajax
+- Highlight params/coeffs that have been changed from the base config
+- Convert to single-page app using ajax
 """
 
 from typing import NamedTuple
@@ -17,7 +17,7 @@ from numbers import Number
 from flask import Flask, request, render_template, abort
 
 from euchplt.core import cfg
-from euchplt.card import Suit, Card, CARDS, get_card, get_deck
+from euchplt.card import ALL_RANKS, Suit, Card, CARDS, get_card, get_deck
 from euchplt.euchre import Hand, Bid, PASS_BID, DealState
 from euchplt.deal import NUM_PLAYERS
 from euchplt.strategy import Strategy
@@ -29,14 +29,23 @@ APP_NAME     = "Smart Tuner"
 APP_TEMPLATE = "smart_tuner.html"
 BASE_CLASS   = "StrategySmart"
 
-VALID_FUNCS  = [
+strategy_list = cfg.config('strategies')
+strategies = [k for k, v in strategy_list.items()
+              if v['base_class'] == BASE_CLASS]
+
+# see REVISIT comment in `get_strg_comps()`
+coeff_names = [
+    'trump_score',
+    'max_suit_score',
+    'num_trump_score',
+    'off_aces_score',
+    'voids_score'
+]
+
+SUBMIT_FUNCS = [
     'new_hand',
     'evaluate'
 ]
-
-strategy_list = cfg.config('strategies')
-strategies    = [k for k, v in strategy_list.items()
-                 if v['base_class'] == BASE_CLASS]
 
 # some random convenience shortcuts
 StrgComps = tuple[Strategy, HandAnalysisSmart, list[Number]]
@@ -44,14 +53,6 @@ NULL_CARD = Card(-1, None, None, '', '', -1, -1)  # hacky
 NULL_HAND = Hand([NULL_CARD] * 5)
 PASSES    = [PASS_BID] * 8
 NONES     = [None] * 10
-
-coeff_names   = [
-    'trump_score',
-    'max_suit_score',
-    'num_trump_score',
-    'off_aces_score',
-    'voids_score'
-]
 
 class Bidding(NamedTuple):
     """Encapsulated bidding information for each hand and bidding position
@@ -92,12 +93,24 @@ def get_strg_comps(strg_name: str, hand: Hand, **kwargs) -> StrgComps:
     coeff = [v for k, v in anly.scoring_coeff.items()]
     return (strg, anly, coeff)
 
+ranks = len(ALL_RANKS)
+disp_suit_offset = [ranks, 0, 2 * ranks, 3 * ranks]
+
+def disp_key(card: Card) -> int:
+    """Return sort key to use for displaying hands (alternate suit colors)
+    """
+    # Note: it's kind of wrong to use ``rank.idx`` here, but our cheeky way of justifying
+    # is using ``len(ALL_RANKS)`` as the offset multiplier (rather than just hardwiring
+    # 10, say, which is what most normal people would do)
+    return card.rank.idx + disp_suit_offset[card.suit.idx]
+
 def get_hand() -> tuple[Hand, Card]:
-    """Return a new randomly generated hand and turn card
+    """Return a new randomly generated hand (sorted for display) and turn card
     """
     deck = get_deck()
-    hand = Hand(deck[:5])
+    cards = deck[:5]
     turn = deck[20]
+    hand = Hand(sorted(cards, key=disp_key))
     return hand, turn
 
 @app.get("/")
@@ -135,7 +148,7 @@ def submit():
     ``evaluate``
     """
     func = request.form['submit_func']
-    if func not in VALID_FUNCS:
+    if func not in SUBMIT_FUNCS:
         abort(404)
     return globals()[func](request.form)
 

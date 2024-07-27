@@ -122,6 +122,11 @@ class Card(NamedTuple):
     def __str__(self):
         return self.tag
 
+    def __lt__(self, other):
+        """Use ``sortkey`` for comparison (e.g. sort)
+        """
+        return self.sortkey < other.sortkey
+
 class Bower(Card):
     """
     """
