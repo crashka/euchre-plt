@@ -47,6 +47,8 @@ SUBMIT_FUNCS = [
     'evaluate'
 ]
 
+FLOAT_PREC = 2
+
 # some random convenience shortcuts
 StrgComps = tuple[Strategy, HandAnalysisSmart, list[Number]]
 NULL_CARD = Card(-1, None, None, '', '', -1, -1)  # hacky
@@ -57,12 +59,12 @@ NONES     = [None] * 10
 class Bidding(NamedTuple):
     """Encapsulated bidding information for each hand and bidding position
     """
-    strength:    Number  # aggregate
-    sub_strgths: dict[str, Number]  # indexed by score name
     discard:     Card    # only for position 3
     new_hand:    Hand    # only for position 3
+    strength:    Number  # aggregate
     margin:      Number
     bid:         Bid
+    sub_strgths: dict[str, Number]  # indexed by score name
 
 class Context(NamedTuple):
     """Context members referenced by the Jinja template
@@ -112,6 +114,15 @@ def get_hand() -> tuple[Hand, Card]:
     turn = deck[20]
     hand = Hand(sorted(cards, key=disp_key))
     return hand, turn
+
+# monkeypatch display properties for ``Bid`` and ``Suit`` to help keep things cleaner
+# in the template
+def alone_str(self) -> str:
+    return " alone" if self.alone else ""
+
+setattr(Suit, 'disp', property(Suit.__str__))
+setattr(Bid, 'disp', property(Bid.__str__))
+setattr(Bid, 'alone_str', property(alone_str))
 
 @app.get("/")
 def index():
@@ -233,20 +244,29 @@ def get_bidding(strg: Strategy, hand: Hand, turn: Card) -> list[Bidding]:
     ret = []
 
     for pos in range(8):
-        bids = PASSES[:pos]
-        bid_pos = pos % NUM_PLAYERS
-        persist = {}  # addl output values from `bid()` call
+        bids     = PASSES[:pos]
+        bid_pos  = pos % NUM_PLAYERS
+        persist  = {}  # addl output values from `bid()` call
+        new_hand = None
 
         # construct minimum functional faux deal state (only bidding fields, and
         # `persist`, needed)
         deal = DealState(bid_pos, hand, turn, bids, *NONES, persist)
-        bid = strg.bid(deal)
-        ret.append(Bidding(persist.get('strength'),
-                           persist.get('sub_strgths'),
-                           persist.get('discard'),
-                           persist.get('new_hand'),
-                           persist.get('thresh_margin'),
-                           bid))
+        bid = strg.bid(deal)  # this call updates `persist`!
+
+        if strength := persist.get('strength'):
+            strength = round(strength, FLOAT_PREC)
+        if margin := persist.get('thresh_margin'):
+            margin = round(margin, FLOAT_PREC)
+        if cards := persist.get('new_hand'):
+            new_hand = sorted(cards, key=disp_key)
+
+        ret.append(Bidding(persist.get('discard'),
+                           new_hand,
+                           strength,
+                           margin,
+                           bid,
+                           persist.get('sub_strgths')))
         pass  # for debugging
 
     return ret

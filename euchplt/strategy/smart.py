@@ -497,10 +497,11 @@ class StrategySmart(Strategy):
         bid_pos       = deal.bid_pos
         turn_suit     = deal.turn_card.suit
         bid_suit      = None
-        strength      = None
-        thresh_margin = None
-        turn_strength = None
+        discard       = None
         new_hand      = None
+        strength      = None
+        turn_strength = None
+        thresh_margin = None
         alone         = False
         sub_strgths   = {}
 
@@ -529,22 +530,22 @@ class StrategySmart(Strategy):
                     tmp_strength = analysis.hand_strength(turn_suit, tmp_sub_strgths)
                     strengths.append((card, tmp_hand, tmp_strength, tmp_sub_strgths))
                 strengths.sort(key=lambda t: t[2], reverse=True)
-                if strengths[0][2] > self.bid_thresh[bid_pos]:
-                    discard, new_hand, strength, sub_strgths = strengths[0]
-                    thresh_margin = strength - self.bid_thresh[bid_pos]
+                discard, new_hand, strength, sub_strgths = strengths[0]
+                thresh_margin = strength - self.bid_thresh[bid_pos]
+                if thresh_margin >= 0.0:
                     bid_suit = turn_suit
-                    persist['discard'] = discard
                     log.debug(f"Dealer bidding based on discard of {strengths[0][0]}")
             else:
                 analysis = HandAnalysisSmart(deal.hand, **self.hand_analysis)
                 strength = analysis.hand_strength(turn_suit, sub_strgths)
                 # this call takes dealer position into account (partner or opponent)
                 turn_strength = self.get_turn_strength(deal, bid_pos)
+                strength += turn_strength
                 log.debug(f"{'turn card adj':15}: "
                          f"{'+' if deal.is_partner_dealer else '-'}{turn_strength:.2f}")
                 log.debug(f"{'adj_strength':15}: {strength:6.2f}")
-                if strength > self.bid_thresh[bid_pos]:
-                    thresh_margin = strength - self.bid_thresh[bid_pos]
+                thresh_margin = strength - self.bid_thresh[bid_pos]
+                if thresh_margin >= 0.0:
                     bid_suit = turn_suit
         else:
             assert deal.bid_round == 2
@@ -553,26 +554,31 @@ class StrategySmart(Strategy):
                 if suit == turn_suit:
                     continue
                 strength = analysis.hand_strength(suit, sub_strgths)
-                if strength > self.bid_thresh[bid_pos]:
-                    thresh_margin = strength - self.bid_thresh[bid_pos]
+                # BROKEN: need to compute for all suits and pick the strongest one
+                # (currently just uses the first)!!!
+                thresh_margin = strength - self.bid_thresh[bid_pos]
+                if thresh_margin >= 0.0:
                     bid_suit = suit
                     break
 
+        assert strength is not None
+        assert thresh_margin is not None
+        assert len(sub_strgths) > 0
+        persist['strength'] = strength
+        persist['thresh_margin'] = thresh_margin
+        persist['sub_strgths'] = sub_strgths
+        persist['discard'] = discard
+        persist['new_hand'] = new_hand
+        persist['turn_strength'] = turn_strength
+
         if bid_suit:
-            assert thresh_margin is not None
-            persist['strength'] = strength
-            persist['thresh_margin'] = thresh_margin
-            if turn_strength is not None:
-                persist['turn_strength'] = turn_strength
-            if sub_strgths:
-                persist['sub_strgths'] = sub_strgths
-            if new_hand:
-                persist['new_hand'] = new_hand
+            assert thresh_margin >= 0.0
             log.debug(f"Bidding on hand strength of {strength:.2f}")
-            if thresh_margin > self.alone_margin[bid_pos]:
+            if thresh_margin >= self.alone_margin[bid_pos]:
                 alone = True
             return Bid(bid_suit, alone)
 
+        assert thresh_margin < 0.0
         return PASS_BID
 
     def discard(self, deal: DealState) -> Card:

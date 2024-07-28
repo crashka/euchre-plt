@@ -33,8 +33,14 @@
    .col_num {
      width: 4.5rem;
    }
+   .col_txt {
+     width: 6rem;
+   }
    .col_txt_short {
      width: 3rem;
+   }
+   .col_txt_long {
+     width: 12rem;
    }
    .col_spc {
      width: 2rem;
@@ -42,10 +48,10 @@
    .td_lbl {
      text-align: right;
    }
-   .td_num {
-     text-align: center;
-   }
-   .td_txt {
+   .td_num,
+   .td_dec,
+   .td_txt,
+   .td_hand {
      text-align: center;
    }
    input[type="number"] {
@@ -59,12 +65,10 @@
    input.txt_card {
      display: none;
    }
-   .spn_card,
-   .spn_suit {
+   .spn_card {
      width: 3rem;
      margin-left: 0.5rem;
      font-size: larger;
-     text-align: center;
    }
    button[value="evaluate"] {
      font-weight: bolder;
@@ -131,7 +135,7 @@
           <td class="td_lbl">Trump values:</td>
           {% if anly %}
           {% for val in anly.trump_values %}
-          <td class="td_num"><input name="tv_{{loop.index0}}" type="number" value={{val}}></td>
+          <td class="td_num"><input name="tv_{{loop.index0}}" type="number" value="{{val}}"></td>
           {% endfor %}
           {% else %}
           {% for idx in range(8) %}
@@ -145,7 +149,7 @@
           <td class="td_lbl">Suit values:</td>
           {% if anly %}
           {% for val in anly.suit_values %}
-          <td class="td_num"><input name="sv_{{loop.index0}}" type="number" value={{val}}></td>
+          <td class="td_num"><input name="sv_{{loop.index0}}" type="number" value="{{val}}"></td>
           {% endfor %}
           {% else %}
           {% for idx in range(6) %}
@@ -189,11 +193,11 @@
           <td class="td_lbl">Num trump scores:</td>
           {% if anly %}
           {% for val in anly.num_trump_scores %}
-          <td class="td_num"><input name="nts_{{loop.index0}}" type="number" step=".01" value={{val}}></td>
+          <td class="td_dec"><input name="nts_{{loop.index0}}" type="number" value="{{val}}"></td>
           {% endfor %}
           {% else %}
           {% for idx in range(6) %}
-          <td class="td_num"><input name="nts_{{idx}}" type="number" step=".01"></td>
+          <td class="td_dec"><input name="nts_{{idx}}" type="number"></td>
           {% endfor %}
           {% endif %}
           <td class="td_spc"></td>
@@ -205,11 +209,11 @@
           <td class="td_lbl">Num off-aces scores:</td>
           {% if anly %}
           {% for val in anly.off_aces_scores %}
-          <td class="td_num"><input name="nas_{{loop.index0}}" type="number" step=".01" value={{val}}></td>
+          <td class="td_dec"><input name="nas_{{loop.index0}}" type="number" value="{{val}}"></td>
           {% endfor %}
           {% else %}
           {% for idx in range(4) %}
-          <td class="td_num"><input name="nas_{{idx}}" type="number" step=".01"></td>
+          <td class="td_dec"><input name="nas_{{idx}}" type="number"></td>
           {% endfor %}
           {% endif %}
           <td class="td_spc"></td>
@@ -223,11 +227,11 @@
           <td class="td_lbl">Num voids scores:</td>
           {% if anly %}
           {% for val in anly.voids_scores %}
-          <td class="td_num"><input name="nvs_{{loop.index0}}" type="number" step=".01" value={{val}}></td>
+          <td class="td_dec"><input name="nvs_{{loop.index0}}" type="number" value="{{val}}"></td>
           {% endfor %}
           {% else %}
           {% for idx in range(4) %}
-          <td class="td_num"><input name="nvs_{{idx}}" type="number" step=".01"></td>
+          <td class="td_dec"><input name="nvs_{{idx}}" type="number"></td>
           {% endfor %}
           {% endif %}
           <td class="td_spc"></td>
@@ -271,7 +275,7 @@
           <td class="td_lbl">Turn card value:</td>
           {% if strg %}
           {% for val in strg.turn_card_value %}
-          <td class="td_num"><input name="tcv_{{loop.index0}}" type="number" value={{val}}></td>
+          <td class="td_num"><input name="tcv_{{loop.index0}}" type="number" value="{{val}}"></td>
           {% endfor %}
           {% else %}
           {% for idx in range(8) %}
@@ -283,7 +287,7 @@
           <td class="td_lbl">Turn card coeff:</td>
           {% if strg %}
           {% for val in strg.turn_card_coeff %}
-          <td class="td_num"><input name="tcc_{{loop.index0}}" type="number" value={{val}}></td>
+          <td class="td_num"><input name="tcc_{{loop.index0}}" type="number" value="{{val}}"></td>
           {% endfor %}
           {% else %}
           {% for idx in range(4) %}
@@ -299,7 +303,7 @@
           <td class="td_lbl">Bid thresh:</td>
           {% if strg %}
           {% for val in strg.bid_thresh %}
-          <td class="td_num"><input name="bt_{{loop.index0}}" type="number" value={{val}}></td>
+          <td class="td_num"><input name="bt_{{loop.index0}}" type="number" value="{{val}}"></td>
           {% endfor %}
           {% else %}
           {% for idx in range(8) %}
@@ -311,7 +315,7 @@
           <td class="td_lbl">Alone margin:</td>
           {% if strg %}
           {% for val in strg.alone_margin %}
-          <td class="td_num"><input name="am_{{loop.index0}}" type="number" value={{val}}></td>
+          <td class="td_num"><input name="am_{{loop.index0}}" type="number" value="{{val}}"></td>
           {% endfor %}
           {% else %}
           {% for idx in range(8) %}
@@ -323,7 +327,7 @@
           <td class="td_lbl">Def alone thresh:</td>
           {% if strg %}
           {% for val in strg.def_alone_thresh %}
-          <td class="td_num"><input name="dat_{{loop.index0}}" type="number" value={{val}}></td>
+          <td class="td_num"><input name="dat_{{loop.index0}}" type="number" value="{{val}}"></td>
           {% endfor %}
           {% else %}
           {% for idx in range(11) %}
@@ -355,123 +359,85 @@
       </div>
     </div>
   </form>
+  {% if bids %}
   <div class="section">
     <span class="sect_label">Results</span>
     <div class="subsection">
-      <span>Bidding</span>
       <table class="tbl_results">
         <colgroup>
-          <col class="col_lbl_short">
-          <col class="col_txt_short">
-          <col class="col_txt_short">
-          <col class="col_txt_short">
-          <col class="col_txt_short">
-          <col class="col_txt_short">
-          <col class="col_txt_short">
-          <col class="col_txt_short">
-          <col class="col_txt_short">
+          <col class="col_num">
+          <col class="col_txt">
+          <col class="col_txt_long">
+          <col class="col_num">
+          <col class="col_num">
+          <col class="col_txt">
+          <col class="col_num">
+          <col class="col_num">
+          <col class="col_txt">
         </colgroup>
         <tr>
-          <th></th>
-          <th>0</th>
-          <th>1</th>
-          <th>2</th>
-          <th>3</th>
-          <th>4</th>
-          <th>5</th>
-          <th>6</th>
-          <th>7</th>
+          <th>Bid Pos</th>
+          <th>Discard</th>
+          <th>New Hand</th>
+          <th>Strength</th>
+          <th>Margin</th>
+          <th>Bid</th>
+          <th>Strength</th>
+          <th>Margin</th>
+          <th>Bid</th>
         </tr>
+        {% for bid in bids %}
+        {% set base_bid = base_bids[loop.index0] %}
         <tr>
-          <td class="td_lbl">Call Suit:</td>
-          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
-          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
-          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
-          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
-          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
-          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
-          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
-          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
+          <td class="td_num">{{loop.index0}}</td>
+          <td class="td_txt">
+            {% if bid.discard %}
+            <span>{{bid.discard.tag}}</span>
+            {% endif %}
+          </td>
+          <td class="td_hand">
+            {% if bid.new_hand %}
+              {% for idx in range(5) %}
+            <span>{{bid.new_hand[idx].tag}}</span>
+              {% endfor %}
+            {% endif %}
+          </td>
+          <td class="td_num">{{bid.strength}}</td>
+          <td class="td_num">{{bid.margin}}</td>
+          <td class="td_txt">
+            <span>{{bid.bid.suit.disp}}</span>
+            {{bid.bid.alone_str}}
+          </td>
+          <td class="td_num">{{base_bid.strength}}</td>
+          <td class="td_num">{{base_bid.margin}}</td>
+          <td class="td_txt">
+            <span>{{base_bid.bid.suit.disp}}</span>
+            {{base_bid.bid.alone_str}}
+          </td>
         </tr>
-        <tr>
-          <td class="td_lbl">Go Alone?</td>
-          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
-          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
-          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
-          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
-          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
-          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
-          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
-          <td class="td_txt"><input type="text" class="txt_gen" readonly></td>
-        </tr>
-      </table>
-    </div>
-    <div class="subsection">
-      <span>Bidding (strategy baseline)</span>
-      <table class="tbl_results">
-        <colgroup>
-          <col class="col_lbl_short">
-          <col class="col_txt_short">
-          <col class="col_txt_short">
-          <col class="col_txt_short">
-          <col class="col_txt_short">
-          <col class="col_txt_short">
-          <col class="col_txt_short">
-          <col class="col_txt_short">
-          <col class="col_txt_short">
-        </colgroup>
-        <tr>
-          <th></th>
-          <th>0</th>
-          <th>1</th>
-          <th>2</th>
-          <th>3</th>
-          <th>4</th>
-          <th>5</th>
-          <th>6</th>
-          <th>7</th>
-        </tr>
-        <tr>
-          <td class="td_lbl">Call Suit:</td>
-          <td class="td_txt"><span class="txt_gen"></span></td>
-          <td class="td_txt"><span class="txt_gen"></span></td>
-          <td class="td_txt"><span class="txt_gen"></span></td>
-          <td class="td_txt"><span class="txt_gen"></span></td>
-          <td class="td_txt"><span class="txt_gen"></span></td>
-          <td class="td_txt"><span class="txt_gen"></span></td>
-          <td class="td_txt"><span class="txt_gen"></span></td>
-          <td class="td_txt"><span class="txt_gen"></span></td>
-        </tr>
-        <tr>
-          <td class="td_lbl">Go Alone?</td>
-          <td class="td_txt"><span class="txt_gen"></span></td>
-          <td class="td_txt"><span class="txt_gen"></span></td>
-          <td class="td_txt"><span class="txt_gen"></span></td>
-          <td class="td_txt"><span class="txt_gen"></span></td>
-          <td class="td_txt"><span class="txt_gen"></span></td>
-          <td class="td_txt"><span class="txt_gen"></span></td>
-          <td class="td_txt"><span class="txt_gen"></span></td>
-          <td class="td_txt"><span class="txt_gen"></span></td>
-        </tr>
+        {% endfor %}
       </table>
     </div>
   </div>
+  {% endif %}
 
   <script src="/static/jquery-3.7.1.min.js"></script>
   <script>
-    $(document).on('change','.sel_strategy', function() {
-    var value = $(this).val();
-    var curpage = window.location.origin + window.location.pathname;
-    window.location.href = curpage + "?strategy=" + encodeURIComponent(value);
-    });
+   $(document).on('change',".sel_strategy", function() {
+     var value = $(this).val();
+     var curpage = window.location.origin + window.location.pathname;
+     window.location.href = curpage + "?strategy=" + encodeURIComponent(value);
+   });
 
-    $("span:contains('\u2665')").css({
-    color: function() { return 'red'; }
-    });
+   $("span:contains('\u2665')").css({
+     color: function() { return 'red'; }
+   });
 
-    $("span:contains('\u2666')").css({
-    color: function() { return 'red'; }
-    });
+   $("span:contains('\u2666')").css({
+     color: function() { return 'red'; }
+   });
+
+   $("td.td_dec input").attr('step', "0.01");
   </script>
 </body>
 
