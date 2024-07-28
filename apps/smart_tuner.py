@@ -187,14 +187,16 @@ def export_params(form: dict) -> str:
     abort(501, "coming soon...")
 
 def evaluate(form: dict) -> str:
-    """Recompute using the selected position and analysis/strategy parameters, using the
-    existing deal context (i.e. hand and turn card)
+    """Compute bidding for selected position and deal context (i.e. hand and turn card),
+    using current analysis and strategy parameters
+
     """
     return compute(form)
 
 def new_hand(form: dict) -> str:
-    """Generate new hand and turn card, then recompute using current analysis/strategy
-    parameters values
+    """Generate new hand and turn card, then recompute bidding using current analysis and
+    strategy parameters
+
     """
     hand, turn = get_hand()
     return compute(form, hand=hand, turn=turn)
@@ -330,8 +332,19 @@ help_txt = {}
 # bidding table
 help_txt['bd_0'] = "bidding round (1-2)"
 help_txt['bd_1'] = "corresponds to bid_pos for Strategy (above)"
+help_txt['bd_2'] = ""
+help_txt['bd_3'] = ""
 help_txt['bd_4'] = "hover over individual strengths to get details"
-help_txt['bd_6'] = "turn suit (rd 1) or strongest suit (rd2) is shown when passing"
+help_txt['bd_5'] = ""
+help_txt['bd_6'] = "turn suit (rd 1) or strongest suit (rd 2) is shown when passing"
+help_txt['bt_0'] = ""
+help_txt['bt_1'] = ""
+help_txt['bt_2'] = ("Compute bidding for selected position and deal\n" +
+                    "context (i.e. hand and turn card), using current\n" +
+                    "analysis and strategy parameters")
+help_txt['bt_3'] = ("Generate new hand and turn card, then recompute\n" +
+                    "bidding using current analysis and strategy\n" +
+                    "parameters")
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -392,10 +392,10 @@
         <span class="spn_card">{{turn.tag}}</span>
       </div>
       <div class="subsection">
-        <button type="submit" name="submit_func" value="revert_params">Revert Params</button>
-        <button type="submit" name="submit_func" value="export_params">Export Params</button>
-        <button type="submit" name="submit_func" value="evaluate">Evaluate Position</button>
-        <button type="submit" name="submit_func" value="new_hand">Evaluate New Hand</button>
+        <button class="submit" value="revert_params" title="{{help_txt['bt_0']}}">Revert Params</button>
+        <button class="submit" value="export_params" title="{{help_txt['bt_1']}}">Export Params</button>
+        <button class="submit" value="evaluate" title="{{help_txt['bt_2']}}">Evaluate Position</button>
+        <button class="submit" value="new_hand" title="{{help_txt['bt_3']}}">Evaluate New Hand</button>
       </div>
     </div>
   </form>
@@ -425,15 +425,15 @@
           <th title="{{help_txt['bd_0']}}">Round</th>
           <th title="{{help_txt['bd_1']}}">(bid_pos)</th>
           {% if player_pos == 3 %}
-          <th>Discard</th>
-          <th>New Hand</th>
+          <th title="{{help_txt['bd_2']}}">Discard</th>
+          <th title="{{help_txt['bd_3']}}">New Hand</th>
           {% endif %}
           <th title="{{help_txt['bd_4']}}">Strength</th>
-          <th>Margin</th>
+          <th title="{{help_txt['bd_5']}}">Margin</th>
           <th title="{{help_txt['bd_6']}}">Bid</th>
-          <th>Strength</th>
-          <th>Margin</th>
-          <th>Bid</th>
+          <th title="{{help_txt['bd_4']}}">Strength</th>
+          <th title="{{help_txt['bd_5']}}">Margin</th>
+          <th title="{{help_txt['bd_6']}}">Bid</th>
         </tr>
         {% for bid in bidding %}
         {% set base_bid = base_bidding[loop.index0] %}
@@ -486,6 +486,10 @@
    $("span:contains('\u2666')").css('color', 'red')
    $("th:contains('(bid_pos)')").css('font-weight', 'normal')
    $("td.td_dec input").attr('step', "0.01");
+   $("button.submit").attr({
+     type: 'submit',
+     name: "submit_func"
+   })
   </script>
 </body>
 
