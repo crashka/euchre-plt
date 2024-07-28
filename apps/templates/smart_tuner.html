@@ -70,6 +70,10 @@
      margin-left: 0.5rem;
      font-size: larger;
    }
+   .spn_bid {
+     color: blue;
+     font-weight: bolder;
+   }
    button[value="evaluate"] {
      font-weight: bolder;
    }
@@ -397,22 +401,32 @@
           </td>
           <td class="td_hand">
             {% if bid.new_hand %}
-              {% for idx in range(5) %}
-            <span>{{bid.new_hand[idx].tag}}</span>
-              {% endfor %}
+            {% for idx in range(5) %}
+            <span>{{bid.new_hand[idx].tag}}</span>&nbsp;
+            {% endfor %}
             {% endif %}
           </td>
           <td class="td_num">{{bid.strength}}</td>
           <td class="td_num">{{bid.margin}}</td>
           <td class="td_txt">
-            <span>{{bid.bid.suit.disp}}</span>
-            {{bid.bid.alone_str}}
+            {% if bid.bid.suit.idx < 0 %}
+            <span class="spn_pass">pass</span> <span>{{bid.eval_suit.disp}}</span>
+            {% elif bid.bid.alone %}
+            <span>{{bid.bid.suit.disp}}</span> <span class="spn_bid">alone</span>
+            {% else %}
+            <span class="spn_bid">call</span> <span>{{bid.bid.suit.disp}}</span>
+            {% endif %}
           </td>
           <td class="td_num">{{base_bid.strength}}</td>
           <td class="td_num">{{base_bid.margin}}</td>
           <td class="td_txt">
-            <span>{{base_bid.bid.suit.disp}}</span>
-            {{base_bid.bid.alone_str}}
+            {% if base_bid.bid.suit.idx < 0 %}
+            <span class="spn_pass">pass</span> <span>{{base_bid.eval_suit.disp}}</span>
+            {% elif base_bid.bid.alone %}
+            <span>{{base_bid.bid.suit.disp}}</span> <span class="spn_bid">alone</span>
+            {% else %}
+            <span class="spn_bid">call</span> <span>{{base_bid.bid.suit.disp}}</span>
+            {% endif %}
           </td>
         </tr>
         {% endfor %}

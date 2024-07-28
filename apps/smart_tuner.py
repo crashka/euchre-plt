@@ -61,6 +61,7 @@ class Bidding(NamedTuple):
     """
     discard:     Card    # only for position 3
     new_hand:    Hand    # only for position 3
+    eval_suit:   Suit    # turn suit (round 1) or best suit (round 2)
     strength:    Number  # aggregate
     margin:      Number
     bid:         Bid
@@ -117,12 +118,8 @@ def get_hand() -> tuple[Hand, Card]:
 
 # monkeypatch display properties for ``Bid`` and ``Suit`` to help keep things cleaner
 # in the template
-def alone_str(self) -> str:
-    return " alone" if self.alone else ""
-
 setattr(Suit, 'disp', property(Suit.__str__))
 setattr(Bid, 'disp', property(Bid.__str__))
-setattr(Bid, 'alone_str', property(alone_str))
 
 @app.get("/")
 def index():
@@ -260,9 +257,14 @@ def get_bidding(strg: Strategy, hand: Hand, turn: Card) -> list[Bidding]:
             margin = round(margin, FLOAT_PREC)
         if cards := persist.get('new_hand'):
             new_hand = sorted(cards, key=disp_key)
+        if best_suit := persist.get('best_suit'):
+            eval_suit = best_suit
+        else:
+            eval_suit = turn.suit
 
         ret.append(Bidding(persist.get('discard'),
                            new_hand,
+                           eval_suit,
                            strength,
                            margin,
                            bid,
