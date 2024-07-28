@@ -45,6 +45,8 @@ coeff_names = [
 ]
 
 SUBMIT_FUNCS = [
+    'revert_params',
+    'export_params',
     'new_hand',
     'evaluate'
 ]
@@ -58,7 +60,7 @@ NULL_HAND = Hand([NULL_CARD] * 5)
 PASSES    = [PASS_BID] * 8
 NONES     = [None] * 10
 
-class Bidding(NamedTuple):
+class BidInfo(NamedTuple):
     """Encapsulated bidding information for each hand and bidding position
     """
     round:     int     # 0-1
@@ -77,17 +79,18 @@ class Context(NamedTuple):
 
     Note: we may not use this directly, but at least it serves as a reference
     """
-    title:      str
-    strategy:   str
-    strategies: list[str]
-    player_pos: int
-    anly:       HandAnalysisSmart
-    strg:       Strategy
-    coeff:      list[Number]
-    hand:       Hand
-    turn:       Card
-    bids:       list[Bidding]
-    base_bids:  list[Bidding]
+    title:        str
+    strategy:     str
+    strategies:   list[str]
+    player_pos:   int
+    anly:         HandAnalysisSmart
+    strg:         Strategy
+    coeff:        list[Number]
+    hand:         Hand
+    turn:         Card
+    bidding:      list[BidInfo]
+    base_bidding: list[BidInfo]
+    help_txt:     dict[str, str]
 
 def get_strg_comps(strg_name: str, hand: Hand, **kwargs) -> StrgComps:
     """Get strategy and analysis components for the specified hand
@@ -155,7 +158,13 @@ def index():
         'bids':       None,
         'base_bids':  None
     }
-    return render_template("smart_tuner.html", **context)
+    return render_app(context)
+
+def render_app(context) -> str:
+    """Common post-processing of context before rendering the main app page through Jinja
+    """
+    context['help_txt'] = help_txt
+    return render_template(APP_TEMPLATE, **context)
 
 @app.post("/")
 def submit():
@@ -167,18 +176,35 @@ def submit():
         abort(404, f"Invalid submit func '{func}'")
     return globals()[func](request.form)
 
+def revert_params(form: dict) -> str:
+    """
+    """
+    abort(501, "coming soon...")
+
+def export_params(form: dict) -> str:
+    """
+    """
+    abort(501, "coming soon...")
+
+def evaluate(form: dict) -> str:
+    """Recompute using the selected position and analysis/strategy parameters, using the
+    existing deal context (i.e. hand and turn card)
+    """
+    return compute(form)
+
 def new_hand(form: dict) -> str:
-    """Generate a new hand, the call ``evaluate()`` (using all existing parameters values)
+    """Generate new hand and turn card, then recompute using current analysis/strategy
+    parameters values
     """
     hand, turn = get_hand()
-    return evaluate(form, hand, turn)
+    return compute(form, hand=hand, turn=turn)
 
-def evaluate(form: dict, hand: Hand = None, turn: Card = None) -> str:
+def compute(form: dict, hand: Hand = None, turn: Card = None) -> str:
     """Compute the hand strength and determine bidding for the current strategy and deal
-    context
+    context (i.e. hand and turn card)
 
-    Will continue using the hand and turn card from ``form`` if not passed in (e.g. new
-    hand requested)
+    Will continue using the hand and turn card from ``form`` if not specified in
+    ``kwargs``
     """
     # set and validate `strategy`
     if not (strategy := form.get('strategy')):
@@ -194,6 +220,35 @@ def evaluate(form: dict, hand: Hand = None, turn: Card = None) -> str:
         hand = Hand([get_card(form[f'hand_{n}']) for n in range(5)])
         turn = get_card(form['turn_card'])
 
+    strg_config = get_strg_config(form)
+    strg, anly, coeff = get_strg_comps(strategy, hand, **strg_config)
+    base_strg, base_anly, _ = get_strg_comps(strategy, hand)
+    # TODO: it would be cool to do a diff of the parameters, etc. so we could highlight
+    # the ones that have been modified, and show the associated changes in hand strength
+    # values as well!!!
+
+    bidding = get_bidding(strg, pos, hand, turn)
+    base_bidding = get_bidding(base_strg, pos, hand, turn)
+
+    context = {
+        'title':        APP_NAME,
+        'strategy':     form['strategy'],
+        'strategies':   strategies,
+        'player_pos':   pos,
+        'anly':         anly,
+        'strg':         strg,
+        'coeff':        coeff,
+        'hand':         hand,
+        'turn':         turn,
+        'bidding':      bidding,
+        'base_bidding': base_bidding
+    }
+    return render_app(context)
+
+def get_strg_config(form: dict) -> dict:
+    """Extract StrategySmart configuration (with embedded SmartHandAnalysis params),
+    return format is the same as config file YAML
+    """
     trump_values     = [int(form[f'tv_{n}']) for n in range(8)]
     suit_values      = [int(form[f'sv_{n}']) for n in range(6)]
     num_trump_scores = [float(form[f'nts_{n}']) for n in range(6)]
@@ -225,34 +280,12 @@ def evaluate(form: dict, hand: Hand = None, turn: Card = None) -> str:
         'hand_analysis'   : hand_analysis
     }
 
-    strg, anly, coeff       = get_strg_comps(strategy, hand, **strg_config)
-    base_strg, base_anly, _ = get_strg_comps(strategy, hand)
-    # TODO: it would be cool to do a diff of the parameters, etc. so we could highlight
-    # the ones that have been modified, and show the associated changes in hand strength
-    # values as well!!!
+    return strg_config
 
-    bids      = get_bidding(strg, pos, hand, turn)
-    base_bids = get_bidding(base_strg, pos, hand, turn)
-
-    context = {
-        'title':      APP_NAME,
-        'strategy':   form['strategy'],
-        'strategies': strategies,
-        'player_pos': pos,
-        'anly':       anly,
-        'strg':       strg,
-        'coeff':      coeff,
-        'hand':       hand,
-        'turn':       turn,
-        'bids':       bids,
-        'base_bids':  base_bids
-    }
-    return render_template(APP_TEMPLATE, **context)
-
-def get_bidding(strg: Strategy, pos: int, hand: Hand, turn: Card) -> list[Bidding]:
-    """Return list of ``Bidding`` information, one element for each bid position
+def get_bidding(strg: Strategy, pos: int, hand: Hand, turn: Card) -> list[BidInfo]:
+    """Return list of ``BidInfo`` information, one element for each bid position
     """
-    ret = []
+    bidding = []
 
     for rnd in range(2):
         bid_pos  = rnd * NUM_PLAYERS + pos
@@ -279,7 +312,7 @@ def get_bidding(strg: Strategy, pos: int, hand: Hand, turn: Card) -> list[Biddin
         if sub_strgths := persist.get('sub_strgths'):
             details = json.dumps(sub_strgths, indent=2)
 
-        ret.append(Bidding(rnd,
+        bid_info = BidInfo(rnd,
                            pos,
                            bid_pos,
                            persist.get('discard'),
@@ -288,10 +321,17 @@ def get_bidding(strg: Strategy, pos: int, hand: Hand, turn: Card) -> list[Biddin
                            strength,
                            details,
                            margin,
-                           bid))
-        pass  # for debugging
+                           bid)
+        bidding.append(bid_info)
 
-    return ret
+    return bidding
+
+help_txt = {}
+# bidding table
+help_txt['bd_0'] = "bidding round (1-2)"
+help_txt['bd_1'] = "corresponds to bid_pos for Strategy (above)"
+help_txt['bd_4'] = "hover over individual strengths to get details"
+help_txt['bd_6'] = "turn suit (rd 1) or strongest suit (rd2) is shown when passing"
 
 if __name__ == "__main__":
     app.run(debug=True)

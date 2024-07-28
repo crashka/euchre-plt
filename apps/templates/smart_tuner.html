@@ -6,10 +6,10 @@
 
   <style>
    div.section {
-     margin-top: 1rem;
+     margin-top: 0.75rem;
    }
    div.subsection {
-     margin-top: 0.5rem;
+     margin-top: 0.3rem;
    }
    span.sect_label {
      font-size: larger;
@@ -56,6 +56,7 @@
    }
    table.pos_layout td {
      text-align: center;
+     font-size: smaller;
    }
    input[type="number"] {
      width: 3rem;
@@ -86,6 +87,15 @@
      margin: 0;
    }
   </style>
+
+  <script src="/static/jquery-3.7.1.min.js"></script>
+  <script>
+   $(document).on('change',".sel_strategy", function() {
+     var value = $(this).val();
+     var curpage = window.location.origin + window.location.pathname;
+     window.location.href = curpage + "?strategy=" + encodeURIComponent(value);
+   });
+  </script>
 </head>
 
 <body>
@@ -389,7 +399,7 @@
       </div>
     </div>
   </form>
-  {% if bids %}
+  {% if bidding %}
   <div class="section">
     <span class="sect_label">Results</span>
     <div class="subsection">
@@ -400,8 +410,10 @@
         <colgroup>
           <col class="col_num">
           <col class="col_num">
+          {% if player_pos == 3 %}
           <col class="col_txt">
           <col class="col_txt_long">
+          {% endif %}
           <col class="col_num">
           <col class="col_num">
           <col class="col_txt">
@@ -410,22 +422,25 @@
           <col class="col_txt">
         </colgroup>
         <tr>
-          <th>Round</th>
-          <th title="corresponds to bid_pos for Strategy (above)">Bid Pos</th>
+          <th title="{{help_txt['bd_0']}}">Round</th>
+          <th title="{{help_txt['bd_1']}}">(bid_pos)</th>
+          {% if player_pos == 3 %}
           <th>Discard</th>
           <th>New Hand</th>
-          <th>Strength</th>
+          {% endif %}
+          <th title="{{help_txt['bd_4']}}">Strength</th>
           <th>Margin</th>
-          <th>Bid</th>
+          <th title="{{help_txt['bd_6']}}">Bid</th>
           <th>Strength</th>
           <th>Margin</th>
           <th>Bid</th>
         </tr>
-        {% for bid in bids %}
-        {% set base_bid = base_bids[loop.index0] %}
+        {% for bid in bidding %}
+        {% set base_bid = base_bidding[loop.index0] %}
         <tr>
           <td class="td_num">{{bid.round + 1}}</td>
           <td class="td_num">{{bid.bid_pos}}</td>
+          {% if player_pos == 3 %}
           <td class="td_txt">
             {% if bid.discard %}
             <span>{{bid.discard.tag}}</span>
@@ -438,15 +453,15 @@
             {% endfor %}
             {% endif %}
           </td>
+          {% endif %}
           <td class="td_num" title="{{bid.details}}">{{bid.strength}}</td>
           <td class="td_num">{{bid.margin}}</td>
           <td class="td_txt">
             {% if bid.bid.suit.idx < 0 %}
             <span class="spn_pass">pass</span> <span>{{bid.eval_suit.disp}}</span>
-            {% elif bid.bid.alone %}
-            <span>{{bid.bid.suit.disp}}</span> <span class="spn_bid">alone</span>
             {% else %}
-            <span class="spn_bid">call</span> <span>{{bid.bid.suit.disp}}</span>
+            <span class="spn_bid">{{"alone" if bid.bid.alone else "call"}}</span>
+            <span> </span><span>{{bid.bid.suit.disp}}</span>
             {% endif %}
           </td>
           <td class="td_num" title="{{base_bid.details}}">{{base_bid.strength}}</td>
@@ -454,10 +469,9 @@
           <td class="td_txt">
             {% if base_bid.bid.suit.idx < 0 %}
             <span class="spn_pass">pass</span> <span>{{base_bid.eval_suit.disp}}</span>
-            {% elif base_bid.bid.alone %}
-            <span>{{base_bid.bid.suit.disp}}</span> <span class="spn_bid">alone</span>
             {% else %}
-            <span class="spn_bid">call</span> <span>{{base_bid.bid.suit.disp}}</span>
+            <span class="spn_bid">{{"alone" if base_bid.bid.alone else "call"}}</span>
+            <span> </span><span>{{base_bid.bid.suit.disp}}</span>
             {% endif %}
           </td>
         </tr>
@@ -467,22 +481,10 @@
   </div>
   {% endif %}
 
-  <script src="/static/jquery-3.7.1.min.js"></script>
   <script>
-   $(document).on('change',".sel_strategy", function() {
-     var value = $(this).val();
-     var curpage = window.location.origin + window.location.pathname;
-     window.location.href = curpage + "?strategy=" + encodeURIComponent(value);
-   });
-
-   $("span:contains('\u2665')").css({
-     color: function() { return 'red'; }
-   });
-
-   $("span:contains('\u2666')").css({
-     color: function() { return 'red'; }
-   });
-
+   $("span:contains('\u2665')").css('color', 'red')
+   $("span:contains('\u2666')").css('color', 'red')
+   $("th:contains('(bid_pos)')").css('font-weight', 'normal')
    $("td.td_dec input").attr('step', "0.01");
   </script>
 </body>
