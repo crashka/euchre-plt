@@ -6,7 +6,8 @@ for manually testing/tweaking the various parameters, coefficients, and threshol
 
 To Do list:
 
-- Sort cards in hand for display
+- Show turn card strength contribution/penalty
+- Normalize sub-strenth contributions (as a percentage)
 - Highlight params/coeffs that have been changed from the base config
 - Convert to single-page app using ajax
 """
