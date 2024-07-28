@@ -13,6 +13,7 @@ To Do list:
 
 from typing import NamedTuple
 from numbers import Number
+import json
 
 from flask import Flask, request, render_template, abort
 
@@ -59,13 +60,16 @@ NONES     = [None] * 10
 class Bidding(NamedTuple):
     """Encapsulated bidding information for each hand and bidding position
     """
-    discard:     Card    # only for position 3
-    new_hand:    Hand    # only for position 3
-    eval_suit:   Suit    # turn suit (round 1) or best suit (round 2)
-    strength:    Number  # aggregate
-    margin:      Number
-    bid:         Bid
-    sub_strgths: dict[str, Number]  # indexed by score name
+    round:     int     # 0-1
+    pos:       int     # 0-3 (dealer = 3)
+    bid_pos:   int     # TEMP: for debugging!!! 0-7
+    discard:   Card    # only for round 1, pos 3 (bid_pos 3)
+    new_hand:  Hand    # only for round 1, pos 3 (bid_pos 3)
+    eval_suit: Suit    # turn suit (round 1) or best suit (round 2)
+    strength:  Number  # aggregate (hand + turn)
+    details:   str     # sub-strength contributions
+    margin:    Number
+    bid:       Bid
 
 class Context(NamedTuple):
     """Context members referenced by the Jinja template
@@ -75,6 +79,7 @@ class Context(NamedTuple):
     title:      str
     strategy:   str
     strategies: list[str]
+    player_pos: int
     anly:       HandAnalysisSmart
     strg:       Strategy
     coeff:      list[Number]
@@ -140,6 +145,7 @@ def index():
         'title':      APP_NAME,
         'strategy':   strategy,
         'strategies': strategies,
+        'player_pos': 0 if strategy else -1,
         'anly':       anly,
         'strg':       strg,
         'coeff':      coeff,
@@ -157,7 +163,7 @@ def submit():
     """
     func = request.form['submit_func']
     if func not in SUBMIT_FUNCS:
-        abort(404)
+        abort(404, f"Invalid submit func '{func}'")
     return globals()[func](request.form)
 
 def new_hand(form: dict) -> str:
@@ -173,9 +179,15 @@ def evaluate(form: dict, hand: Hand = None, turn: Card = None) -> str:
     Will continue using the hand and turn card from ``form`` if not passed in (e.g. new
     hand requested)
     """
-    if 'strategy' not in form:
-        abort(500, "Empty or invalid strategy specified")
-    strategy = form['strategy']
+    # set and validate `strategy`
+    if not (strategy := form.get('strategy')):
+        abort(500, "Strategy not selected")
+    elif strategy not in strategies:
+        abort(500, f"Invalid strategy ({strategy}) specified")
+
+    if not (player_pos := form.get('player_pos')):  # note that bool('0') == True
+        abort(500, "Player position not selected")
+    pos = int(player_pos)
 
     if not hand:
         hand = Hand([get_card(form[f'hand_{n}']) for n in range(5)])
@@ -218,13 +230,14 @@ def evaluate(form: dict, hand: Hand = None, turn: Card = None) -> str:
     # the ones that have been modified, and show the associated changes in hand strength
     # values as well!!!
 
-    bids      = get_bidding(strg, hand, turn)
-    base_bids = get_bidding(base_strg, hand, turn)
+    bids      = get_bidding(strg, pos, hand, turn)
+    base_bids = get_bidding(base_strg, pos, hand, turn)
 
     context = {
         'title':      APP_NAME,
         'strategy':   form['strategy'],
         'strategies': strategies,
+        'player_pos': pos,
         'anly':       anly,
         'strg':       strg,
         'coeff':      coeff,
@@ -235,20 +248,21 @@ def evaluate(form: dict, hand: Hand = None, turn: Card = None) -> str:
     }
     return render_template(APP_TEMPLATE, **context)
 
-def get_bidding(strg: Strategy, hand: Hand, turn: Card) -> list[Bidding]:
+def get_bidding(strg: Strategy, pos: int, hand: Hand, turn: Card) -> list[Bidding]:
     """Return list of ``Bidding`` information, one element for each bid position
     """
     ret = []
 
-    for pos in range(8):
-        bids     = PASSES[:pos]
-        bid_pos  = pos % NUM_PLAYERS
+    for rnd in range(2):
+        bid_pos  = rnd * NUM_PLAYERS + pos
+        bids     = PASSES[:bid_pos]
         persist  = {}  # addl output values from `bid()` call
         new_hand = None
+        details  = None
 
         # construct minimum functional faux deal state (only bidding fields, and
         # `persist`, needed)
-        deal = DealState(bid_pos, hand, turn, bids, *NONES, persist)
+        deal = DealState(pos, hand, turn, bids, *NONES, persist)
         bid = strg.bid(deal)  # this call updates `persist`!
 
         if strength := persist.get('strength'):
@@ -261,14 +275,19 @@ def get_bidding(strg: Strategy, hand: Hand, turn: Card) -> list[Bidding]:
             eval_suit = best_suit
         else:
             eval_suit = turn.suit
+        if sub_strgths := persist.get('sub_strgths'):
+            details = json.dumps(sub_strgths, indent=2)
 
-        ret.append(Bidding(persist.get('discard'),
+        ret.append(Bidding(rnd,
+                           pos,
+                           bid_pos,
+                           persist.get('discard'),
                            new_hand,
                            eval_suit,
                            strength,
+                           details,
                            margin,
-                           bid,
-                           persist.get('sub_strgths')))
+                           bid))
         pass  # for debugging
 
     return ret

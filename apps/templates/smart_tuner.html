@@ -54,6 +54,9 @@
    .td_hand {
      text-align: center;
    }
+   table.pos_layout td {
+     text-align: center;
+   }
    input[type="number"] {
      width: 3rem;
      text-align: center;
@@ -68,7 +71,6 @@
    .spn_card {
      width: 3rem;
      margin-left: 0.5rem;
-     font-size: larger;
    }
    .spn_bid {
      color: blue;
@@ -92,11 +94,7 @@
       <select name="strategy" class="sel_strategy">
         {% if strategy %}
         {% for strat in strategies %}
-        {% if strat == strategy %}
-        <option value="{{strat}}" selected>{{strat}}</option>
-        {% else %}
-        <option value="{{strat}}">{{strat}}</option>
-        {% endif %}
+        <option value="{{strat}}"{{" selected" if strat == strategy else ""}}>{{strat}}</option>
         {% endfor %}
         {% else %}
         <option value="" disabled selected></option>
@@ -265,7 +263,7 @@
           <col class="col_num">
         </colgroup>
         <tr>
-          <th></th>
+          <th class="td_lbl">(bid_pos)</th>
           <th>0</th>
           <th>1</th>
           <th>2</th>
@@ -343,6 +341,33 @@
     </div>
     <div class="section">
       <span class="sect_label">Deal Info</span>
+
+      <div class="subsection">
+        <span>Position:</span>
+        <table class="pos_layout">
+          <tr>
+            <td></td>
+            <td><input type="radio" name="player_pos" value="1"{{" checked" if player_pos == 1 else ""}}></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td><input type="radio" name="player_pos" value="0"{{" checked" if player_pos == 0 else ""}}></td>
+            <td></td>
+            <td><input type="radio" name="player_pos" value="2"{{" checked" if player_pos == 2 else ""}}></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td><input type="radio" name="player_pos" value="3"{{" checked" if player_pos == 3 else ""}}></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>(dealer)</td>
+            <td></td>
+          </tr>
+        </table>
+      </div>
+
       <div class="subsection">
         <span>Hand:</span>
         {% for card in hand %}
@@ -367,8 +392,12 @@
   <div class="section">
     <span class="sect_label">Results</span>
     <div class="subsection">
+      <span>Position: {{player_pos + 1}}</span>
+    </div>
+    <div class="subsection">
       <table class="tbl_results">
         <colgroup>
+          <col class="col_num">
           <col class="col_num">
           <col class="col_txt">
           <col class="col_txt_long">
@@ -380,7 +409,8 @@
           <col class="col_txt">
         </colgroup>
         <tr>
-          <th>Bid Pos</th>
+          <th>Round</th>
+          <th title="corresponds to bid_pos for Strategy (above)">Bid Pos</th>
           <th>Discard</th>
           <th>New Hand</th>
           <th>Strength</th>
@@ -393,7 +423,8 @@
         {% for bid in bids %}
         {% set base_bid = base_bids[loop.index0] %}
         <tr>
-          <td class="td_num">{{loop.index0}}</td>
+          <td class="td_num">{{bid.round + 1}}</td>
+          <td class="td_num">{{bid.bid_pos}}</td>
           <td class="td_txt">
             {% if bid.discard %}
             <span>{{bid.discard.tag}}</span>
@@ -402,11 +433,11 @@
           <td class="td_hand">
             {% if bid.new_hand %}
             {% for idx in range(5) %}
-            <span>{{bid.new_hand[idx].tag}}</span>&nbsp;
+            <span class="spn_card">{{bid.new_hand[idx].tag}}</span>
             {% endfor %}
             {% endif %}
           </td>
-          <td class="td_num">{{bid.strength}}</td>
+          <td class="td_num" title="{{bid.details}}">{{bid.strength}}</td>
           <td class="td_num">{{bid.margin}}</td>
           <td class="td_txt">
             {% if bid.bid.suit.idx < 0 %}
@@ -417,7 +448,7 @@
             <span class="spn_bid">call</span> <span>{{bid.bid.suit.disp}}</span>
             {% endif %}
           </td>
-          <td class="td_num">{{base_bid.strength}}</td>
+          <td class="td_num" title="{{base_bid.details}}">{{base_bid.strength}}</td>
           <td class="td_num">{{base_bid.margin}}</td>
           <td class="td_txt">
             {% if base_bid.bid.suit.idx < 0 %}
