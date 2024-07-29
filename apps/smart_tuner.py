@@ -363,12 +363,12 @@ def get_details(persist: dict) -> str:
     lines = []
     # note we are hard-wiring the precision for this output (`FLOAT_PREC` is more
     # about aligning form-filling data with input precision in the template)
-    lines.append(f"Hand Strength: {hand_strength:.1f}")
+    lines.append(f"Hand Strength: {hand_strength:.2f}")
     lines.append("")
     lines.append("Component Strength Val:")
     for coeff in coeff_list:
         comp_val = sub_strgths[coeff]
-        lines.append(f"  {coeff}:  {comp_val:.1f}")
+        lines.append(f"  {coeff}:  {comp_val:.2f}")
     lines.append("")
     lines.append("Component Strength Pct:")
     for coeff in coeff_list:

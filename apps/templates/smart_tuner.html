@@ -23,6 +23,13 @@
    }
    .tbl_results {
      margin-top: 0.25rem;
+     border-collapse: collapse;
+   }
+   .tbl_results th {
+     border: 1px solid lightgrey;
+   }
+   .tbl_results td {
+     border: 1px solid lightgrey;
    }
    .col_lbl {
      width: 10rem;
@@ -422,6 +429,14 @@
           <col class="col_txt">
         </colgroup>
         <tr>
+          <th colspan="2"></th>
+          {% if player_pos == 3 %}
+          <th colspan="2"></th>
+          {% endif %}
+          <th colspan="3">Current Params</th>
+          <th colspan="3">Baseline Params</th>
+        </tr>
+        <tr>
           <th title="{{help_txt['bd_0']}}">Round</th>
           <th title="{{help_txt['bd_1']}}">(bid_pos)</th>
           {% if player_pos == 3 %}
@@ -484,6 +499,7 @@
   <script>
    $("span:contains('\u2665')").css('color', 'red')
    $("span:contains('\u2666')").css('color', 'red')
+   $("th:empty").css('border', 'none');
    $("th:contains('(bid_pos)')").css('font-weight', 'normal')
    $("td.td_dec input").attr('step', "0.01");
    $("button.submit").attr({

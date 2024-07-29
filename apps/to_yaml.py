@@ -23,20 +23,13 @@ Scalar    = Number | str | None
 Nonscalar = Mapping | list
 AnyT      = Scalar | Nonscalar
 
-class Params(NamedTuple):
-    """Encapsulation for formatting args (REVISIT: not pretty, might be better to do the
-    implementation as a class!)
-    """
-    indent:  int
-    offset:  int
-    maxsize: int
-    maxline: int
-
 DFLT_INDENT  = 2
 DFLT_OFFSET  = 0
 DFLT_MAXSIZE = 10
 DFLT_MAXLINE = 90
+DFLT_PADDING = 2
 
+# a couple of utility functions
 def all_scalars(data: Sequence) -> bool:
     """Return true if all elements of the Sequence are scalars
 
@@ -51,125 +44,153 @@ def max_keylen(data: Mapping) -> int:
     keylens = [len(x) for x in data.keys()]
     return max(keylens)
 
-def single_line(data: AnyT, pfx: str, params: Params) -> str | None:
-    """Format data for single-line output given the prefix for the line (used to determine
-    the overall line length as well as generate the string); return ``None`` if data does
-    not qualify (e.g. ``maxsize`` or ``maxline`` exceeded)
-
-    Note that scalar data always comes back as a single line
-    """
-    if isinstance(data, Scalar):
-        return pfx + ' ' + repr(data)
-
-    vals = data.values() if isinstance(data, Mapping) else data
-    if not all_scalars(vals):
-        return None
-
-    if len(data) > params.maxsize:
-        return None
-
-    line = pfx + ' ' + repr(data)
-    if len(line) > params.maxline:
-        return None
-
-    return line
-
-def dict_data(data: dict, params: Params, level: int) -> list[str]:
-    """Return list of lines representing dict data as YAML
-    """
-    assert isinstance(data, dict)
-    tabstop = ' ' * (level * params.indent)
-
-    if len(data) == 0:
-        return tabstop + '{}'
-
-    output = []
-
-    field_size = max_keylen(data) + 2
-    for key, val in data.items():
-        pfx = f"{tabstop}{key + ':':{field_size}}"
-        if isinstance(val, dict):
-            if line := single_line(val, pfx, params):
-                output.append(line)
-            else:
-                output.append(pfx)
-                lines = dict_data(val, params, level + 1)
-                output.extend(lines)
-        elif isinstance(val, list):
-            if line := single_line(val, pfx, params):
-                output.append(line)
-            else:
-                output.append(pfx)
-                lines = list_data(val, params, level + 1)
-                output.extend(lines)
-        else:
-            assert isinstance(val, Scalar)
-            line = single_line(val, pfx, params)
-            output.append(line)
-
-    return output
-
-def list_data(data: list, params: Params, level: int) -> list:
-    """Return list of lines representing list data as YAML
-    """
-    assert isinstance(data, list)
-    tabstop = ' ' * (level * params.indent)
-
-    if len(data) == 0:
-        return '[]'
-
-    output = []
-    pfx = tabstop + '-'
-    for val in data:
-        if isinstance(val, dict):
-            if line := single_line(val, pfx, params):
-                output.append(line)
-            else:
-                output.append(pfx)
-                lines = dict_data(val, params, level + 1)
-                output.extend(lines)
-        elif isinstance(val, list):
-            if line := single_line(val, pfx, params):
-                output.append(line)
-            else:
-                output.append(pfx)
-                lines = list_data(val, params, level + 1)
-                output.extend(lines)
-        else:
-            assert isinstance(val, Scalar)
-            line = single_line(val, pfx, params)
-            output.append(line)
-
-    return output
-
-def to_yaml(data: dict | list, **kwargs) -> str:
+class YamlGenerator:
     """Generate nice looking YAML
+
+    Usage::
+
+      from to_yaml import to_yaml
+
+      data_yaml = to_yaml(data, indent=2, offset=4)
 
     Supports the following keyword args:
 
     - ``indent`` - level of indentation between levels (default = 2)
-    - ``offset`` - offset for the entire output, e.g. representing interior of a document
-      body (default = 0)
-    - ``maxsize`` - max number of items for single- vs. multi-line representations of lists
-      of dicts (default = 10)
+    - ``offset`` - offset for the entire output, e.g. representing the interior of a
+      document body (default = 0)
+    - ``maxsize`` - max number of items for single- vs. multi-line representations of
+      lists of dicts (default = 10)
     - ``maxline`` - max line length for single- vs. multi-line representations of lists or
       dicts (default = 90)
+    - ``padding`` - minimum padding between key name + colon and corresponding value for
+      "associative arrays" (i.e. dicts, in python) (default = 2)
     """
-    indent  = kwargs.get('indent') or DFLT_INDENT
-    offset  = kwargs.get('offset') or DFLT_OFFSET
-    maxsize = kwargs.get('maxsize') or DFLT_MAXSIZE
-    maxline = kwargs.get('maxline') or DFLT_MAXLINE
-    params  = Params(indent, offset, maxsize, maxline)
+    indent:  int
+    offset:  int
+    maxsize: int
+    maxline: int
+    padding: int
 
-    if isinstance(data, list):
-        lines = dict_data(data, params, level=0)
-    elif isinstance(data, dict):
-        lines = dict_data(data, params, level=0)
-    else:
-        raise TypeError(f"Invalid input type ({type(data)})")
+    def __init__(self, **kwargs):
+        self.indent  = kwargs.get('indent') or DFLT_INDENT
+        self.offset  = kwargs.get('offset') or DFLT_OFFSET
+        self.maxsize = kwargs.get('maxsize') or DFLT_MAXSIZE
+        self.maxline = kwargs.get('maxline') or DFLT_MAXLINE
+        self.padding = kwargs.get('padding') or DFLT_PADDING
 
-    tabstop = ' ' * offset
-    return tabstop + ('\n' + tabstop).join(lines)
+    def single_line(self, data: AnyT, pfx: str) -> str | None:
+        """Format data for single-line output given the prefix for the line (used for
+        determining the overall line length as well as generating the string); return
+        ``None`` if data does not qualify (e.g. ``maxsize`` or ``maxline`` exceeded)
+
+        Note that scalar data always comes back as a single line
+        """
+        if isinstance(data, Scalar):
+            return pfx + ' ' + repr(data)
+
+        vals = data.values() if isinstance(data, Mapping) else data
+        if not all_scalars(vals):
+            return None
+
+        if len(data) > self.maxsize:
+            return None
+
+        line = pfx + ' ' + repr(data)
+        if len(line) > self.maxline:
+            return None
+
+        return line
+
+    def dict_data(self, data: dict, level: int) -> list[str]:
+        """Return list of lines representing dict data as YAML
+        """
+        assert isinstance(data, dict)
+        tabstop = ' ' * (level * self.indent)
+
+        if len(data) == 0:
+            return tabstop + '{}'
+
+        output = []
+
+        field_size = max_keylen(data) + self.padding
+        for key, val in data.items():
+            pfx = f"{tabstop}{key + ':':{field_size}}"
+            if isinstance(val, dict):
+                if line := self.single_line(val, pfx):
+                    output.append(line)
+                else:
+                    output.append(pfx)
+                    lines = self.dict_data(val, level + 1)
+                    output.extend(lines)
+            elif isinstance(val, list):
+                if line := self.single_line(val, pfx):
+                    output.append(line)
+                else:
+                    output.append(pfx)
+                    lines = self.list_data(val, level + 1)
+                    output.extend(lines)
+            else:
+                assert isinstance(val, Scalar)
+                line = self.single_line(val, pfx)
+                output.append(line)
+
+        return output
+
+    def list_data(self, data: list, level: int) -> list:
+        """Return list of lines representing list data as YAML
+        """
+        assert isinstance(data, list)
+        tabstop = ' ' * (level * self.indent)
+
+        if len(data) == 0:
+            return '[]'
+
+        output = []
+        pfx = tabstop + '-'
+        for val in data:
+            if isinstance(val, dict):
+                if line := self.single_line(val, pfx):
+                    output.append(line)
+                else:
+                    output.append(pfx)
+                    lines = self.dict_data(val, level + 1)
+                    output.extend(lines)
+            elif isinstance(val, list):
+                if line := self.single_line(val, pfx):
+                    output.append(line)
+                else:
+                    output.append(pfx)
+                    lines = self.list_data(val, level + 1)
+                    output.extend(lines)
+            else:
+                assert isinstance(val, Scalar)
+                line = self.single_line(val, pfx)
+                output.append(line)
+
+        return output
+
+    def to_yaml(self, data: dict | list) -> str:
+        """Return generated YAML
+        """
+        if isinstance(data, dict):
+            lines = self.dict_data(data, level=0)
+        elif isinstance(data, list):
+            lines = self.dict_data(data, level=0)
+        else:
+            raise TypeError(f"Invalid input type ({type(data)})")
+
+        tabstop = ' ' * self.offset
+        return tabstop + ('\n' + tabstop).join(lines)
+
+def to_yaml(data: dict | list, **kwargs) -> str:
+    """Generate nice looking YAML, thin wrapper around ``YamlGenerator.to_yaml()``
+    (hides the containing class)
+
+    See ``YamlGenerator`` for supported keyword args
+    """
+    # delegate all validation, etc. to the class implementation
+    generator = YamlGenerator(**kwargs)
+    return generator.to_yaml(data)
 
 #############
 # test_data #
