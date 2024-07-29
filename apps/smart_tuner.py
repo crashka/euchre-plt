@@ -185,7 +185,7 @@ def render_export(data: dict) -> str:
     """
     context = {
         'title': EXP_NAME,
-        'data':  to_yaml(data, indent=2, offset=6, maxsize=12)
+        'data':  to_yaml(data, indent=2, offset=4, maxsize=12)
     }
     return render_template(EXP_TEMPLATE, **context)
 
@@ -231,7 +231,9 @@ def compute(form: dict, **kwargs) -> str:
         bidding = get_bidding(strg, pos, hand, turn)
         base_bidding = get_bidding(base_strg, pos, hand, turn)
     elif export:
-        return render_export(strg_config)
+        new_strategy = strategy + " (modified)"
+        data = {new_strategy: strg_config}
+        return render_export(data)
 
     context = {
         'title':        APP_NAME,
