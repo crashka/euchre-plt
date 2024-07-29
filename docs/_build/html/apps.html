@@ -273,7 +273,8 @@ persistence, and generate explanatory detail text</p>
 <section id="module-apps.to_yaml">
 <span id="apps-to-yaml-yaml-generator"></span><h2><a class="reference internal" href="#module-apps.to_yaml" title="apps.to_yaml"><code class="xref py py-mod docutils literal notranslate"><span class="pre">apps.to_yaml</span></code></a> – YAML Generator<a class="headerlink" href="#module-apps.to_yaml" title="Link to this heading">¶</a></h2>
 <p>Module (and command line tool) for generating nice looking YAML from a data structure
-(dict or list).  More flexible than <code class="docutils literal notranslate"><span class="pre">yaml.dumps()</span></code> in the <code class="docutils literal notranslate"><span class="pre">pyyaml</span></code> package.</p>
+(i.e. dict or list).  More flexible than <code class="docutils literal notranslate"><span class="pre">yaml.dumps()</span></code> in the <code class="docutils literal notranslate"><span class="pre">pyyaml</span></code> package.</p>
+<p>See <code class="docutils literal notranslate"><span class="pre">to_yaml()</span></code> for usage.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="apps.to_yaml.all_scalars">
 <span class="sig-prename descclassname"><span class="pre">apps.to_yaml.</span></span><span class="sig-name descname"><span class="pre">all_scalars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#apps.to_yaml.all_scalars" title="Link to this definition">¶</a></dt>
@@ -291,28 +292,9 @@ persistence, and generate explanatory detail text</p>
 <dt class="sig sig-object py" id="apps.to_yaml.YamlGenerator">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.to_yaml.</span></span><span class="sig-name descname"><span class="pre">YamlGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apps.to_yaml.YamlGenerator" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Generate nice looking YAML</p>
-<p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">to_yaml</span> <span class="kn">import</span> <span class="n">to_yaml</span>
-
-<span class="n">data_yaml</span> <span class="o">=</span> <span class="n">to_yaml</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Supports the following keyword args:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">indent</span></code> - level of indentation between levels (default = 2)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">offset</span></code> - offset for the entire output, e.g. representing the interior of a
-document body (default = 0)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">maxsize</span></code> - max number of items for single- vs. multi-line representations of
-lists of dicts (default = 10)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">maxline</span></code> - max line length for single- vs. multi-line representations of lists or
-dicts (default = 90)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">padding</span></code> - minimum padding between key name + colon and corresponding value for
-“associative arrays” (i.e. dicts, in python) (default = 2)</p></li>
-</ul>
-<p>Note that supported types in the input data include: <code class="docutils literal notranslate"><span class="pre">list</span></code>, <code class="docutils literal notranslate"><span class="pre">dict</span></code>, and scalars
-(<code class="docutils literal notranslate"><span class="pre">str</span></code>, <code class="docutils literal notranslate"><span class="pre">Number</span></code>, <code class="docutils literal notranslate"><span class="pre">bool</span></code>, <code class="docutils literal notranslate"><span class="pre">NoneType</span></code>, or anything else where <code class="docutils literal notranslate"><span class="pre">repr()</span></code> will
-yield a valid YAML representation)</p>
+<p>Implementation class for <code class="docutils literal notranslate"><span class="pre">to_yaml()</span></code> entry point</p>
+<p>See <code class="docutils literal notranslate"><span class="pre">to_yaml()</span></code> for documentation on supported keyword args and additional
+information</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="apps.to_yaml.YamlGenerator.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apps.to_yaml.YamlGenerator.__init__" title="Link to this definition">¶</a></dt>
@@ -335,14 +317,14 @@ determining the overall line length as well as generating the string); return
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apps.to_yaml.YamlGenerator.list_data">
-<span class="sig-name descname"><span class="pre">list_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#apps.to_yaml.YamlGenerator.list_data" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">list_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#apps.to_yaml.YamlGenerator.list_data" title="Link to this definition">¶</a></dt>
 <dd><p>Return list of lines representing list data as YAML</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apps.to_yaml.YamlGenerator.to_yaml">
 <span class="sig-name descname"><span class="pre">to_yaml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#apps.to_yaml.YamlGenerator.to_yaml" title="Link to this definition">¶</a></dt>
-<dd><p>Return generated YAML</p>
+<dd><p>Return generated YAML representation of specified data</p>
 </dd></dl>
 
 </dd></dl>
@@ -350,9 +332,30 @@ determining the overall line length as well as generating the string); return
 <dl class="py function">
 <dt class="sig sig-object py" id="apps.to_yaml.to_yaml">
 <span class="sig-prename descclassname"><span class="pre">apps.to_yaml.</span></span><span class="sig-name descname"><span class="pre">to_yaml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#apps.to_yaml.to_yaml" title="Link to this definition">¶</a></dt>
-<dd><p>Generate nice looking YAML, thin wrapper around <code class="docutils literal notranslate"><span class="pre">YamlGenerator.to_yaml()</span></code>
-(hides the containing class)</p>
-<p>See <code class="docutils literal notranslate"><span class="pre">YamlGenerator</span></code> for supported keyword args and additional information</p>
+<dd><p>Generate nice looking YAML</p>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">to_yaml</span> <span class="kn">import</span> <span class="n">to_yaml</span>
+
+<span class="n">data_yaml</span> <span class="o">=</span> <span class="n">to_yaml</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Supports the following keyword args:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">indent</span></code> - level of indentation between levels (default = 2)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">offset</span></code> - offset for the entire output, e.g. representing the interior of a
+document body (default = 0)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">maxsize</span></code> - max number of items for single- vs. multi-line representations of
+lists of dicts (default = 10)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">maxline</span></code> - max line length for single- vs. multi-line representations of lists or
+dicts (default = 90)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">padding</span></code> - minimum padding between key name + colon and corresponding value for
+“associative arrays” (i.e. dicts, in python) (default = 2)</p></li>
+</ul>
+<p>Supported types in the input data include: <code class="docutils literal notranslate"><span class="pre">list</span></code>, <code class="docutils literal notranslate"><span class="pre">dict</span></code>, and scalars (<code class="docutils literal notranslate"><span class="pre">str</span></code>,
+<code class="docutils literal notranslate"><span class="pre">Number</span></code>, <code class="docutils literal notranslate"><span class="pre">bool</span></code>, <code class="docutils literal notranslate"><span class="pre">NoneType</span></code>, or anything else where <code class="docutils literal notranslate"><span class="pre">repr()</span></code> will yield a
+valid YAML representation)</p>
+<p>This is the main entry point for the module, but is basically just a thin wrapper
+around <code class="docutils literal notranslate"><span class="pre">YamlGenerator.to_yaml()</span></code> (for convenience)</p>
 </dd></dl>
 
 <dl class="py function">
@@ -370,7 +373,7 @@ determining the overall line length as well as generating the string); return
 <blockquote>
 <div><p>where: “-” for &lt;filename&gt; indicates stdin</p>
 </div></blockquote>
-<p>See <code class="docutils literal notranslate"><span class="pre">YamlGenerator</span></code> for supported keyword args and additional information</p>
+<p>See <code class="docutils literal notranslate"><span class="pre">to_yaml()</span></code> for supported keyword args and additional information</p>
 </dd></dl>
 
 </section>

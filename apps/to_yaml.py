@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 
 """Module (and command line tool) for generating nice looking YAML from a data structure
-(dict or list).  More flexible than ``yaml.dumps()`` in the ``pyyaml`` package.
+(i.e. dict or list).  More flexible than ``yaml.dumps()`` in the ``pyyaml`` package.
+
+See ``to_yaml()`` for usage.
 """
 
 import sys
@@ -18,8 +20,8 @@ from euchplt.utils import parse_argv
 ##################
 
 Scalar    = Number | str | None
-# note: not using `Sequence` here, since it includes str` (and `MutableSequence`
-# is not really right!)
+# note: not using `Sequence` here, since it includes `str` (`MutableSequence`
+# would work for our purposes, but is not really right!)%
 Nonscalar = Mapping | list
 AnyT      = Scalar | Nonscalar
 
@@ -45,29 +47,10 @@ def max_keylen(data: Mapping) -> int:
     return max(keylens)
 
 class YamlGenerator:
-    """Generate nice looking YAML
+    """Implementation class for ``to_yaml()`` entry point
 
-    Usage::
-
-      from to_yaml import to_yaml
-
-      data_yaml = to_yaml(data, indent=2, offset=4)
-
-    Supports the following keyword args:
-
-    - ``indent`` - level of indentation between levels (default = 2)
-    - ``offset`` - offset for the entire output, e.g. representing the interior of a
-      document body (default = 0)
-    - ``maxsize`` - max number of items for single- vs. multi-line representations of
-      lists of dicts (default = 10)
-    - ``maxline`` - max line length for single- vs. multi-line representations of lists or
-      dicts (default = 90)
-    - ``padding`` - minimum padding between key name + colon and corresponding value for
-      "associative arrays" (i.e. dicts, in python) (default = 2)
-
-    Note that supported types in the input data include: ``list``, ``dict``, and scalars
-    (``str``, ``Number``, ``bool``, ``NoneType``, or anything else where ``repr()`` will
-    yield a valid YAML representation)
+    See ``to_yaml()`` for documentation on supported keyword args and additional
+    information
     """
     indent:  int
     offset:  int
@@ -115,10 +98,12 @@ class YamlGenerator:
             return tabstop + '{}'
 
         output = []
-
         field_size = max_keylen(data) + self.padding
         for key, val in data.items():
             pfx = f"{tabstop}{key + ':':{field_size}}"
+            # NOTE: the rest of this loop is identical to the corresponding
+            # code in `list_data` and the two should be kept in sync!!! (not
+            # quite worth refactoring out into common code)
             if isinstance(val, dict):
                 if line := self.single_line(val, pfx):
                     output.append(line)
@@ -140,7 +125,7 @@ class YamlGenerator:
 
         return output
 
-    def list_data(self, data: list, level: int) -> list:
+    def list_data(self, data: list, level: int) -> list[str]:
         """Return list of lines representing list data as YAML
         """
         assert isinstance(data, list)
@@ -152,6 +137,9 @@ class YamlGenerator:
         output = []
         pfx = tabstop + '-'
         for val in data:
+            # NOTE: the rest of this loop is identical to the corresponding
+            # code in `dict_data` and the two should be kept in sync!!! (not
+            # quite worth refactoring out into common code)
             if isinstance(val, dict):
                 if line := self.single_line(val, pfx):
                     output.append(line)
@@ -174,7 +162,7 @@ class YamlGenerator:
         return output
 
     def to_yaml(self, data: dict | list) -> str:
-        """Return generated YAML
+        """Return generated YAML representation of specified data
         """
         if isinstance(data, dict):
             lines = self.dict_data(data, level=0)
@@ -187,10 +175,32 @@ class YamlGenerator:
         return tabstop + ('\n' + tabstop).join(lines)
 
 def to_yaml(data: dict | list, **kwargs) -> str:
-    """Generate nice looking YAML, thin wrapper around ``YamlGenerator.to_yaml()``
-    (hides the containing class)
+    """Generate nice looking YAML
 
-    See ``YamlGenerator`` for supported keyword args and additional information
+    Usage::
+
+      from to_yaml import to_yaml
+
+      data_yaml = to_yaml(data, indent=2, offset=4)
+
+    Supports the following keyword args:
+
+    - ``indent`` - level of indentation between levels (default = 2)
+    - ``offset`` - offset for the entire output, e.g. representing the interior of a
+      document body (default = 0)
+    - ``maxsize`` - max number of items for single- vs. multi-line representations of
+      lists of dicts (default = 10)
+    - ``maxline`` - max line length for single- vs. multi-line representations of lists or
+      dicts (default = 90)
+    - ``padding`` - minimum padding between key name + colon and corresponding value for
+      "associative arrays" (i.e. dicts, in python) (default = 2)
+
+    Supported types in the input data include: ``list``, ``dict``, and scalars (``str``,
+    ``Number``, ``bool``, ``NoneType``, or anything else where ``repr()`` will yield a
+    valid YAML representation)
+
+    This is the main entry point for the module, but is basically just a thin wrapper
+    around ``YamlGenerator.to_yaml()`` (for convenience)
     """
     # delegate all validation, etc. to the class implementation
     generator = YamlGenerator(**kwargs)
@@ -269,7 +279,7 @@ def main() -> int:
 
       where: "-" for <filename> indicates stdin
 
-    See ``YamlGenerator`` for supported keyword args and additional information
+    See ``to_yaml()`` for supported keyword args and additional information
     """
     args, kwargs = parse_argv(sys.argv[1:])
     data = get_data(args)
