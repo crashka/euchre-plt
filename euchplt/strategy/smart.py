@@ -505,12 +505,12 @@ class StrategySmart(Strategy):
         thresh_margin = None
         alone         = False
         sub_strgths   = {}
-        analysis      = HandAnalysisSmart(deal.hand, **self.hand_analysis)
 
         if def_bid:
             if deal.is_partner_caller:
                 # generally shouldn't get here, but just in case...
                 return NULL_BID
+            analysis = HandAnalysisSmart(deal.hand, **self.hand_analysis)
             strength = analysis.hand_strength(deal.contract.suit)
             if strength > self.def_alone_thresh[bid_pos]:
                 alone = True
@@ -527,6 +527,7 @@ class StrategySmart(Strategy):
                     tmp_hand.remove_card(card)
                     tmp_hand.append_card(deal.turn_card)
                     tmp_sub_strgths = {}
+                    analysis = HandAnalysisSmart(tmp_hand, **self.hand_analysis)
                     tmp_strength = analysis.hand_strength(turn_suit, tmp_sub_strgths)
                     strengths.append((card, tmp_hand, tmp_strength, tmp_sub_strgths))
                 strengths.sort(key=lambda t: t[2], reverse=True)
@@ -536,6 +537,7 @@ class StrategySmart(Strategy):
                     bid_suit = turn_suit
                     log.debug(f"Dealer bidding based on discard of {strengths[0][0]}")
             else:
+                analysis = HandAnalysisSmart(deal.hand, **self.hand_analysis)
                 strength = analysis.hand_strength(turn_suit, sub_strgths)
                 # this call takes dealer position into account (partner or opponent)
                 turn_strength = self.get_turn_strength(deal, bid_pos)
@@ -549,6 +551,7 @@ class StrategySmart(Strategy):
         else:
             assert deal.bid_round == 2
             strengths: list[tuple[Suit, float, dict]] = []
+            analysis = HandAnalysisSmart(deal.hand, **self.hand_analysis)
             for suit in SUITS:
                 if suit == turn_suit:
                     continue
@@ -614,7 +617,6 @@ class StrategySmart(Strategy):
         assert deal.turn_card in deal.hand
         turn_suit = deal.turn_card.suit
         persist = deal.player_state
-        analysis = HandAnalysisSmart(tmp_hand, **self.hand_analysis)
 
         # see if best discard was previously computed
         discard = persist.get('discard')
@@ -626,6 +628,7 @@ class StrategySmart(Strategy):
             for card in deal.hand:
                 tmp_hand = deal.hand.copy()
                 tmp_hand.remove_card(card)
+                analysis = HandAnalysisSmart(tmp_hand, **self.hand_analysis)
                 strengths.append((card, analysis.hand_strength(turn_suit)))
             strengths.sort(key=lambda t: t[1], reverse=True)
             discard, strength = strengths[0]

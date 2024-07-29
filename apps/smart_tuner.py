@@ -17,6 +17,7 @@ from numbers import Number
 import json
 
 from flask import Flask, request, render_template, abort
+import yaml
 
 from euchplt.core import cfg
 from euchplt.card import ALL_RANKS, Suit, Card, CARDS, get_card, get_deck
@@ -25,40 +26,16 @@ from euchplt.deal import NUM_PLAYERS
 from euchplt.strategy import Strategy
 from euchplt.analysis import HandAnalysisSmart
 
+#########
+# Setup #
+#########
+
 app = Flask(__name__)
 
 APP_NAME     = "Smart Tuner"
 APP_TEMPLATE = "smart_tuner.html"
-BASE_CLASS   = "StrategySmart"
-
-strategy_list = cfg.config('strategies')
-strategies = [k for k, v in strategy_list.items()
-              if v['base_class'] == BASE_CLASS]
-
-# see REVISIT comment in `get_strg_comps()`
-coeff_names = [
-    'trump_score',
-    'max_suit_score',
-    'num_trump_score',
-    'off_aces_score',
-    'voids_score'
-]
-
-SUBMIT_FUNCS = [
-    'revert_params',
-    'export_params',
-    'new_hand',
-    'evaluate'
-]
-
-FLOAT_PREC = 2
-
-# some random convenience shortcuts
-StrgComps = tuple[Strategy, HandAnalysisSmart, list[Number]]
-NULL_CARD = Card(-1, None, None, '', '', -1, -1)  # hacky
-NULL_HAND = Hand([NULL_CARD] * 5)
-PASSES    = [PASS_BID] * 8
-NONES     = [None] * 10
+EXP_NAME     = "Smart Tuner Export"
+EXP_TEMPLATE = "smart_tuner_exp.html"
 
 class BidInfo(NamedTuple):
     """Encapsulated bidding information for each hand and bidding position
@@ -92,18 +69,14 @@ class Context(NamedTuple):
     base_bidding: list[BidInfo]
     help_txt:     dict[str, str]
 
-def get_strg_comps(strg_name: str, hand: Hand, **kwargs) -> StrgComps:
-    """Get strategy and analysis components for the specified hand
+# some random convenience shortcuts
+StrgComps = tuple[Strategy, HandAnalysisSmart, list[Number]]
+NULL_CARD = Card(-1, None, None, '', '', -1, -1)  # hacky
+NULL_HAND = Hand([NULL_CARD] * 5)
+PASSES    = [PASS_BID] * 8
+NONES     = [None] * 10
 
-    Note: ``coeff`` list is returned as a convenience (doing it here to make sure it is
-    only done in one place, since it is a little dicey right now)
-    """
-    strg = Strategy.new(strg_name, **kwargs)
-    anly = HandAnalysisSmart(hand, **strg.hand_analysis)
-    # REVISIT: this is a little tenuous, depends on consistent ordering between config,
-    # `coeff_names` (above), and Python dict management!!!
-    coeff = [v for k, v in anly.scoring_coeff.items()]
-    return (strg, anly, coeff)
+FLOAT_PREC = 2
 
 ranks = len(ALL_RANKS)
 disp_suit_offset = [ranks, 0, 2 * ranks, 3 * ranks]
@@ -116,23 +89,26 @@ def disp_key(card: Card) -> int:
     # 10, say, which is what most normal people would do)
     return card.rank.idx + disp_suit_offset[card.suit.idx]
 
-def get_hand() -> tuple[Hand, Card]:
-    """Return a new randomly generated hand (sorted for display) and turn card
-    """
-    deck = get_deck()
-    cards = deck[:5]
-    turn = deck[20]
-    hand = Hand(sorted(cards, key=disp_key))
-    return hand, turn
-
 # monkeypatch display properties for ``Bid`` and ``Suit`` to help keep things cleaner
 # in the template
 setattr(Suit, 'disp', property(Suit.__str__))
 setattr(Bid, 'disp', property(Bid.__str__))
 
+################
+# Flask Routes #
+################
+
+SUBMIT_FUNCS = [
+    'revert_params',
+    'export_params',
+    'new_hand',
+    'evaluate'
+]
+
 @app.get("/")
 def index():
-    """Return an empty form
+    """Get the analysis and strategy parameters for the specified strategy (or an empty
+    form if ``strategy`` is not specified in the request)
     """
     anly  = None
     strg  = None
@@ -160,12 +136,6 @@ def index():
     }
     return render_app(context)
 
-def render_app(context) -> str:
-    """Common post-processing of context before rendering the main app page through Jinja
-    """
-    context['help_txt'] = help_txt
-    return render_template(APP_TEMPLATE, **context)
-
 @app.post("/")
 def submit():
     """Process submitted form, switch on ``submit_func`` equals either ``new_hand`` or
@@ -179,12 +149,12 @@ def submit():
 def revert_params(form: dict) -> str:
     """
     """
-    abort(501, "coming soon...")
+    return compute(form, revert=True)
 
 def export_params(form: dict) -> str:
+    """Export of analysis and strategy parameters
     """
-    """
-    abort(501, "coming soon...")
+    return compute(form, export=True)
 
 def evaluate(form: dict) -> str:
     """Compute bidding for selected position and deal context (i.e. hand and turn card),
@@ -201,13 +171,38 @@ def new_hand(form: dict) -> str:
     hand, turn = get_hand()
     return compute(form, hand=hand, turn=turn)
 
-def compute(form: dict, hand: Hand = None, turn: Card = None) -> str:
+################
+# App Routines #
+################
+
+def render_app(context: dict) -> str:
+    """Common post-processing of context before rendering the main app page through Jinja
+    """
+    context['help_txt'] = help_txt
+    return render_template(APP_TEMPLATE, **context)
+
+def render_export(data: dict) -> str:
+    """Export of analysis and strategy parameters
+    """
+    context = {
+        'title': EXP_NAME,
+        'data':  yaml.dump(data, sort_keys=False)
+    }
+    return render_template(EXP_TEMPLATE, **context)
+
+def compute(form: dict, **kwargs) -> str:
     """Compute the hand strength and determine bidding for the current strategy and deal
     context (i.e. hand and turn card)
 
     Will continue using the hand and turn card from ``form`` if not specified in
     ``kwargs``
     """
+    hand:   Hand = kwargs.get('hand')
+    turn:   Card = kwargs.get('turn')
+    revert: bool = bool(kwargs.get('revert', False))
+    export: bool = bool(kwargs.get('export', False))
+    do_bid: bool = bool(kwargs.get('do_bid', True))
+
     # set and validate `strategy`
     if not (strategy := form.get('strategy')):
         abort(500, "Strategy not selected")
@@ -222,15 +217,22 @@ def compute(form: dict, hand: Hand = None, turn: Card = None) -> str:
         hand = Hand([get_card(form[f'hand_{n}']) for n in range(5)])
         turn = get_card(form['turn_card'])
 
-    strg_config = get_strg_config(form)
+    if export:
+        revert = False
+        do_bid = False
+
+    strg_config = get_strg_config(form) if not revert else {}
     strg, anly, coeff = get_strg_comps(strategy, hand, **strg_config)
     base_strg, base_anly, _ = get_strg_comps(strategy, hand)
-    # TODO: it would be cool to do a diff of the parameters, etc. so we could highlight
-    # the ones that have been modified, and show the associated changes in hand strength
-    # values as well!!!
+    # TODO: it would be cool to do a diff of the parameters, etc. so we could
+    # highlight the ones that have been modified, and show the associated changes
+    # in hand strength values as well!!!
 
-    bidding = get_bidding(strg, pos, hand, turn)
-    base_bidding = get_bidding(base_strg, pos, hand, turn)
+    if do_bid:
+        bidding = get_bidding(strg, pos, hand, turn)
+        base_bidding = get_bidding(base_strg, pos, hand, turn)
+    elif export:
+        return render_export(strg_config)
 
     context = {
         'title':        APP_NAME,
@@ -247,6 +249,17 @@ def compute(form: dict, hand: Hand = None, turn: Card = None) -> str:
     }
     return render_app(context)
 
+def get_strg_comps(strg_name: str, hand: Hand, **kwargs) -> StrgComps:
+    """Get strategy and analysis components for the specified hand
+
+    Note: ``coeff`` list is returned as a convenience (doing it here to make sure it is
+    only done in one place, since it is a little dicey right now)
+    """
+    strg  = Strategy.new(strg_name, **kwargs)
+    anly  = HandAnalysisSmart(hand, **strg.hand_analysis)
+    coeff = [v for k, v in anly.scoring_coeff.items()]
+    return (strg, anly, coeff)
+
 def get_strg_config(form: dict) -> dict:
     """Extract StrategySmart configuration (with embedded SmartHandAnalysis params),
     return format is the same as config file YAML
@@ -257,7 +270,6 @@ def get_strg_config(form: dict) -> dict:
     off_aces_scores  = [float(form[f'nas_{n}']) for n in range(4)]
     voids_scores     = [float(form[f'nvs_{n}']) for n in range(4)]
     coeff_values     = [int(form[f'coeff_{n}']) for n in range(5)]
-    # see REVISIT in `get_strg_comps()`!
     scoring_coeff    = dict(zip(coeff_names, coeff_values))
     hand_analysis    = {
         'trump_values'    : trump_values,
@@ -272,7 +284,7 @@ def get_strg_config(form: dict) -> dict:
     turn_card_coeff  = [int(form[f'tcc_{n}']) for n in range(4)]
     bid_thresh       = [int(form[f'bt_{n}']) for n in range(8)]
     alone_margin     = [int(form[f'am_{n}']) for n in range(8)]
-    def_alone_thresh = [int(form[f'dat_{n}']) for n in range(8)]
+    def_alone_thresh = [int(form[f'dat_{n}']) for n in range(11)]
     strg_config  = {
         'turn_card_value' : turn_card_value,
         'turn_card_coeff' : turn_card_coeff,
@@ -283,6 +295,15 @@ def get_strg_config(form: dict) -> dict:
     }
 
     return strg_config
+
+def get_hand() -> tuple[Hand, Card]:
+    """Return a new randomly generated hand (sorted for display) and turn card
+    """
+    deck = get_deck()
+    cards = deck[:5]
+    turn = deck[20]
+    hand = Hand(sorted(cards, key=disp_key))
+    return hand, turn
 
 def get_bidding(strg: Strategy, pos: int, hand: Hand, turn: Card) -> list[BidInfo]:
     """Return list of ``BidInfo`` information, one element for each bid position
@@ -311,8 +332,6 @@ def get_bidding(strg: Strategy, pos: int, hand: Hand, turn: Card) -> list[BidInf
             eval_suit = best_suit
         else:
             eval_suit = turn.suit
-        if sub_strgths := persist.get('sub_strgths'):
-            details = json.dumps(sub_strgths, indent=2)
 
         bid_info = BidInfo(rnd,
                            pos,
@@ -321,12 +340,65 @@ def get_bidding(strg: Strategy, pos: int, hand: Hand, turn: Card) -> list[BidInf
                            new_hand,
                            eval_suit,
                            strength,
-                           details,
+                           get_details(persist),
                            margin,
                            bid)
         bidding.append(bid_info)
 
     return bidding
+
+def get_details(persist: dict) -> str:
+    """Extract component sub-strength and turn card strength info from the strategy
+    persistence, and generate explanatory detail text
+    """
+    coeff_list = coeff_names.copy()
+    sub_strgths = persist.get('sub_strgths')
+    assert sub_strgths
+    turn_strength = persist.get('turn_strength') or 0.0
+    hand_strength = persist.get('strength') - turn_strength
+    turn_pct = turn_strength / hand_strength * 100.0
+    if turn_strength:
+        sub_strgths['turn_card_score**'] = turn_strength
+        coeff_list += ['turn_card_score**']
+
+    lines = []
+    # note we are hard-wiring the precision for this output (`FLOAT_PREC` is more
+    # about aligning form-filling data with input precision in the template)
+    lines.append(f"Hand Strength: {hand_strength:.1f}")
+    lines.append("")
+    lines.append("Component Strength Val:")
+    for coeff in coeff_list:
+        comp_val = sub_strgths[coeff]
+        lines.append(f"  {coeff}:  {comp_val:.1f}")
+    lines.append("")
+    lines.append("Component Strength Pct:")
+    for coeff in coeff_list:
+        comp_val = sub_strgths[coeff]
+        comp_pct = comp_val / hand_strength * 100.0
+        lines.append(f"  {coeff}:  {comp_pct:.1f}%")
+    if turn_strength:
+        lines.append("")
+        lines.append("(** turn_card_score not counted\n" +
+                     "in hand strength, only shown for\n" +
+                     "reference)")
+
+    return '\n'.join(lines)
+
+#########################
+# Content / Metacontent #
+#########################
+
+BASE_CLASS = 'StrategySmart'
+
+strategy_list = cfg.config('strategies')
+strategies = [k for k, v in strategy_list.items()
+              if v['base_class'] == BASE_CLASS]
+
+# this is a little hacky, but does ensure that the coefficient structures are
+# aligned between `get_strg_comps` and `get_strg_config`
+anly = HandAnalysisSmart(NULL_HAND)
+coeff_names = [c for c in anly.scoring_coeff]
+del anly
 
 help_txt = {}
 # bidding table
@@ -336,7 +408,9 @@ help_txt['bd_2'] = ""
 help_txt['bd_3'] = ""
 help_txt['bd_4'] = "hover over individual strengths to get details"
 help_txt['bd_5'] = ""
-help_txt['bd_6'] = "turn suit (rd 1) or strongest suit (rd 2) is shown when passing"
+help_txt['bd_6'] = ("turn suit (rd 1) or strongest suit (rd 2) is shown\n" +
+                    "when passing")
+# submit buttons
 help_txt['bt_0'] = ""
 help_txt['bt_1'] = ""
 help_txt['bt_2'] = ("Compute bidding for selected position and deal\n" +
@@ -345,6 +419,10 @@ help_txt['bt_2'] = ("Compute bidding for selected position and deal\n" +
 help_txt['bt_3'] = ("Generate new hand and turn card, then recompute\n" +
                     "bidding using current analysis and strategy\n" +
                     "parameters")
+
+############
+# __main__ #
+############
 
 if __name__ == "__main__":
     app.run(debug=True)
