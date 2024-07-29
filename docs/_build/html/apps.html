@@ -40,50 +40,70 @@
 for manually testing/tweaking the various parameters, coefficients, and thresholds</p>
 <p>To Do list:</p>
 <ul class="simple">
-<li><p>Sort cards in hand for display</p></li>
-<li><p>Highlight params/coeffs that are changed from the base config</p></li>
-<li><p>Ajax</p></li>
+<li><p>Open parameter export in a separate window</p></li>
+<li><p>Highlight params/coeffs that have been changed from the base config</p></li>
+<li><p>Convert to single-page app using ajax</p></li>
 </ul>
 <dl class="py class">
-<dt class="sig sig-object py" id="apps.smart_tuner.Bidding">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">Bidding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strength</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_strgths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Number</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">discard</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_hand</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.euchre.Hand" title="euchplt.euchre.Hand"><span class="pre">Hand</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">margin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.euchre.Bid" title="euchplt.euchre.Bid"><span class="pre">Bid</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apps.smart_tuner.Bidding" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apps.smart_tuner.BidInfo">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">BidInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bid_pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">discard</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_hand</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.euchre.Hand" title="euchplt.euchre.Hand"><span class="pre">Hand</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">eval_suit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">strength</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">details</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">margin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.euchre.Bid" title="euchplt.euchre.Bid"><span class="pre">Bid</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apps.smart_tuner.BidInfo" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">NamedTuple</span></code></p>
 <p>Encapsulated bidding information for each hand and bidding position</p>
 <dl class="py attribute">
-<dt class="sig sig-object py" id="apps.smart_tuner.Bidding.strength">
-<span class="sig-name descname"><span class="pre">strength</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Number</span></em><a class="headerlink" href="#apps.smart_tuner.Bidding.strength" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apps.smart_tuner.BidInfo.round">
+<span class="sig-name descname"><span class="pre">round</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#apps.smart_tuner.BidInfo.round" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="apps.smart_tuner.Bidding.sub_strgths">
-<span class="sig-name descname"><span class="pre">sub_strgths</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Number</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apps.smart_tuner.Bidding.sub_strgths" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apps.smart_tuner.BidInfo.pos">
+<span class="sig-name descname"><span class="pre">pos</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#apps.smart_tuner.BidInfo.pos" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="apps.smart_tuner.Bidding.discard">
-<span class="sig-name descname"><span class="pre">discard</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="euchplt.html#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></em><a class="headerlink" href="#apps.smart_tuner.Bidding.discard" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apps.smart_tuner.BidInfo.bid_pos">
+<span class="sig-name descname"><span class="pre">bid_pos</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#apps.smart_tuner.BidInfo.bid_pos" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="apps.smart_tuner.Bidding.new_hand">
-<span class="sig-name descname"><span class="pre">new_hand</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="euchplt.html#euchplt.euchre.Hand" title="euchplt.euchre.Hand"><span class="pre">Hand</span></a></em><a class="headerlink" href="#apps.smart_tuner.Bidding.new_hand" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apps.smart_tuner.BidInfo.discard">
+<span class="sig-name descname"><span class="pre">discard</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="euchplt.html#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></em><a class="headerlink" href="#apps.smart_tuner.BidInfo.discard" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="apps.smart_tuner.Bidding.margin">
-<span class="sig-name descname"><span class="pre">margin</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Number</span></em><a class="headerlink" href="#apps.smart_tuner.Bidding.margin" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apps.smart_tuner.BidInfo.new_hand">
+<span class="sig-name descname"><span class="pre">new_hand</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="euchplt.html#euchplt.euchre.Hand" title="euchplt.euchre.Hand"><span class="pre">Hand</span></a></em><a class="headerlink" href="#apps.smart_tuner.BidInfo.new_hand" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="apps.smart_tuner.Bidding.bid">
-<span class="sig-name descname"><span class="pre">bid</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="euchplt.html#euchplt.euchre.Bid" title="euchplt.euchre.Bid"><span class="pre">Bid</span></a></em><a class="headerlink" href="#apps.smart_tuner.Bidding.bid" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apps.smart_tuner.BidInfo.eval_suit">
+<span class="sig-name descname"><span class="pre">eval_suit</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="euchplt.html#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a></em><a class="headerlink" href="#apps.smart_tuner.BidInfo.eval_suit" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.smart_tuner.BidInfo.strength">
+<span class="sig-name descname"><span class="pre">strength</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Number</span></em><a class="headerlink" href="#apps.smart_tuner.BidInfo.strength" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.smart_tuner.BidInfo.details">
+<span class="sig-name descname"><span class="pre">details</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#apps.smart_tuner.BidInfo.details" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.smart_tuner.BidInfo.margin">
+<span class="sig-name descname"><span class="pre">margin</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Number</span></em><a class="headerlink" href="#apps.smart_tuner.BidInfo.margin" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.smart_tuner.BidInfo.bid">
+<span class="sig-name descname"><span class="pre">bid</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="euchplt.html#euchplt.euchre.Bid" title="euchplt.euchre.Bid"><span class="pre">Bid</span></a></em><a class="headerlink" href="#apps.smart_tuner.BidInfo.bid" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="apps.smart_tuner.Context">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">Context</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategies</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anly</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.analysis.HandAnalysisSmart" title="euchplt.analysis.smart.HandAnalysisSmart"><span class="pre">HandAnalysisSmart</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">strg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.strategy.Strategy" title="euchplt.strategy.base.Strategy"><span class="pre">Strategy</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">coeff</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Number</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hand</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.euchre.Hand" title="euchplt.euchre.Hand"><span class="pre">Hand</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">turn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#apps.smart_tuner.Bidding" title="apps.smart_tuner.Bidding"><span class="pre">Bidding</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_bids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#apps.smart_tuner.Bidding" title="apps.smart_tuner.Bidding"><span class="pre">Bidding</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apps.smart_tuner.Context" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">Context</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategies</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">player_pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anly</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.analysis.HandAnalysisSmart" title="euchplt.analysis.smart.HandAnalysisSmart"><span class="pre">HandAnalysisSmart</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">strg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.strategy.Strategy" title="euchplt.strategy.base.Strategy"><span class="pre">Strategy</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">coeff</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Number</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hand</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.euchre.Hand" title="euchplt.euchre.Hand"><span class="pre">Hand</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">turn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bidding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#apps.smart_tuner.BidInfo" title="apps.smart_tuner.BidInfo"><span class="pre">BidInfo</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_bidding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#apps.smart_tuner.BidInfo" title="apps.smart_tuner.BidInfo"><span class="pre">BidInfo</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">help_txt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apps.smart_tuner.Context" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">NamedTuple</span></code></p>
 <p>Context members referenced by the Jinja template</p>
 <p>Note: we may not use this directly, but at least it serves as a reference</p>
@@ -100,6 +120,11 @@ for manually testing/tweaking the various parameters, coefficients, and threshol
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apps.smart_tuner.Context.strategies">
 <span class="sig-name descname"><span class="pre">strategies</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apps.smart_tuner.Context.strategies" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.smart_tuner.Context.player_pos">
+<span class="sig-name descname"><span class="pre">player_pos</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#apps.smart_tuner.Context.player_pos" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -128,15 +153,86 @@ for manually testing/tweaking the various parameters, coefficients, and threshol
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="apps.smart_tuner.Context.bids">
-<span class="sig-name descname"><span class="pre">bids</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#apps.smart_tuner.Bidding" title="apps.smart_tuner.Bidding"><span class="pre">Bidding</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apps.smart_tuner.Context.bids" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apps.smart_tuner.Context.bidding">
+<span class="sig-name descname"><span class="pre">bidding</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#apps.smart_tuner.BidInfo" title="apps.smart_tuner.BidInfo"><span class="pre">BidInfo</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apps.smart_tuner.Context.bidding" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="apps.smart_tuner.Context.base_bids">
-<span class="sig-name descname"><span class="pre">base_bids</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#apps.smart_tuner.Bidding" title="apps.smart_tuner.Bidding"><span class="pre">Bidding</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apps.smart_tuner.Context.base_bids" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apps.smart_tuner.Context.base_bidding">
+<span class="sig-name descname"><span class="pre">base_bidding</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#apps.smart_tuner.BidInfo" title="apps.smart_tuner.BidInfo"><span class="pre">BidInfo</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apps.smart_tuner.Context.base_bidding" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.smart_tuner.Context.help_txt">
+<span class="sig-name descname"><span class="pre">help_txt</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apps.smart_tuner.Context.help_txt" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.smart_tuner.disp_key">
+<span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">disp_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">card</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#apps.smart_tuner.disp_key" title="Link to this definition">¶</a></dt>
+<dd><p>Return sort key to use for displaying hands (alternate suit colors)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.smart_tuner.index">
+<span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">index</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apps.smart_tuner.index" title="Link to this definition">¶</a></dt>
+<dd><p>Get the analysis and strategy parameters for the specified strategy (or an empty
+form if <code class="docutils literal notranslate"><span class="pre">strategy</span></code> is not specified in the request)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.smart_tuner.submit">
+<span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">submit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apps.smart_tuner.submit" title="Link to this definition">¶</a></dt>
+<dd><p>Process submitted form, switch on <code class="docutils literal notranslate"><span class="pre">submit_func</span></code> equals either <code class="docutils literal notranslate"><span class="pre">new_hand</span></code> or
+<code class="docutils literal notranslate"><span class="pre">evaluate</span></code></p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.smart_tuner.revert_params">
+<span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">revert_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">form</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#apps.smart_tuner.revert_params" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.smart_tuner.export_params">
+<span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">export_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">form</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#apps.smart_tuner.export_params" title="Link to this definition">¶</a></dt>
+<dd><p>Export of analysis and strategy parameters</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.smart_tuner.evaluate">
+<span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">form</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#apps.smart_tuner.evaluate" title="Link to this definition">¶</a></dt>
+<dd><p>Compute bidding for selected position and deal context (i.e. hand and turn card),
+using current analysis and strategy parameters</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.smart_tuner.new_hand">
+<span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">new_hand</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">form</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#apps.smart_tuner.new_hand" title="Link to this definition">¶</a></dt>
+<dd><p>Generate new hand and turn card, then recompute bidding using current analysis and
+strategy parameters</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.smart_tuner.render_app">
+<span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">render_app</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#apps.smart_tuner.render_app" title="Link to this definition">¶</a></dt>
+<dd><p>Common post-processing of context before rendering the main app page through Jinja</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.smart_tuner.render_export">
+<span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">render_export</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#apps.smart_tuner.render_export" title="Link to this definition">¶</a></dt>
+<dd><p>Export of analysis and strategy parameters</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.smart_tuner.compute">
+<span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">compute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">form</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#apps.smart_tuner.compute" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the hand strength and determine bidding for the current strategy and deal
+context (i.e. hand and turn card)</p>
+<p>Will continue using the hand and turn card from <code class="docutils literal notranslate"><span class="pre">form</span></code> if not specified in
+<code class="docutils literal notranslate"><span class="pre">kwargs</span></code></p>
 </dd></dl>
 
 <dl class="py function">
@@ -148,43 +244,135 @@ only done in one place, since it is a little dicey right now)</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="apps.smart_tuner.get_strg_config">
+<span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">get_strg_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">form</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#apps.smart_tuner.get_strg_config" title="Link to this definition">¶</a></dt>
+<dd><p>Extract StrategySmart configuration (with embedded SmartHandAnalysis params),
+return format is the same as config file YAML</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="apps.smart_tuner.get_hand">
 <span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">get_hand</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="euchplt.html#euchplt.euchre.Hand" title="euchplt.euchre.Hand"><span class="pre">Hand</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="euchplt.html#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#apps.smart_tuner.get_hand" title="Link to this definition">¶</a></dt>
-<dd><p>Return a new randomly generated hand and turn card</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="apps.smart_tuner.index">
-<span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">index</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apps.smart_tuner.index" title="Link to this definition">¶</a></dt>
-<dd><p>Return an empty form</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="apps.smart_tuner.submit">
-<span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">submit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apps.smart_tuner.submit" title="Link to this definition">¶</a></dt>
-<dd><p>Process submitted form, switch on <code class="docutils literal notranslate"><span class="pre">submit_func</span></code> equals either <code class="docutils literal notranslate"><span class="pre">new_hand</span></code> or
-<code class="docutils literal notranslate"><span class="pre">evaluate</span></code></p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="apps.smart_tuner.new_hand">
-<span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">new_hand</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">form</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#apps.smart_tuner.new_hand" title="Link to this definition">¶</a></dt>
-<dd><p>Generate a new hand, the call <code class="docutils literal notranslate"><span class="pre">evaluate()</span></code> (using all existing parameters values)</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="apps.smart_tuner.evaluate">
-<span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">form</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hand</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.euchre.Hand" title="euchplt.euchre.Hand"><span class="pre">Hand</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">turn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#apps.smart_tuner.evaluate" title="Link to this definition">¶</a></dt>
-<dd><p>Compute the hand strength and determine bidding for the current strategy and deal
-context</p>
-<p>Will continue using the hand and turn card from <code class="docutils literal notranslate"><span class="pre">form</span></code> if not passed in (e.g. new
-hand requested)</p>
+<dd><p>Return a new randomly generated hand (sorted for display) and turn card</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="apps.smart_tuner.get_bidding">
-<span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">get_bidding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.strategy.Strategy" title="euchplt.strategy.base.Strategy"><span class="pre">Strategy</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">hand</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.euchre.Hand" title="euchplt.euchre.Hand"><span class="pre">Hand</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">turn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#apps.smart_tuner.Bidding" title="apps.smart_tuner.Bidding"><span class="pre">Bidding</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#apps.smart_tuner.get_bidding" title="Link to this definition">¶</a></dt>
-<dd><p>Return list of <code class="docutils literal notranslate"><span class="pre">Bidding</span></code> information, one element for each bid position</p>
+<span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">get_bidding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.strategy.Strategy" title="euchplt.strategy.base.Strategy"><span class="pre">Strategy</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hand</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.euchre.Hand" title="euchplt.euchre.Hand"><span class="pre">Hand</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">turn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="euchplt.html#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#apps.smart_tuner.BidInfo" title="apps.smart_tuner.BidInfo"><span class="pre">BidInfo</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#apps.smart_tuner.get_bidding" title="Link to this definition">¶</a></dt>
+<dd><p>Return list of <code class="docutils literal notranslate"><span class="pre">BidInfo</span></code> information, one element for each bid position</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.smart_tuner.get_details">
+<span class="sig-prename descclassname"><span class="pre">apps.smart_tuner.</span></span><span class="sig-name descname"><span class="pre">get_details</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">persist</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#apps.smart_tuner.get_details" title="Link to this definition">¶</a></dt>
+<dd><p>Extract component sub-strength and turn card strength info from the strategy
+persistence, and generate explanatory detail text</p>
+</dd></dl>
+
+</section>
+<section id="module-apps.to_yaml">
+<span id="apps-to-yaml-yaml-generator"></span><h2><a class="reference internal" href="#module-apps.to_yaml" title="apps.to_yaml"><code class="xref py py-mod docutils literal notranslate"><span class="pre">apps.to_yaml</span></code></a> – YAML Generator<a class="headerlink" href="#module-apps.to_yaml" title="Link to this heading">¶</a></h2>
+<p>Module (and command line tool) for generating nice-looking YAML from a data structure
+(dict or list).  More flexible than <code class="docutils literal notranslate"><span class="pre">yaml.dumps()</span></code> in the <code class="docutils literal notranslate"><span class="pre">pyyaml</span></code> package.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="apps.to_yaml.Params">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.to_yaml.</span></span><span class="sig-name descname"><span class="pre">Params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxline</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apps.to_yaml.Params" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">NamedTuple</span></code></p>
+<p>Encapsulation for formatting args (REVISIT: not pretty, might be better to do the
+implementation as a class!)</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.to_yaml.Params.indent">
+<span class="sig-name descname"><span class="pre">indent</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#apps.to_yaml.Params.indent" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.to_yaml.Params.offset">
+<span class="sig-name descname"><span class="pre">offset</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#apps.to_yaml.Params.offset" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.to_yaml.Params.maxsize">
+<span class="sig-name descname"><span class="pre">maxsize</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#apps.to_yaml.Params.maxsize" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.to_yaml.Params.maxline">
+<span class="sig-name descname"><span class="pre">maxline</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#apps.to_yaml.Params.maxline" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.to_yaml.all_scalars">
+<span class="sig-prename descclassname"><span class="pre">apps.to_yaml.</span></span><span class="sig-name descname"><span class="pre">all_scalars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#apps.to_yaml.all_scalars" title="Link to this definition">¶</a></dt>
+<dd><p>Return true if all elements of the Sequence are scalars</p>
+<p>Note: the logic actually counts nonscalars</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.to_yaml.max_keylen">
+<span class="sig-prename descclassname"><span class="pre">apps.to_yaml.</span></span><span class="sig-name descname"><span class="pre">max_keylen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mapping</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#apps.to_yaml.max_keylen" title="Link to this definition">¶</a></dt>
+<dd><p>Return the maximum key length for the Mapping</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.to_yaml.single_line">
+<span class="sig-prename descclassname"><span class="pre">apps.to_yaml.</span></span><span class="sig-name descname"><span class="pre">single_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Number</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Mapping</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pfx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#apps.to_yaml.Params" title="apps.to_yaml.Params"><span class="pre">Params</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#apps.to_yaml.single_line" title="Link to this definition">¶</a></dt>
+<dd><p>Format data for single-line output given the prefix for the line (used to determine
+the overall line length as well as generate the string); return <code class="docutils literal notranslate"><span class="pre">None</span></code> if data does
+not qualify (e.g. <code class="docutils literal notranslate"><span class="pre">maxsize</span></code> or <code class="docutils literal notranslate"><span class="pre">maxline</span></code> exceeded)</p>
+<p>Note that scalar data always comes back as a single line</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.to_yaml.dict_data">
+<span class="sig-prename descclassname"><span class="pre">apps.to_yaml.</span></span><span class="sig-name descname"><span class="pre">dict_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#apps.to_yaml.Params" title="apps.to_yaml.Params"><span class="pre">Params</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#apps.to_yaml.dict_data" title="Link to this definition">¶</a></dt>
+<dd><p>Return list of lines representing dict data as YAML</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.to_yaml.list_data">
+<span class="sig-prename descclassname"><span class="pre">apps.to_yaml.</span></span><span class="sig-name descname"><span class="pre">list_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#apps.to_yaml.Params" title="apps.to_yaml.Params"><span class="pre">Params</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#apps.to_yaml.list_data" title="Link to this definition">¶</a></dt>
+<dd><p>Return list of lines representing list data as YAML</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.to_yaml.to_yaml">
+<span class="sig-prename descclassname"><span class="pre">apps.to_yaml.</span></span><span class="sig-name descname"><span class="pre">to_yaml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#apps.to_yaml.to_yaml" title="Link to this definition">¶</a></dt>
+<dd><p>Generate nice looking YAML</p>
+<p>Supports the following keyword args:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">indent</span></code> - level of indentation between levels (default = 2)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">offset</span></code> - offset for the entire output, e.g. representing interior of a document
+body (default = 0)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">maxsize</span></code> - max number of items for single- vs. multi-line representations of lists
+of dicts (default = 10)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">maxline</span></code> - max line length for single- vs. multi-line representations of lists or
+dicts (default = 90)</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.to_yaml.get_data">
+<span class="sig-prename descclassname"><span class="pre">apps.to_yaml.</span></span><span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#apps.to_yaml.get_data" title="Link to this definition">¶</a></dt>
+<dd><p>Get data from specified file (or stdin, if “-“)</p>
+<p>Uses test data if filename is empty</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apps.to_yaml.main">
+<span class="sig-prename descclassname"><span class="pre">apps.to_yaml.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#apps.to_yaml.main" title="Link to this definition">¶</a></dt>
+<dd><p>Usage: to_yaml.py &lt;filename&gt; [&lt;arg&gt;=&lt;value&gt; …]</p>
+<p>where: “-” for &lt;filename&gt; indicates stdin</p>
+<p>See <code class="docutils literal notranslate"><span class="pre">to_yaml()</span></code> for supported keyword args</p>
+<p>The input file or stream provides the test data (yaml or json) for the actual yaml
+generation</p>
+<p>Constraints:</p>
+<ul class="simple">
+<li><p>supported types include: <code class="docutils literal notranslate"><span class="pre">list</span></code>, <code class="docutils literal notranslate"><span class="pre">dict</span></code>, and scalars (<code class="docutils literal notranslate"><span class="pre">str</span></code>, <code class="docutils literal notranslate"><span class="pre">Number</span></code>,
+<code class="docutils literal notranslate"><span class="pre">bool</span></code>, <code class="docutils literal notranslate"><span class="pre">NoneType</span></code>, etc.), or anything else where <code class="docutils literal notranslate"><span class="pre">repr()</span></code> will yield a valid
+YAML representation)</p></li>
+</ul>
 </dd></dl>
 
 </section>
@@ -211,6 +399,7 @@ hand requested)</p>
 <li class="toctree-l1"><a class="reference internal" href="euchplt.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">euchplt</span></code> – Platform</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">apps</span></code> – Apps</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#module-apps.smart_tuner"><code class="xref py py-mod docutils literal notranslate"><span class="pre">apps.smart_tuner</span></code> – Smart Tuner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-apps.to_yaml"><code class="xref py py-mod docutils literal notranslate"><span class="pre">apps.to_yaml</span></code> – YAML Generator</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ml.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ml</span></code> – ML</a></li>

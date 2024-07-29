@@ -5,3 +5,8 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: apps.smart_tuner
+
+:mod:`apps.to_yaml` -- YAML Generator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: apps.to_yaml

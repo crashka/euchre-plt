@@ -6,8 +6,7 @@ for manually testing/tweaking the various parameters, coefficients, and threshol
 
 To Do list:
 
-- Show turn card strength contribution/penalty
-- Normalize sub-strenth contributions (as a percentage)
+- Open parameter export in a separate window
 - Highlight params/coeffs that have been changed from the base config
 - Convert to single-page app using ajax
 """
@@ -17,8 +16,8 @@ from numbers import Number
 import json
 
 from flask import Flask, request, render_template, abort
-import yaml
 
+from .to_yaml import to_yaml
 from euchplt.core import cfg
 from euchplt.card import ALL_RANKS, Suit, Card, CARDS, get_card, get_deck
 from euchplt.euchre import Hand, Bid, PASS_BID, DealState
@@ -186,7 +185,7 @@ def render_export(data: dict) -> str:
     """
     context = {
         'title': EXP_NAME,
-        'data':  yaml.dump(data, sort_keys=False)
+        'data':  to_yaml(data, indent=2, offset=6, maxsize=12)
     }
     return render_template(EXP_TEMPLATE, **context)
 
