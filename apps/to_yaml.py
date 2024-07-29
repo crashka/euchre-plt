@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Module (and command line tool) for generating nice-looking YAML from a data structure
+"""Module (and command line tool) for generating nice looking YAML from a data structure
 (dict or list).  More flexible than ``yaml.dumps()`` in the ``pyyaml`` package.
 """
 
@@ -64,6 +64,10 @@ class YamlGenerator:
       dicts (default = 90)
     - ``padding`` - minimum padding between key name + colon and corresponding value for
       "associative arrays" (i.e. dicts, in python) (default = 2)
+
+    Note that supported types in the input data include: ``list``, ``dict``, and scalars
+    (``str``, ``Number``, ``bool``, ``NoneType``, or anything else where ``repr()`` will
+    yield a valid YAML representation)
     """
     indent:  int
     offset:  int
@@ -186,7 +190,7 @@ def to_yaml(data: dict | list, **kwargs) -> str:
     """Generate nice looking YAML, thin wrapper around ``YamlGenerator.to_yaml()``
     (hides the containing class)
 
-    See ``YamlGenerator`` for supported keyword args
+    See ``YamlGenerator`` for supported keyword args and additional information
     """
     # delegate all validation, etc. to the class implementation
     generator = YamlGenerator(**kwargs)
@@ -259,20 +263,13 @@ def get_data(filename: str | None) -> str:
     raise NotImplementedError("coming soon..")
 
 def main() -> int:
-    """Usage: to_yaml.py <filename> [<arg>=<value> ...]
+    """Reformat a json or yaml file (or stream) as nice looking YAML
 
-    where: "-" for <filename> indicates stdin
+    Usage: to_yaml.py <filename> [<arg>=<value> ...]
 
-    See ``to_yaml()`` for supported keyword args
+      where: "-" for <filename> indicates stdin
 
-    The input file or stream provides the test data (yaml or json) for the actual yaml
-    generation
-
-    Constraints:
-
-    - supported types include: ``list``, ``dict``, and scalars (``str``, ``Number``,
-      ``bool``, ``NoneType``, etc.), or anything else where ``repr()`` will yield a valid
-      YAML representation)
+    See ``YamlGenerator`` for supported keyword args and additional information
     """
     args, kwargs = parse_argv(sys.argv[1:])
     data = get_data(args)
