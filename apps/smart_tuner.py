@@ -285,12 +285,12 @@ def get_strg_config(form: dict) -> dict:
     alone_margin     = [int(form[f'am_{n}']) for n in range(8)]
     def_alone_thresh = [int(form[f'dat_{n}']) for n in range(11)]
     strg_config  = {
+        'hand_analysis'   : hand_analysis,
         'turn_card_value' : turn_card_value,
         'turn_card_coeff' : turn_card_coeff,
         'bid_thresh'      : bid_thresh,
         'alone_margin'    : alone_margin,
-        'def_alone_thresh': def_alone_thresh,
-        'hand_analysis'   : hand_analysis
+        'def_alone_thresh': def_alone_thresh
     }
 
     return strg_config
