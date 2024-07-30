@@ -6,7 +6,6 @@ for manually testing/tweaking the various parameters, coefficients, and threshol
 
 To Do list:
 
-- Open parameter export in a separate window
 - Highlight params/coeffs that have been changed from the base config
 - Convert to single-page app using ajax
 """

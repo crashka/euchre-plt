@@ -20,8 +20,8 @@ from euchplt.utils import parse_argv
 ##################
 
 Scalar    = Number | str | None
-# note: not using `Sequence` here, since it includes `str` (`MutableSequence`
-# would work for our purposes, but is not really right!)%
+# note: not using `Sequence` here, since it includes `str` (`MutableSequence` would work
+# for our purposes, but is not really right!)
 Nonscalar = Mapping | list
 AnyT      = Scalar | Nonscalar
 
@@ -101,9 +101,9 @@ class YamlGenerator:
         field_size = max_keylen(data) + self.padding
         for key, val in data.items():
             pfx = f"{tabstop}{key + ':':{field_size}}"
-            # NOTE: the rest of this loop is identical to the corresponding
-            # code in `list_data` and the two should be kept in sync!!! (not
-            # quite worth refactoring out into common code)
+            # NOTE: the rest of this loop is identical to the corresponding code in
+            # `list_data`, and the two should be kept in sync (though not quite worth
+            # refactoring out into a common implementation)!!!
             if isinstance(val, dict):
                 if line := self.single_line(val, pfx):
                     output.append(line)
@@ -137,9 +137,9 @@ class YamlGenerator:
         output = []
         pfx = tabstop + '-'
         for val in data:
-            # NOTE: the rest of this loop is identical to the corresponding
-            # code in `dict_data` and the two should be kept in sync!!! (not
-            # quite worth refactoring out into common code)
+            # NOTE: the rest of this loop is identical to the corresponding code in
+            # `dict_data`, and the two should be kept in sync (though not quite worth
+            # refactoring out into a common implementation)!!!
             if isinstance(val, dict):
                 if line := self.single_line(val, pfx):
                     output.append(line)

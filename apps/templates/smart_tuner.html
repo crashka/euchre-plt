@@ -4,6 +4,8 @@
 <head>
   <title>{{title}}</title>
 
+  <script src="/static/jquery-3.7.1.min.js"></script>
+
   <style>
    div.section {
      margin-top: 0.75rem;
@@ -94,15 +96,6 @@
      margin: 0;
    }
   </style>
-
-  <script src="/static/jquery-3.7.1.min.js"></script>
-  <script>
-   $(document).on('change',".sel_strategy", function() {
-     var value = $(this).val();
-     var curpage = window.location.origin + window.location.pathname;
-     window.location.href = curpage + "?strategy=" + encodeURIComponent(value);
-   });
-  </script>
 </head>
 
 <body>
@@ -506,6 +499,18 @@
      type: 'submit',
      name: "submit_func"
    })
+
+   $("select.sel_strategy").on('change', function() {
+     var value = $(this).val();
+     var curpage = window.location.origin + window.location.pathname;
+     window.location.href = curpage + "?strategy=" + encodeURIComponent(value);
+   });
+   $("button[value!='export_params']").on('click', function (e) {
+     $("form").attr('target', '_self');
+   });
+   $("button[value='export_params']").on('click', function (e) {
+     $("form").attr('target', '_blank');
+   });
   </script>
 </body>
 
