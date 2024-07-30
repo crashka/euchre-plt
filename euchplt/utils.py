@@ -2,6 +2,7 @@
 
 from collections.abc import Iterable, Sequence
 from numbers import Number
+from copy import deepcopy
 import os.path
 import logging
 import json
@@ -96,7 +97,10 @@ class Config:
             profile_data = self.profile_data[profile]
             profile_params = profile_data.get(section, {})
             ret_params.update(profile_params)
-        return ret_params
+        # return a deep copy, otherwise caller can change the cached config (which
+        # might have its use cases, but not what we want here)--an alternative to
+        # consider is to return an immutable dict (see `werkzeug.ImmutableDict`)
+        return deepcopy(ret_params)
 
 #########################
 # Trace logging support #

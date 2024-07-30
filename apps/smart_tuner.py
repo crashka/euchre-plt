@@ -6,8 +6,9 @@ for manually testing/tweaking the various parameters, coefficients, and threshol
 
 To Do list:
 
+- Don't clear out deal info when switching strategies
 - Highlight params/coeffs that have been changed from the base config
-- Convert to single-page app using ajax
+- Convert to single-page app using ajax to update fields/info
 """
 
 from typing import NamedTuple

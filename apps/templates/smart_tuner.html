@@ -6,10 +6,10 @@
 
   <style>
    div.section {
-     margin-top: 0.75rem;
+     margin-top: 0.6rem;
    }
    div.subsection {
-     margin-top: 0.3rem;
+     margin-top: 0.2rem;
    }
    span.sect_label {
      font-size: larger;
@@ -389,12 +389,12 @@
         <input type="text" name="turn_card" class="txt_card" value="{{turn.idx}}" readonly>
         <span class="spn_card">{{turn.tag}}</span>
       </div>
-      <div class="subsection">
-        <button class="submit" value="revert_params" title="{{help_txt['bt_0']}}">Revert Params</button>
-        <button class="submit" value="export_params" title="{{help_txt['bt_1']}}">Export Params</button>
-        <button class="submit" value="evaluate" title="{{help_txt['bt_2']}}">Evaluate Hand</button>
-        <button class="submit" value="new_hand" title="{{help_txt['bt_3']}}">Get New Hand</button>
-      </div>
+    </div>
+    <div class="section">
+      <button class="submit" value="revert_params" title="{{help_txt['bt_0']}}">Revert Params</button>
+      <button class="submit" value="export_params" title="{{help_txt['bt_1']}}">Export Params</button>
+      <button class="submit" value="evaluate" title="{{help_txt['bt_2']}}">Evaluate Hand</button>
+      <button class="submit" value="new_hand" title="{{help_txt['bt_3']}}">Get New Hand</button>
     </div>
   </form>
   {% if bidding %}
