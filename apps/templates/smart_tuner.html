@@ -4,8 +4,6 @@
 <head>
   <title>{{title}}</title>
 
-  <script src="/static/jquery-3.7.1.min.js"></script>
-
   <style>
    div.section {
      margin-top: 0.75rem;
@@ -99,7 +97,7 @@
 </head>
 
 <body>
-  <form action="" method="post">
+  <form method="post">
     <div class="section">
       <span>Pick strategy:</span>
       <select name="strategy" class="sel_strategy">
@@ -394,8 +392,8 @@
       <div class="subsection">
         <button class="submit" value="revert_params" title="{{help_txt['bt_0']}}">Revert Params</button>
         <button class="submit" value="export_params" title="{{help_txt['bt_1']}}">Export Params</button>
-        <button class="submit" value="evaluate" title="{{help_txt['bt_2']}}">Evaluate Position</button>
-        <button class="submit" value="new_hand" title="{{help_txt['bt_3']}}">Evaluate New Hand</button>
+        <button class="submit" value="evaluate" title="{{help_txt['bt_2']}}">Evaluate Hand</button>
+        <button class="submit" value="new_hand" title="{{help_txt['bt_3']}}">Get New Hand</button>
       </div>
     </div>
   </form>
@@ -410,10 +408,8 @@
         <colgroup>
           <col class="col_num">
           <col class="col_num">
-          {% if player_pos == 3 %}
           <col class="col_txt">
           <col class="col_txt_long">
-          {% endif %}
           <col class="col_num">
           <col class="col_num">
           <col class="col_txt">
@@ -423,19 +419,15 @@
         </colgroup>
         <tr>
           <th colspan="2"></th>
-          {% if player_pos == 3 %}
           <th colspan="2"></th>
-          {% endif %}
           <th colspan="3">Current Params</th>
           <th colspan="3">Baseline Params</th>
         </tr>
         <tr>
           <th title="{{help_txt['bd_0']}}">Round</th>
           <th title="{{help_txt['bd_1']}}">(bid_pos)</th>
-          {% if player_pos == 3 %}
           <th title="{{help_txt['bd_2']}}">Discard</th>
           <th title="{{help_txt['bd_3']}}">New Hand</th>
-          {% endif %}
           <th title="{{help_txt['bd_4']}}">Strength</th>
           <th title="{{help_txt['bd_5']}}">Margin</th>
           <th title="{{help_txt['bd_6']}}">Bid</th>
@@ -448,7 +440,6 @@
         <tr>
           <td class="td_num">{{bid.round + 1}}</td>
           <td class="td_num">{{bid.bid_pos}}</td>
-          {% if player_pos == 3 %}
           <td class="td_txt">
             {% if bid.discard %}
             <span>{{bid.discard.tag}}</span>
@@ -461,7 +452,6 @@
             {% endfor %}
             {% endif %}
           </td>
-          {% endif %}
           <td class="td_num" title="{{bid.details}}">{{bid.strength}}</td>
           <td class="td_num">{{bid.margin}}</td>
           <td class="td_txt">
@@ -489,6 +479,7 @@
   </div>
   {% endif %}
 
+  <script src="/static/jquery-3.7.1.min.js"></script>
   <script>
    $("span:contains('\u2665')").css('color', 'red')
    $("span:contains('\u2666')").css('color', 'red')
@@ -500,15 +491,18 @@
      name: "submit_func"
    })
 
-   $("select.sel_strategy").on('change', function() {
+   $(".sel_strategy").on('change', function() {
      var value = $(this).val();
      var curpage = window.location.origin + window.location.pathname;
      window.location.href = curpage + "?strategy=" + encodeURIComponent(value);
    });
-   $("button[value!='export_params']").on('click', function (e) {
+   $(".pos_layout input").on('change', function() {
+     $("button[value='evaluate']").click();
+   });
+   $("button[value!='export_params']").on('click', function () {
      $("form").attr('target', '_self');
    });
-   $("button[value='export_params']").on('click', function (e) {
+   $("button[value='export_params']").on('click', function () {
      $("form").attr('target', '_blank');
    });
   </script>
