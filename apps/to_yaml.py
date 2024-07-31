@@ -92,10 +92,8 @@ class YamlGenerator:
         """Return list of lines representing dict data as YAML
         """
         assert isinstance(data, dict)
+        assert len(data) > 0, "should be represented as a single line"
         tabstop = ' ' * (level * self.indent)
-
-        if len(data) == 0:
-            return tabstop + '{}'
 
         output = []
         field_size = max_keylen(data) + self.padding
@@ -129,10 +127,8 @@ class YamlGenerator:
         """Return list of lines representing list data as YAML
         """
         assert isinstance(data, list)
+        assert len(data) > 0, "should be represented as a single line"
         tabstop = ' ' * (level * self.indent)
-
-        if len(data) == 0:
-            return '[]'
 
         output = []
         pfx = tabstop + '-'
@@ -167,7 +163,7 @@ class YamlGenerator:
         if isinstance(data, dict):
             lines = self.dict_data(data, level=0)
         elif isinstance(data, list):
-            lines = self.dict_data(data, level=0)
+            lines = self.list_data(data, level=0)
         else:
             raise TypeError(f"Invalid input type ({type(data)})")
 
