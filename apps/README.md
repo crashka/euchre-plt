@@ -40,9 +40,10 @@ Open a browser window and navigate to `localhost:5000`.  The usage of the applic
 should be pretty self-explanatory.
 
 **Hint**: hover over "Strength" value in the Bidding Analysis section to get a detailed
-breakdown of the contribution from the various components scores; for instance:
+breakdown of the contribution from the various components scores; for example:
 
-![Strength details](resources/strength_details.png)
+<img src="resources/strength_details.png" alt="Strength details screenshot"
+     style="display: block; margin: auto; width: 75%;">
 
 ## YAML Generator
 
