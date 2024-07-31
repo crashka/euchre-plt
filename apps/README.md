@@ -39,6 +39,11 @@ Note that `--app smart_tuner` (no parent module) should be specified if running 
 Open a browser window and navigate to `localhost:5000`.  The usage of the application
 should be pretty self-explanatory.
 
+**Hint**: hover over "Strength" value in the Bidding Analysis section to get a detailed
+breakdown of the contribution from the various components scores; for instance:
+
+![Strength details](resources/strength_details.png)
+
 ## YAML Generator
 
 Module (and command line tool) for generating nice looking YAML from a data structure
