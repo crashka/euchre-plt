@@ -5,15 +5,16 @@
   <title>{{title}}</title>
 
   <style>
-   div.section {
+   .section {
      margin-top: 0.6rem;
+     overflow: hidden;
    }
-   div.subsection {
-     margin-top: 0.2rem;
-   }
-   span.sect_label {
+   .section_lbl {
      font-size: larger;
      font-weight: bold;
+   }
+   .subsect_pos {
+     margin-top: 0.2rem;
    }
    .sel_strategy {
      width: 10rem;
@@ -34,17 +35,11 @@
    .col_lbl {
      width: 10rem;
    }
-   .col_lbl_short {
-     width: 5rem;
-   }
    .col_num {
      width: 4.5rem;
    }
    .col_txt {
      width: 6rem;
-   }
-   .col_txt_short {
-     width: 3rem;
    }
    .col_txt_long {
      width: 12rem;
@@ -61,24 +56,38 @@
    .td_hand {
      text-align: center;
    }
-   table.pos_layout td {
+   .pos_lbl {
+     float: left;
+   }
+   .pos_layout {
+     float: left;
+   }
+   .pos_layout td {
      text-align: center;
      font-size: smaller;
+   }
+   .deal_info {
+     #margin-top: 1.2rem;
+     margin-top: 1.0rem;
+     margin-left: 2.0rem;
+     float: left;
    }
    input[type="number"] {
      width: 3rem;
      text-align: center;
    }
-   input.txt_gen {
-     width: 3rem;
-     text-align: center;
-   }
-   input.txt_card {
+   .txt_card {
      display: none;
    }
+   .spn_hand {
+     margin-right: 0.5rem;
+   }
    .spn_card {
-     width: 3rem;
      margin-left: 0.5rem;
+     word-spacing: -0.15rem;
+   }
+   .spn_suit {
+     margin-left: 0.2rem;
    }
    .spn_bid {
      color: blue;
@@ -92,6 +101,15 @@
    input::-webkit-inner-spin-button {
      -webkit-appearance: none;
      margin: 0;
+   }
+   .refs {
+     margin-top: 1.2rem;
+     font-size: smaller;
+   }
+   .refs ul {
+     margin-top: 0.1rem;
+     padding: 0;
+     list-style-type: none;
    }
   </style>
 </head>
@@ -114,7 +132,7 @@
       </select>
     </div>
     <div class="section">
-      <span class="sect_label">Hand Analysis</span>
+      <span class="section_lbl">Hand Analysis</span>
       <table class="tbl_params">
         <colgroup>
           <col class="col_lbl">
@@ -255,7 +273,7 @@
       </table>
     </div>
     <div class="section">
-      <span class="sect_label">Strategy</span>
+      <span class="section_lbl">Strategy</span>
       <table class="tbl_params">
         <colgroup>
           <col class="col_lbl">
@@ -349,10 +367,9 @@
       </table>
     </div>
     <div class="section">
-      <span class="sect_label">Deal Info</span>
-
-      <div class="subsection">
-        <span>Position:</span>
+      <span class="section_lbl">Deal Info</span>
+      <div class="subsect_pos">
+        <span class="pos_lbl">Position:</span>
         <table class="pos_layout">
           <tr>
             <td></td>
@@ -375,19 +392,26 @@
             <td></td>
           </tr>
         </table>
-      </div>
-
-      <div class="subsection">
-        <span>Hand:</span>
-        {% for card in hand %}
-        <input type="text" name="hand_{{loop.index0}}" class="txt_card" value="{{card.idx}}" readonly>
-        <span class="spn_card">{{card.tag}}</span>
-        {% endfor %}
-      </div>
-      <div class="subsection">
-        <span>Turn card:</span>
-        <input type="text" name="turn_card" class="txt_card" value="{{turn.idx}}" readonly>
-        <span class="spn_card">{{turn.tag}}</span>
+        <table class="deal_info">
+          <tr>
+            <td class="td_lbl">Hand:</td>
+            <td>
+              <span class="spn_hand">
+                {% for card in hand %}
+                <input type="text" name="hand_{{loop.index0}}" class="txt_card" value="{{card.idx}}">
+                <span class="spn_card">{{card.disp}}</span>
+                {% endfor %}
+              </span>
+            </td>
+          </tr>
+          <tr>
+            <td class="td_lbl">Turn card:</td>
+            <td>
+              <input type="text" name="turn_card" class="txt_card" value="{{turn.idx}}">
+              <span class="spn_card">{{turn.disp}}</span>
+            </td>
+          </tr>
+        </table>
       </div>
     </div>
     <div class="section">
@@ -399,90 +423,97 @@
   </form>
   {% if bidding %}
   <div class="section">
-    <span class="sect_label">Results</span>
-    <div class="subsection">
-      <span>Position: {{player_pos + 1}}</span>
-    </div>
-    <div class="subsection">
-      <table class="tbl_results">
-        <colgroup>
-          <col class="col_num">
-          <col class="col_num">
-          <col class="col_txt">
-          <col class="col_txt_long">
-          <col class="col_num">
-          <col class="col_num">
-          <col class="col_txt">
-          <col class="col_num">
-          <col class="col_num">
-          <col class="col_txt">
-        </colgroup>
-        <tr>
-          <th colspan="2"></th>
-          <th colspan="2"></th>
-          <th colspan="3">Current Params</th>
-          <th colspan="3">Baseline Params</th>
-        </tr>
-        <tr>
-          <th title="{{help_txt['bd_0']}}">Round</th>
-          <th title="{{help_txt['bd_1']}}">(bid_pos)</th>
-          <th title="{{help_txt['bd_2']}}">Discard</th>
-          <th title="{{help_txt['bd_3']}}">New Hand</th>
-          <th title="{{help_txt['bd_4']}}">Strength</th>
-          <th title="{{help_txt['bd_5']}}">Margin</th>
-          <th title="{{help_txt['bd_6']}}">Bid</th>
-          <th title="{{help_txt['bd_4']}}">Strength</th>
-          <th title="{{help_txt['bd_5']}}">Margin</th>
-          <th title="{{help_txt['bd_6']}}">Bid</th>
-        </tr>
-        {% for bid in bidding %}
-        {% set base_bid = base_bidding[loop.index0] %}
-        <tr>
-          <td class="td_num">{{bid.round + 1}}</td>
-          <td class="td_num">{{bid.bid_pos}}</td>
-          <td class="td_txt">
-            {% if bid.discard %}
-            <span>{{bid.discard.tag}}</span>
-            {% endif %}
-          </td>
-          <td class="td_hand">
+    <span class="section_lbl">Results</span>
+    <table class="tbl_results">
+      <colgroup>
+        <col class="col_num">
+        <col class="col_num">
+        <col class="col_txt">
+        <col class="col_txt_long">
+        <col class="col_num">
+        <col class="col_num">
+        <col class="col_txt">
+        <col class="col_num">
+        <col class="col_num">
+        <col class="col_txt">
+      </colgroup>
+      <tr>
+        <th colspan="2"></th>
+        <th colspan="2"></th>
+        <th colspan="3">Current Params</th>
+        <th colspan="3">Baseline Params</th>
+      </tr>
+      <tr>
+        <th title="{{help_txt['bd_0']}}">Round</th>
+        <th title="{{help_txt['bd_1']}}">(bid_pos)</th>
+        <th title="{{help_txt['bd_2']}}">Discard</th>
+        <th title="{{help_txt['bd_3']}}">New Hand</th>
+        <th title="{{help_txt['bd_4']}}">Strength</th>
+        <th title="{{help_txt['bd_5']}}">Margin</th>
+        <th title="{{help_txt['bd_6']}}">Bid</th>
+        <th title="{{help_txt['bd_4']}}">Strength</th>
+        <th title="{{help_txt['bd_5']}}">Margin</th>
+        <th title="{{help_txt['bd_6']}}">Bid</th>
+      </tr>
+      {% for bid in bidding %}
+      {% set base_bid = base_bidding[loop.index0] %}
+      <tr>
+        <td class="td_num">{{bid.round + 1}}</td>
+        <td class="td_num">{{bid.bid_pos}}</td>
+        <td class="td_txt">
+          {% if bid.discard %}
+          <span class="spn_card">{{bid.discard.disp}}</span>
+          {% endif %}
+        </td>
+        <td class="td_hand">
+          <span class="spn_hand">
             {% if bid.new_hand %}
             {% for idx in range(5) %}
-            <span class="spn_card">{{bid.new_hand[idx].tag}}</span>
+            <span class="spn_card">{{bid.new_hand[idx].disp}}</span>
             {% endfor %}
             {% endif %}
-          </td>
-          <td class="td_num" title="{{bid.details}}">{{bid.strength}}</td>
-          <td class="td_num">{{bid.margin}}</td>
-          <td class="td_txt">
-            {% if bid.bid.suit.idx < 0 %}
-            <span class="spn_pass">pass</span> <span>{{bid.eval_suit.disp}}</span>
-            {% else %}
-            <span class="spn_bid">{{"alone" if bid.bid.alone else "call"}}</span>
-            <span> </span><span>{{bid.bid.suit.disp}}</span>
-            {% endif %}
-          </td>
-          <td class="td_num" title="{{base_bid.details}}">{{base_bid.strength}}</td>
-          <td class="td_num">{{base_bid.margin}}</td>
-          <td class="td_txt">
-            {% if base_bid.bid.suit.idx < 0 %}
-            <span class="spn_pass">pass</span> <span>{{base_bid.eval_suit.disp}}</span>
-            {% else %}
-            <span class="spn_bid">{{"alone" if base_bid.bid.alone else "call"}}</span>
-            <span> </span><span>{{base_bid.bid.suit.disp}}</span>
-            {% endif %}
-          </td>
-        </tr>
-        {% endfor %}
-      </table>
-    </div>
+          </span>
+        </td>
+        <td class="td_num" title="{{bid.details}}">{{bid.strength}}</td>
+        <td class="td_num">{{bid.margin}}</td>
+        <td class="td_txt">
+          {% if bid.bid.suit.idx < 0 %}
+          <span class="spn_pass">pass</span> <span class="spn_suit">{{bid.eval_suit.disp}}</span>
+          {% else %}
+          <span class="spn_bid">{{"alone" if bid.bid.alone else "call"}}</span>
+          <span> </span><span class="spn_suit">{{bid.bid.suit.disp}}</span>
+          {% endif %}
+        </td>
+        <td class="td_num" title="{{base_bid.details}}">{{base_bid.strength}}</td>
+        <td class="td_num">{{base_bid.margin}}</td>
+        <td class="td_txt">
+          {% if base_bid.bid.suit.idx < 0 %}
+          <span class="spn_pass">pass</span> <span class="spn_suit">{{base_bid.eval_suit.disp}}</span>
+          {% else %}
+          <span class="spn_bid">{{"alone" if base_bid.bid.alone else "call"}}</span>
+          <span> </span><span class="spn_suit">{{base_bid.bid.suit.disp}}</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
   </div>
   {% endif %}
+  <div class="refs">
+    Reference Links:
+    <ul>
+      {% for name, link in ref_links.items() %}
+      <li><a href="{{link}}" target='_blank'>{{name}}</a></li>
+      {% endfor %}
+    </ul>
+  </div>
 
   <script src="/static/jquery-3.7.1.min.js"></script>
   <script>
-   $("span:contains('\u2665')").css('color', 'red')
-   $("span:contains('\u2666')").css('color', 'red')
+   $(".spn_card:contains('\u2665')").css('color', 'red')
+   $(".spn_card:contains('\u2666')").css('color', 'red')
+   $(".spn_suit:contains('\u2665')").css('color', 'red')
+   $(".spn_suit:contains('\u2666')").css('color', 'red')
    $("th:empty").css('border', 'none');
    $("th:contains('(bid_pos)')").css('font-weight', 'normal')
    $("td.td_dec input").attr('step', "0.01");

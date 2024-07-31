@@ -67,6 +67,7 @@ class Context(NamedTuple):
     bidding:      list[BidInfo]
     base_bidding: list[BidInfo]
     help_txt:     dict[str, str]
+    ref_links:    dict[str, str]
 
 # some random convenience shortcuts
 StrgComps = tuple[Strategy, HandAnalysisSmart, list[Number]]
@@ -80,6 +81,12 @@ FLOAT_PREC = 2
 ranks = len(ALL_RANKS)
 disp_suit_offset = [ranks, 0, 2 * ranks, 3 * ranks]
 
+def card_disp(card: Card) -> str:
+    """Add a space between rank and suit for card string representation so we can use CSS
+    ``word-spacing`` in the template (alternate version of `card.tag`)
+    """
+    return "%s %s" % (card.rank.tag, card.suit.tag)
+
 def disp_key(card: Card) -> int:
     """Return sort key to use for displaying hands (alternate suit colors)
     """
@@ -88,9 +95,10 @@ def disp_key(card: Card) -> int:
     # 10, say, which is what most normal people would do)
     return card.rank.idx + disp_suit_offset[card.suit.idx]
 
-# monkeypatch display properties for ``Bid`` and ``Suit`` to help keep things cleaner
-# in the template
+# monkeypatch display properties for `Suit`, `Card`, and `Bid` to help keep things cleaner
+# in the template and/or to be CSS-friendly
 setattr(Suit, 'disp', property(Suit.__str__))
+setattr(Card, 'disp', property(card_disp))
 setattr(Bid, 'disp', property(Bid.__str__))
 
 ################
@@ -178,6 +186,7 @@ def render_app(context: dict) -> str:
     """Common post-processing of context before rendering the main app page through Jinja
     """
     context['help_txt'] = help_txt
+    context['ref_links'] = ref_links
     return render_template(APP_TEMPLATE, **context)
 
 def render_export(data: dict) -> str:
@@ -401,25 +410,33 @@ anly = HandAnalysisSmart(NULL_HAND)
 coeff_names = [c for c in anly.scoring_coeff]
 del anly
 
-help_txt = {}
-# bidding table
-help_txt['bd_0'] = "bidding round (1-2)"
-help_txt['bd_1'] = "corresponds to bid_pos for Strategy (above)"
-help_txt['bd_2'] = ""
-help_txt['bd_3'] = ""
-help_txt['bd_4'] = "hover over individual strengths to get details"
-help_txt['bd_5'] = ""
-help_txt['bd_6'] = ("turn suit (rd 1) or strongest suit (rd 2) is shown\n" +
-                    "when passing")
-# submit buttons
-help_txt['bt_0'] = ""
-help_txt['bt_1'] = ""
-help_txt['bt_2'] = ("Compute bidding for selected position and deal\n" +
-                    "context (i.e. hand and turn card), using current\n" +
-                    "analysis and strategy parameters")
-help_txt['bt_3'] = ("Generate new hand and turn card, then recompute\n" +
-                    "bidding using current analysis and strategy\n" +
-                    "parameters")
+help_txt = {
+    # bidding table
+    'bd_0': "bidding round (1-2)",
+    'bd_1': "corresponds to bid_pos for Strategy (above)",
+    'bd_2': "",
+    'bd_3': "",
+    'bd_4': "hover over individual strengths to get details",
+    'bd_5': "",
+    'bd_6': ("turn suit (rd 1) or strongest suit (rd 2) is shown\n" +
+             "when passing"),
+    # submit buttons
+    'bt_0': "",
+    'bt_1': "",
+    'bt_2': ("Compute bidding for selected position and deal\n" +
+             "context (i.e. hand and turn card), using current\n" +
+             "analysis and strategy parameters"),
+    'bt_3': ("Generate new hand and turn card, then recompute\n" +
+             "bidding using current analysis and strategy\n" +
+             "parameters")
+}
+
+euchplt_pfx = "https://crashka.github.io/euchre-plt/_build/html/euchplt.html#euchplt."
+
+ref_links = {
+    "HandAnalysisSmart": euchplt_pfx + "analysis.HandAnalysisSmart",
+    "StrategySmart":     euchplt_pfx + "strategy.StrategySmart"
+}
 
 ############
 # __main__ #
