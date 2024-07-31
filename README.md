@@ -275,6 +275,7 @@ the various subdirectories (work in process):
 - [euchplt/](euchplt)
   - [analysis/](euchplt/analysis)
   - [strategy/](euchplt/strategy)
+- [apps/](apps)
 - [ml/](ml)
   - [strategy/](ml/strategy)
 

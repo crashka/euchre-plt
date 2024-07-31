@@ -175,7 +175,7 @@ def to_yaml(data: dict | list, **kwargs) -> str:
 
     Usage::
 
-      from to_yaml import to_yaml
+      from apps.to_yaml import to_yaml
 
       data_yaml = to_yaml(data, indent=2, offset=4)
 
@@ -189,14 +189,15 @@ def to_yaml(data: dict | list, **kwargs) -> str:
     - ``maxline`` - max line length for single- vs. multi-line representations of lists or
       dicts (default = 90)
     - ``padding`` - minimum padding between key name + colon and corresponding value for
-      "associative arrays" (i.e. dicts, in python) (default = 2)
+      associative arrays (i.e. dicts, in python) (default = 2)
 
     Supported types in the input data include: ``list``, ``dict``, and scalars (``str``,
-    ``Number``, ``bool``, ``NoneType``, or anything else where ``repr()`` will yield a
-    valid YAML representation)
+    ``Number``, ``bool``, ``NoneType``, or anything else where ``repr()`` yields a valid
+    YAML representation)
 
     This is the main entry point for the module, but is basically just a thin wrapper
     around ``YamlGenerator.to_yaml()`` (for convenience)
+
     """
     # delegate all validation, etc. to the class implementation
     generator = YamlGenerator(**kwargs)
@@ -259,7 +260,7 @@ test_data = {
 #####################
 
 def get_data(filename: str | None) -> str:
-    """Get data from specified file (or stdin, if "-")
+    """Get data from specified file (or stdin, if '-')
 
     Uses test data if filename is empty
     """
@@ -271,9 +272,11 @@ def get_data(filename: str | None) -> str:
 def main() -> int:
     """Reformat a json or yaml file (or stream) as nice looking YAML
 
-    Usage: to_yaml.py <filename> [<arg>=<value> ...]
+    Usage::
 
-      where: "-" for <filename> indicates stdin
+      $ python -m apps.to_yaml <filename> [<arg>=<value> ...]
+
+    where: '-' for *<filename>* indicates stdin
 
     See ``to_yaml()`` for supported keyword args and additional information
     """

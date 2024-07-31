@@ -2,7 +2,21 @@
 # -*- coding: utf-8 -*-
 
 """Simple form-based web app to evaluate bidding strategies for ``StrategySmart``; useful
-for manually testing/tweaking the various parameters, coefficients, and thresholds
+for manually testing/tweaking the various parameters, coefficients, and thresholds.
+
+To start the server (local usage only)::
+
+  $ python -m apps.smart_tuner
+
+or::
+
+  $ flask --app apps.smart_tuner run [--debug]
+
+Note that ``--app smart_tuner`` (no parent module) should be specified if running from the
+``apps/`` subdirectory.
+
+To run the application, open a browser window and navigate to ``localhost:5000``.  The
+usage of the application should be pretty self-explanatory.
 
 To Do list:
 
@@ -82,8 +96,8 @@ ranks = len(ALL_RANKS)
 disp_suit_offset = [ranks, 0, 2 * ranks, 3 * ranks]
 
 def card_disp(card: Card) -> str:
-    """Add a space between rank and suit for card string representation so we can use CSS
-    ``word-spacing`` in the template (alternate version of `card.tag`)
+    """Add a space between rank and suit in the string representation for the card so we
+    can use CSS ``word-spacing`` in the template (alternate version of ``__str__``)
     """
     return "%s %s" % (card.rank.tag, card.suit.tag)
 
@@ -145,8 +159,8 @@ def index():
 
 @app.post("/")
 def submit():
-    """Process submitted form, switch on ``submit_func`` equals either ``new_hand`` or
-    ``evaluate``
+    """Process submitted form, switch on ``submit_func``, which is validated against
+    values in ``SUBMIT_FUNCS``
     """
     func = request.form['submit_func']
     if func not in SUBMIT_FUNCS:
@@ -154,26 +168,27 @@ def submit():
     return globals()[func](request.form)
 
 def revert_params(form: dict) -> str:
-    """
+    """Revert all parameters back to values specified by the selected strategy
     """
     return compute(form, revert=True)
 
 def export_params(form: dict) -> str:
-    """Export of analysis and strategy parameters
+    """Export the current analysis and strategy parameters to YAML suitable for creating
+    an entry in ``strategies.yaml``
+
+    Later, we may support automatically creating the new entry in the config file
     """
     return compute(form, export=True)
 
 def evaluate(form: dict) -> str:
     """Compute bidding for selected position and deal context (i.e. hand and turn card),
     using current analysis and strategy parameters
-
     """
     return compute(form)
 
 def new_hand(form: dict) -> str:
     """Generate new hand and turn card, then recompute bidding using current analysis and
     strategy parameters
-
     """
     hand, turn = get_hand()
     return compute(form, hand=hand, turn=turn)
@@ -262,8 +277,9 @@ def compute(form: dict, **kwargs) -> str:
 def get_strg_comps(strg_name: str, hand: Hand, **kwargs) -> StrgComps:
     """Get strategy and analysis components for the specified hand
 
-    Note: ``coeff`` list is returned as a convenience (doing it here to make sure it is
-    only done in one place, since it is a little dicey right now)
+    Note: ``coeff`` list (last member of the output tuple) is returned as a convenience
+    (doing it here to make sure it is only done in one place, since it is a little dicey
+    right now)
     """
     strg  = Strategy.new(strg_name, **kwargs)
     anly  = HandAnalysisSmart(hand, **strg.hand_analysis)
@@ -316,7 +332,8 @@ def get_hand() -> tuple[Hand, Card]:
     return hand, turn
 
 def get_bidding(strg: Strategy, pos: int, hand: Hand, turn: Card) -> list[BidInfo]:
-    """Return list of ``BidInfo`` information, one element for each bid position
+    """Return list of ``BidInfo`` information for the specified seat position, one entry
+    for each round of bidding
     """
     bidding = []
 
@@ -359,7 +376,7 @@ def get_bidding(strg: Strategy, pos: int, hand: Hand, turn: Card) -> list[BidInf
 
 def get_details(persist: dict) -> str:
     """Extract component sub-strength and turn card strength info from the strategy
-    persistence, and generate explanatory detail text
+    persistence store, and generate explanatory detail text
     """
     coeff_list = coeff_names.copy()
     sub_strgths = persist.get('sub_strgths')
