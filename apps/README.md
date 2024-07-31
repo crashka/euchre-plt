@@ -42,8 +42,10 @@ should be pretty self-explanatory.
 **Hint**: hover over "Strength" value in the Bidding Analysis section to get a detailed
 breakdown of the contribution from the various components scores; for example:
 
-<img src="resources/strength_details.png" alt="Strength details screenshot"
-     style="display: block; margin: auto; width: 75%;">
+<p align="center">
+  <img src="resources/strength_details.png" alt="Strength details screenshot"
+       style="width: 75%;">
+</p>
 
 ## YAML Generator
 
