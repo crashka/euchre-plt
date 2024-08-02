@@ -74,8 +74,12 @@
      width: 3rem;
      text-align: center;
    }
-   .txt_card {
+   .inp_card {
      display: none;
+     width: 1.5rem;
+   }
+   .container {
+     position: relative;
    }
    .spn_hand {
      margin-right: 0.5rem;
@@ -90,6 +94,20 @@
    .spn_bid {
      color: blue;
      font-weight: bolder;
+   }
+   .sel_card {
+     appearance: none;
+     -webkit-appearance: none;
+     -moz-appearance: none;
+     background-color: #F0F0F0;
+     border: dotted red 1px;
+     text-align: center;
+     position: absolute;
+     top: 0.05rem;
+     left: 0.45rem;
+     height: 1.1rem;
+     width: 2.0rem;
+     display: none;
    }
    button[value="evaluate"],
    button[value="new_hand"] {
@@ -394,19 +412,37 @@
           <tr>
             <td class="td_lbl">Hand:</td>
             <td>
+              {% if hand %}
               <span class="spn_hand">
-                {% for card in hand %}
-                <input type="text" name="hand_{{loop.index0}}" class="txt_card" value="{{card.idx}}">
-                <span class="spn_card">{{card.disp}}</span>
+                {% for mycard in hand %}
+                <span class="container">
+                  <input type="text" name="hand_{{loop.index0}}" class="inp_card" value="{{mycard.idx}}">
+                  <span class="spn_card" title="Click to change...">{{mycard.disp}}</span>
+                  <select name="strategy" class="sel_card" title="Click to choose...">
+                    {% for card in cards %}
+                    <option value="{{card.idx}}"{{" selected" if card.idx == mycard.idx else ""}}>{{card.disp}}</option>
+                    {% endfor %}
+                  </select>
+                </span>
                 {% endfor %}
               </span>
+              {% endif %}
             </td>
           </tr>
           <tr>
             <td class="td_lbl">Turn card:</td>
             <td>
-              <input type="text" name="turn_card" class="txt_card" value="{{turn.idx}}">
-              <span class="spn_card">{{turn.disp}}</span>
+              {% if turn %}
+              <span class="container">
+                <input type="text" name="turn_card" class="inp_card" value="{{turn.idx}}">
+                <span class="spn_card" title="Click to change...">{{turn.disp}}</span>
+                <select name="strategy" class="sel_card" title="Click to choose...">
+                  {% for card in cards %}
+                  <option value="{{card.idx}}"{{" selected" if card.idx == turn.idx else ""}}>{{card.disp}}</option>
+                  {% endfor %}
+                </select>
+              </span>
+              {% endif %}
             </td>
           </tr>
         </table>
@@ -508,31 +544,57 @@
 
   <script src="/static/jquery-3.7.1.min.js"></script>
   <script>
-   $(".spn_card:contains('\u2665')").css('color', 'red')
-   $(".spn_card:contains('\u2666')").css('color', 'red')
-   $(".spn_suit:contains('\u2665')").css('color', 'red')
-   $(".spn_suit:contains('\u2666')").css('color', 'red')
-   $("th:empty").css('border', 'none');
-   $("th:contains('(bid_pos)')").css('font-weight', 'normal')
-   $("td.td_dec input").attr('step', "0.01");
-   $("button.submit").attr({
-     type: 'submit',
-     name: "submit_func"
-   })
+   $(function() {
+     // add css and attributes
+     $(".spn_card:contains('\u2665')").css('color', 'red');
+     $(".spn_card:contains('\u2666')").css('color', 'red');
+     $(".spn_suit:contains('\u2665')").css('color', 'red');
+     $(".spn_suit:contains('\u2666')").css('color', 'red');
+     $(".sel_card option:contains('\u2665')").css('color', 'red');
+     $(".sel_card option:contains('\u2666')").css('color', 'red');
+     $("th:empty").css('border', 'none');
+     $("th:contains('(bid_pos)')").css('font-weight', 'normal');
+     $("td.td_dec input").attr('step', "0.01");
+     $("button.submit").attr({
+       type: 'submit',
+       name: "submit_func"
+     });
 
-   $(".sel_strategy").on('change', function() {
-     var value = $(this).val();
-     var curpage = window.location.origin + window.location.pathname;
-     window.location.href = curpage + "?strategy=" + encodeURIComponent(value);
-   });
-   $(".pos_layout input").on('change', function() {
-     $("button[value='evaluate']").click();
-   });
-   $("button[value!='export_params']").on('click', function () {
-     $("form").attr('target', '_self');
-   });
-   $("button[value='export_params']").on('click', function () {
-     $("form").attr('target', '_blank');
+     // strategy section
+     $(".sel_strategy").on('change', function() {
+       var value = $(this).val();
+       var curpage = window.location.origin + window.location.pathname;
+       window.location.href = curpage + "?strategy=" + encodeURIComponent(value);
+     });
+
+     // deal info section
+     $(".pos_layout input").on('change', function() {
+       $("button[value='evaluate']").click();
+     });
+     $(".inp_card").on('change', function() {
+       $("button[value='evaluate']").click();
+     });
+     $(".spn_card").on('click', function() {
+       $(this).siblings(".sel_card").css('display', 'inline').trigger('focus');
+     });
+     $(".sel_card").on('change', function() {
+       var $value = $(this).val();
+       $(this).css('display', 'none');
+       $(this).siblings(".spn_card").css('color', 'white');
+       $(this).siblings(".inp_card").val($value).change();
+       //$("button[value='evaluate']").click();
+     });
+     $(".sel_card").on('focusout', function() {
+       $(this).css('display', 'none');
+     });
+
+     // buttons section
+     $("button[value!='export_params']").on('click', function () {
+       $("form").attr('target', '_self');
+     });
+     $("button[value='export_params']").on('click', function () {
+       $("form").attr('target', '_blank');
+     });
    });
   </script>
 </body>

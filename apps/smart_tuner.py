@@ -26,6 +26,7 @@ To Do list:
 """
 
 from typing import NamedTuple
+from collections.abc import Hashable, Sequence
 from numbers import Number
 import json
 
@@ -69,9 +70,7 @@ class Context(NamedTuple):
 
     Note: we may not use this directly, but at least it serves as a reference
     """
-    title:        str
     strategy:     str
-    strategies:   list[str]
     player_pos:   int
     anly:         HandAnalysisSmart
     strg:         Strategy
@@ -80,6 +79,10 @@ class Context(NamedTuple):
     turn:         Card
     bidding:      list[BidInfo]
     base_bidding: list[BidInfo]
+    # const members added by `render_app()`
+    title:        str
+    strategies:   list[str]
+    cards:        tuple[Card, ...]
     help_txt:     dict[str, str]
     ref_links:    dict[str, str]
 
@@ -115,6 +118,15 @@ setattr(Suit, 'disp', property(Suit.__str__))
 setattr(Card, 'disp', property(card_disp))
 setattr(Bid, 'disp', property(Bid.__str__))
 
+CARDS_BY_SUIT = sorted(CARDS, key=disp_key)
+
+def all_distinct(seq: Sequence[Hashable]) -> bool:
+    """Return `True` if all elements of input sequence are distinct (implemented by adding
+    to a set and counting the members)
+    """
+    seqset = set(seq)
+    return len(seqset) == len(list(seq))
+
 ################
 # Flask Routes #
 ################
@@ -134,8 +146,8 @@ def index():
     anly  = None
     strg  = None
     coeff = [''] * 5  # shortcut (okay, hack) to simplify the template
-    hand  = NULL_HAND
-    turn  = NULL_CARD
+    hand  = None
+    turn  = None
 
     strategy = request.args.get('strategy')
     if strategy:
@@ -143,9 +155,7 @@ def index():
         strg, anly, coeff = get_strg_comps(strategy, hand)
 
     context = {
-        'title':      APP_NAME,
         'strategy':   strategy,
-        'strategies': strategies,
         'player_pos': 0 if strategy else -1,
         'anly':       anly,
         'strg':       strg,
@@ -200,8 +210,11 @@ def new_hand(form: dict) -> str:
 def render_app(context: dict) -> str:
     """Common post-processing of context before rendering the main app page through Jinja
     """
-    context['help_txt'] = help_txt
-    context['ref_links'] = ref_links
+    context['title']      = APP_NAME
+    context['strategies'] = strategies
+    context['cards']      = CARDS_BY_SUIT
+    context['help_txt']   = help_txt
+    context['ref_links']  = ref_links
     return render_template(APP_TEMPLATE, **context)
 
 def render_export(data: dict) -> str:
@@ -239,6 +252,8 @@ def compute(form: dict, **kwargs) -> str:
     if not hand:
         hand = Hand([get_card(form[f'hand_{n}']) for n in range(5)])
         turn = get_card(form['turn_card'])
+        if not all_distinct(list(hand) + [turn]):
+            abort(500, "Duplicated cards not allowed")
 
     if export:
         revert = False
@@ -260,9 +275,7 @@ def compute(form: dict, **kwargs) -> str:
         return render_export(data)
 
     context = {
-        'title':        APP_NAME,
         'strategy':     form['strategy'],
-        'strategies':   strategies,
         'player_pos':   pos,
         'anly':         anly,
         'strg':         strg,
@@ -428,6 +441,8 @@ coeff_names = [c for c in anly.scoring_coeff]
 del anly
 
 help_txt = {
+    # strategy select
+    'st_0': "from strategies.yml config file",
     # bidding table
     'bd_0': "bidding round (1-2)",
     'bd_1': "corresponds to bid_pos for Strategy (above)",
