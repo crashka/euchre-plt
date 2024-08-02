@@ -250,9 +250,10 @@ def compute(form: dict, **kwargs) -> str:
     pos = int(player_pos)
 
     if not hand:
-        hand = Hand([get_card(form[f'hand_{n}']) for n in range(5)])
+        cards = [get_card(form[f'hand_{n}']) for n in range(5)]
+        hand = Hand(sorted(cards, key=disp_key))
         turn = get_card(form['turn_card'])
-        if not all_distinct(list(hand) + [turn]):
+        if not all_distinct(cards + [turn]):
             abort(500, "Duplicated cards not allowed")
 
     if export:
