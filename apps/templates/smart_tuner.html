@@ -554,8 +554,8 @@
      $(".sel_card option:contains('\u2666')").css('color', 'red');
      $("th:empty").css('border', 'none');
      $("th:contains('(bid_pos)')").css('font-weight', 'normal');
-     $("td.td_dec input").attr('step', "0.01");
-     $("button.submit").attr({
+     $(".td_dec input").attr('step', "0.01");
+     $(".submit").attr({
        type: 'submit',
        name: "submit_func"
      });
@@ -571,29 +571,32 @@
      $(".pos_layout input").on('change', function() {
        $("button[value='evaluate']").click();
      });
-     $(".inp_card").on('change', function() {
+
+     var $deal_info = $(".deal_info");
+     $deal_info.on('change', ".inp_card", function() {
        $("button[value='evaluate']").click();
      });
-     $(".spn_card").on('click', function() {
+     $deal_info.on('click', ".spn_card", function() {
        $(this).siblings(".sel_card").css('display', 'inline').trigger('focus');
      });
-     $(".sel_card").on('change', function() {
-       var $value = $(this).val();
+     $deal_info.on('change', ".sel_card", function() {
+       var new_val = $(this).val();
        $(this).css('display', 'none');
        $(this).siblings(".spn_card").css('color', 'white');
-       $(this).siblings(".inp_card").val($value).change();
-       //$("button[value='evaluate']").click();
+       $(this).siblings(".inp_card").val(new_val).change();
      });
-     $(".sel_card").on('focusout', function() {
+     $deal_info.on('focusout', ".sel_card", function() {
        $(this).css('display', 'none');
      });
 
      // buttons section
-     $("button[value!='export_params']").on('click', function () {
-       $("form").attr('target', '_self');
+     $("button[value!='export_params']").on('click', function() {
+       $("form").attr({target: '_self', onsubmit: null});
      });
-     $("button[value='export_params']").on('click', function () {
-       $("form").attr('target', '_blank');
+     $("button[value='export_params']").on('click', function() {
+       var popup_pos = "'width=750, height=550, top=200, left=200'"
+       var exp_popup = "window.open(null, 'export_popup', " + popup_pos + ");"
+       $("form").attr({target: 'export_popup', onsubmit: exp_popup});
      });
    });
   </script>

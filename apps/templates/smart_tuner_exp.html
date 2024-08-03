@@ -5,12 +5,74 @@
   <title>{{title}}</title>
 
   <style>
+   .section {
+     margin-top: 1.0rem;
+   }
+   .sect_lbl {
+     font-size: larger;
+   }
+   table {
+     margin-top: 1.0rem;
+   }
+   .td_lbl {
+     text-align: right;
+   }
+   .config_yaml {
+     display: none;
+   }
+   .buttons {
+     margin-top: 2.0rem;
+   }
+   button[value="save"] {
+     font-weight: bolder;
+   }
   </style>
 
 </head>
 
 <body>
-  <pre>{{data}}</pre>
+  <div class="section">
+    <span class="sect_lbl">Config Params</span>
+    <pre class="params">{{data}}</pre>
+  </div>
+
+  <form action="/export" method="post">
+    <div class="section">
+      <span class="sect_lbl">New Strategy</span>
+      <table>
+        <tr>
+          <td class="td_lbl">Name:</td>
+          <td><input type="text" class="name" name="new_strategy" value="{{strat_name}}"></td>
+        </tr>
+        <tr>
+          <td class="td_lbl">Comments:</td>
+          <td><input type="text" name="comments" placeholder="(optional)" size="60"></td>
+        </tr>
+      </table>
+      <textarea class="config_yaml" name="config_yaml">{{data}}</textarea>
+    </div>
+    <div class="buttons">
+      <button type="button" onclick="window.close();">Cancel</button>
+      <button type="submit" name="submit_val" value="save">Save</button>
+    </div>
+  </form>
+
+  <script src="/static/jquery-3.7.1.min.js"></script>
+  <script>
+   $(function() {
+     $('input.name').on('focusin', function() {
+       $(this).data('prev_val', $(this).val());
+     });
+     $('input.name').on('change', function() {
+       var old_val = $(this).data('prev_val');
+       var new_val = $(this).val();
+       var old_yaml = $(".config_yaml").val();
+       var new_yaml = old_yaml.replace(old_val, new_val);
+       $(".params").text(new_yaml).change();
+       $(".config_yaml").val(new_yaml).change();
+     });
+   });
+  </script>
 </body>
 
 </html>

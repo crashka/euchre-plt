@@ -3,6 +3,7 @@
 from collections.abc import Iterable, Sequence
 from numbers import Number
 from copy import deepcopy
+from os import sep as os_sep
 import os.path
 import logging
 import json
@@ -54,14 +55,19 @@ class Config:
         for file in load_files:
             self.load(file)
 
-    def load(self, file: str) -> bool:
+    def load(self, file: str, file_dir = None) -> bool:
         """Load a config file, overwriting existing parameter entries at the section
         level (i.e. direct children within a section).  Deeper merging within these
         top-level parameters is not supported.  Note that additional config files
         can be loaded at any time.  A config file that has already been loaded will
         be politely skipped, with a `False` return value being the only rebuke.
         """
-        path = os.path.join(self.config_dir, file) if self.config_dir else os.path.realpath(file)
+        if file_dir:
+            path = os.path.join(file_dir, file)
+        elif self.config_dir:
+            path = os.path.join(self.config_dir, file)
+        else:
+            path = os.path.realpath(file)
         if path in self.filepaths:
             return False
 

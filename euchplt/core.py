@@ -19,7 +19,7 @@ DFLT_CONFIG_FILES = ['base_config.yml',
 
 FILE_DIR     = os.path.dirname(os.path.realpath(__file__))
 BASE_DIR     = os.path.realpath(os.path.join(FILE_DIR, os.pardir))
-CONFIG_DIR   = os.path.join(BASE_DIR, 'config')
+CONFIG_DIR   = environ.get('EUCH_CONFIG_DIR') or os.path.join(BASE_DIR, 'config')
 CONFIG_FILES = environ.get('EUCH_CONFIG_FILES') or DFLT_CONFIG_FILES
 cfg          = utils.Config(CONFIG_FILES, CONFIG_DIR)
 

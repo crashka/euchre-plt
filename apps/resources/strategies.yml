@@ -1,0 +1,4 @@
+---
+default:
+  strategies:
+    Dummy Strategy: {}  # needed to be a valid config file

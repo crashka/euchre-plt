@@ -28,6 +28,7 @@ To Do list:
 from typing import NamedTuple
 from collections.abc import Hashable, Sequence
 from numbers import Number
+import os.path
 import json
 
 from flask import Flask, request, render_template, abort
@@ -46,10 +47,40 @@ from euchplt.analysis import HandAnalysisSmart
 
 app = Flask(__name__)
 
-APP_NAME     = "Smart Tuner"
-APP_TEMPLATE = "smart_tuner.html"
-EXP_NAME     = "Smart Tuner Export"
-EXP_TEMPLATE = "smart_tuner_exp.html"
+APP_NAME       = "Smart Tuner"
+APP_TEMPLATE   = "smart_tuner.html"
+EXP_NAME       = "Smart Tuner Export"
+EXP_TEMPLATE   = "smart_tuner_exp.html"
+MSG_TEMPLATE   = "smart_tuner_msg.html"
+
+APP_DIR        = os.path.dirname(os.path.realpath(__file__))
+CONFIG_DIR     = os.path.join(APP_DIR, 'resources')
+CONFIG_FILE    = 'strategies.yml'
+CONFIG_PATH    = os.path.join(CONFIG_DIR, CONFIG_FILE)
+
+STRATEGY_PATH  = 'euchplt.strategy'
+STRATEGY_CLASS = 'StrategySmart'
+new_strgy_fmt  = "%s (modified)"
+_strategies    = None
+
+def get_strategies() -> list[str]:
+    """
+    """
+    global _strategies
+    if _strategies:
+        return _strategies
+
+    cfg.load(CONFIG_FILE, CONFIG_DIR)
+    all_strategies = cfg.config('strategies')
+    _strategies = [k for k, v in all_strategies.items()
+                   if v.get('base_class') == STRATEGY_CLASS]
+    return _strategies
+
+def reset_strategies() -> None:
+    """
+    """
+    global _strategies
+    _strategies = None
 
 class BidInfo(NamedTuple):
     """Encapsulated bidding information for each hand and bidding position
@@ -127,6 +158,11 @@ def all_distinct(seq: Sequence[Hashable]) -> bool:
     seqset = set(seq)
     return len(seqset) == len(list(seq))
 
+def leading_spaces(line: str) -> int:
+    """Return count of leading spaces in specified string
+    """
+    return len(line) - len(line.lstrip(' '))
+
 ################
 # Flask Routes #
 ################
@@ -203,6 +239,41 @@ def new_hand(form: dict) -> str:
     hand, turn = get_hand()
     return compute(form, hand=hand, turn=turn)
 
+@app.post("/export")
+def save_strategy():
+    """We are only appending to the config file (to not screw up any pre-existing manual
+    editing), noting that duplicate entries are fine (latest one will win)
+    """
+    if (func := request.form['submit_val']) != 'save':
+        abort(404, f"Invalid submit func '{func}'")
+    new_strategy = request.form['new_strategy']
+    comments     = request.form['comments']
+    config_yaml  = request.form['config_yaml']
+
+    yaml_lines = config_yaml.split('\n')
+    indent = leading_spaces(yaml_lines[1])
+    tabstop = ' ' * indent
+    keyfield = 19  # magic number for consistency with `config/strategies.yml`
+
+    header_lines = []
+    if comments:
+        header_lines.append(tabstop + f'{"comments:":{keyfield}}' + comments)
+    header_lines.append(tabstop + f'{"module_path:":{keyfield}}' + STRATEGY_PATH)
+    header_lines.append(tabstop + f'{"base_class:":{keyfield}}' + STRATEGY_CLASS)
+    yaml_lines[1:1] = header_lines
+    # get rid of horrible CRLF line terminators from textarea
+    append_yaml = '\n'.join([x.rstrip() for x in yaml_lines])
+
+    with open(CONFIG_PATH, 'a') as f:
+        f.write(append_yaml + '\n')
+    reset_strategies()
+
+    context = {
+        'title': "Export Complete",
+        'msg':   f"New strategy \"{new_strategy}\" saved"
+    }
+    return render_template(MSG_TEMPLATE, **context)
+
 ################
 # App Routines #
 ################
@@ -211,7 +282,7 @@ def render_app(context: dict) -> str:
     """Common post-processing of context before rendering the main app page through Jinja
     """
     context['title']      = APP_NAME
-    context['strategies'] = strategies
+    context['strategies'] = get_strategies()
     context['cards']      = CARDS_BY_SUIT
     context['help_txt']   = help_txt
     context['ref_links']  = ref_links
@@ -222,7 +293,8 @@ def render_export(data: dict) -> str:
     """
     context = {
         'title': EXP_NAME,
-        'data':  to_yaml(data, indent=2, offset=4, maxsize=12)
+        'strat_name': next(iter(data.keys())),
+        'data': to_yaml(data, indent=2, offset=4, maxsize=12)
     }
     return render_template(EXP_TEMPLATE, **context)
 
@@ -241,12 +313,12 @@ def compute(form: dict, **kwargs) -> str:
 
     # set and validate `strategy`
     if not (strategy := form.get('strategy')):
-        abort(500, "Strategy not selected")
-    elif strategy not in strategies:
-        abort(500, f"Invalid strategy ({strategy}) specified")
+        abort(400, "Strategy not selected")
+    elif strategy not in get_strategies():
+        abort(400, f"Invalid strategy ({strategy}) specified")
 
     if not (player_pos := form.get('player_pos')):  # note that bool('0') == True
-        abort(500, "Player position not selected")
+        abort(400, "Player position not selected")
     pos = int(player_pos)
 
     if not hand:
@@ -254,7 +326,7 @@ def compute(form: dict, **kwargs) -> str:
         hand = Hand(sorted(cards, key=disp_key))
         turn = get_card(form['turn_card'])
         if not all_distinct(cards + [turn]):
-            abort(500, "Duplicated cards not allowed")
+            abort(400, "Duplicated cards not allowed")
 
     if export:
         revert = False
@@ -271,8 +343,8 @@ def compute(form: dict, **kwargs) -> str:
         bidding = get_bidding(strg, pos, hand, turn)
         base_bidding = get_bidding(base_strg, pos, hand, turn)
     elif export:
-        new_strategy = strategy + " (modified)"
-        data = {new_strategy: strg_config}
+        new_strategy = new_strgy_fmt % (strategy)
+        data = {new_strategy: {'strategy_params': strg_config}}
         return render_export(data)
 
     context = {
@@ -428,12 +500,6 @@ def get_details(persist: dict) -> str:
 #########################
 # Content / Metacontent #
 #########################
-
-BASE_CLASS = 'StrategySmart'
-
-strategy_list = cfg.config('strategies')
-strategies = [k for k, v in strategy_list.items()
-              if v['base_class'] == BASE_CLASS]
 
 # this is a little hacky, but does ensure that the coefficient structures are
 # aligned between `get_strg_comps` and `get_strg_config`
