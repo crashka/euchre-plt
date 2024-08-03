@@ -46,10 +46,10 @@
         </tr>
         <tr>
           <td class="td_lbl">Comments:</td>
-          <td><input type="text" name="comments" placeholder="(optional)" size="60"></td>
+          <td><input type="text" class="desc" name="comments" placeholder="(optional)" size="60"></td>
         </tr>
       </table>
-      <textarea class="config_yaml" name="config_yaml">{{data}}</textarea>
+      <textarea class="config_yaml" name="config_yaml" rows="10" cols="70">{{data}}</textarea>
     </div>
     <div class="buttons">
       <button type="button" onclick="window.close();">Cancel</button>
@@ -66,6 +66,21 @@
      $('input.name').on('change', function() {
        var old_val = $(this).data('prev_val');
        var new_val = $(this).val();
+       var old_yaml = $(".config_yaml").val();
+       var new_yaml = old_yaml.replace(old_val, new_val);
+       $(".params").text(new_yaml).change();
+       $(".config_yaml").val(new_yaml).change();
+     });
+
+     var desc_pfx = "comments:         ";
+     $('input.desc').on('focusin', function() {
+       $(this).data('prev_val', $(this).val());
+     });
+     $('input.desc').on('change', function() {
+       // FIX: this does not currently understand quoting (either for empty
+       // strings or for valid YAML representation of special characters)!!!
+       var old_val = desc_pfx + $(this).data('prev_val');
+       var new_val = desc_pfx + $(this).val();
        var old_yaml = $(".config_yaml").val();
        var new_yaml = old_yaml.replace(old_val, new_val);
        $(".params").text(new_yaml).change();

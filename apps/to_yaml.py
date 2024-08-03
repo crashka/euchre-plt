@@ -73,7 +73,10 @@ class YamlGenerator:
         Note that scalar data always comes back as a single line
         """
         if isinstance(data, Scalar):
-            return pfx + ' ' + repr(data)
+            # TODO: quote string data (e.g. using `repr()`) if it contains any of the
+            # following characters: :{}[],&*#?|-<>=!%@\
+            return pfx + ' ' + (data if isinstance(data, str) else repr(data))
+            # ...or just always use `repr()` (pedantic/ugly solution)
 
         vals = data.values() if isinstance(data, Mapping) else data
         if not all_scalars(vals):

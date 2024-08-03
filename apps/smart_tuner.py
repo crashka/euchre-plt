@@ -244,33 +244,21 @@ def save_strategy():
     """We are only appending to the config file (to not screw up any pre-existing manual
     editing), noting that duplicate entries are fine (latest one will win)
     """
-    if (func := request.form['submit_val']) != 'save':
-        abort(404, f"Invalid submit func '{func}'")
+    if (submit_val := request.form['submit_val']) != 'save':
+        abort(404, f"Invalid submit val '{submit_val}'")
     new_strategy = request.form['new_strategy']
     comments     = request.form['comments']
     config_yaml  = request.form['config_yaml']
-
-    yaml_lines = config_yaml.split('\n')
-    indent = leading_spaces(yaml_lines[1])
-    tabstop = ' ' * indent
-    keyfield = 19  # magic number for consistency with `config/strategies.yml`
-
-    header_lines = []
-    if comments:
-        header_lines.append(tabstop + f'{"comments:":{keyfield}}' + comments)
-    header_lines.append(tabstop + f'{"module_path:":{keyfield}}' + STRATEGY_PATH)
-    header_lines.append(tabstop + f'{"base_class:":{keyfield}}' + STRATEGY_CLASS)
-    yaml_lines[1:1] = header_lines
-    # get rid of horrible CRLF line terminators from textarea
-    append_yaml = '\n'.join([x.rstrip() for x in yaml_lines])
+    # get rid of horrible CRs from stupid html/textarea spec
+    config_yaml  = config_yaml.replace('\r', '')
 
     with open(CONFIG_PATH, 'a') as f:
-        f.write(append_yaml + '\n')
+        f.write(config_yaml + '\n')
     reset_strategies()
 
     context = {
         'title': "Export Complete",
-        'msg':   f"New strategy \"{new_strategy}\" saved"
+        'msg':   f"New strategy \"{new_strategy}\" created"
     }
     return render_template(MSG_TEMPLATE, **context)
 
@@ -288,13 +276,21 @@ def render_app(context: dict) -> str:
     context['ref_links']  = ref_links
     return render_template(APP_TEMPLATE, **context)
 
-def render_export(data: dict) -> str:
+def render_export(strat_name: str, config_data: dict) -> str:
     """Export of analysis and strategy parameters
     """
+    data = {
+        strat_name: {
+            'comments':        '',
+            'module_path':     STRATEGY_PATH,
+            'base_class':      STRATEGY_CLASS,
+            'strategy_params': config_data
+        }
+    }
     context = {
-        'title': EXP_NAME,
-        'strat_name': next(iter(data.keys())),
-        'data': to_yaml(data, indent=2, offset=4, maxsize=12)
+        'title':      EXP_NAME,
+        'strat_name': strat_name,
+        'data':       to_yaml(data, indent=2, offset=4, maxsize=12)
     }
     return render_template(EXP_TEMPLATE, **context)
 
@@ -343,9 +339,8 @@ def compute(form: dict, **kwargs) -> str:
         bidding = get_bidding(strg, pos, hand, turn)
         base_bidding = get_bidding(base_strg, pos, hand, turn)
     elif export:
-        new_strategy = new_strgy_fmt % (strategy)
-        data = {new_strategy: {'strategy_params': strg_config}}
-        return render_export(data)
+        strat_name = new_strgy_fmt % (strategy)
+        return render_export(strat_name, strg_config)
 
     context = {
         'strategy':     form['strategy'],
