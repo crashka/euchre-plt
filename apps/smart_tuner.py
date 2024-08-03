@@ -20,9 +20,19 @@ usage of the application should be pretty self-explanatory.
 
 To Do list:
 
-- Don't clear out deal info when switching strategies
-- Highlight params/coeffs that have been changed from the base config
-- Convert to single-page app using ajax to update fields/info
+- Nits
+
+  - Update "Pick strategies" list to include newly created (i.e. exported) strategies
+  - Fix trailing spaces in export parameter yaml generation
+  - Handle special characters in new strategy names/comments (is this needed?)
+  - Don't clear out deal info and hide bidding when switching strategies
+
+- Enhancements
+
+  - Highlight params/coeffs that have been changed from the base config
+  - Show more of the underlying computation for hand strength (e.g. individual component
+    scores before coefficient weighting)
+  - Convert to single-page app using ajax to update fields/info
 """
 
 from typing import NamedTuple
@@ -104,7 +114,7 @@ class Context(NamedTuple):
     strategy:     str
     player_pos:   int
     anly:         HandAnalysisSmart
-    strg:         Strategy
+    strgy:        Strategy
     coeff:        list[Number]
     hand:         Hand
     turn:         Card
@@ -118,11 +128,11 @@ class Context(NamedTuple):
     ref_links:    dict[str, str]
 
 # some random convenience shortcuts
-StrgComps = tuple[Strategy, HandAnalysisSmart, list[Number]]
-NULL_CARD = Card(-1, None, None, '', '', -1, -1)  # hacky
-NULL_HAND = Hand([NULL_CARD] * 5)
-PASSES    = [PASS_BID] * 8
-NONES     = [None] * 10
+StrgyComps = tuple[Strategy, HandAnalysisSmart, list[Number]]
+NULL_CARD  = Card(-1, None, None, '', '', -1, -1)  # hacky
+NULL_HAND  = Hand([NULL_CARD] * 5)
+PASSES     = [PASS_BID] * 8
+NONES      = [None] * 10
 
 FLOAT_PREC = 2
 
@@ -180,7 +190,7 @@ def index():
     form if ``strategy`` is not specified in the request)
     """
     anly  = None
-    strg  = None
+    strgy = None
     coeff = [''] * 5  # shortcut (okay, hack) to simplify the template
     hand  = None
     turn  = None
@@ -188,13 +198,13 @@ def index():
     strategy = request.args.get('strategy')
     if strategy:
         hand, turn = get_hand()
-        strg, anly, coeff = get_strg_comps(strategy, hand)
+        strgy, anly, coeff = get_strgy_comps(strategy, hand)
 
     context = {
         'strategy':   strategy,
         'player_pos': 0 if strategy else -1,
         'anly':       anly,
-        'strg':       strg,
+        'strgy':      strgy,
         'coeff':      coeff,
         'hand':       hand,
         'turn':       turn,
@@ -328,25 +338,25 @@ def compute(form: dict, **kwargs) -> str:
         revert = False
         do_bid = False
 
-    strg_config = get_strg_config(form) if not revert else {}
-    strg, anly, coeff = get_strg_comps(strategy, hand, **strg_config)
-    base_strg, base_anly, _ = get_strg_comps(strategy, hand)
+    strgy_config = get_strgy_config(form) if not revert else {}
+    strgy, anly, coeff = get_strgy_comps(strategy, hand, **strgy_config)
+    base_strgy, base_anly, _ = get_strgy_comps(strategy, hand)
     # TODO: it would be cool to do a diff of the parameters, etc. so we could
     # highlight the ones that have been modified, and show the associated changes
     # in hand strength values as well!!!
 
     if do_bid:
-        bidding = get_bidding(strg, pos, hand, turn)
-        base_bidding = get_bidding(base_strg, pos, hand, turn)
+        bidding = get_bidding(strgy, pos, hand, turn)
+        base_bidding = get_bidding(base_strgy, pos, hand, turn)
     elif export:
         strat_name = new_strgy_fmt % (strategy)
-        return render_export(strat_name, strg_config)
+        return render_export(strat_name, strgy_config)
 
     context = {
         'strategy':     form['strategy'],
         'player_pos':   pos,
         'anly':         anly,
-        'strg':         strg,
+        'strgy':        strgy,
         'coeff':        coeff,
         'hand':         hand,
         'turn':         turn,
@@ -355,19 +365,19 @@ def compute(form: dict, **kwargs) -> str:
     }
     return render_app(context)
 
-def get_strg_comps(strg_name: str, hand: Hand, **kwargs) -> StrgComps:
+def get_strgy_comps(strgy_name: str, hand: Hand, **kwargs) -> StrgyComps:
     """Get strategy and analysis components for the specified hand
 
     Note: ``coeff`` list (last member of the output tuple) is returned as a convenience
     (doing it here to make sure it is only done in one place, since it is a little dicey
     right now)
     """
-    strg  = Strategy.new(strg_name, **kwargs)
-    anly  = HandAnalysisSmart(hand, **strg.hand_analysis)
+    strgy  = Strategy.new(strgy_name, **kwargs)
+    anly  = HandAnalysisSmart(hand, **strgy.hand_analysis)
     coeff = [v for k, v in anly.scoring_coeff.items()]
-    return (strg, anly, coeff)
+    return (strgy, anly, coeff)
 
-def get_strg_config(form: dict) -> dict:
+def get_strgy_config(form: dict) -> dict:
     """Extract StrategySmart configuration (with embedded SmartHandAnalysis params),
     return format is the same as config file YAML
     """
@@ -392,7 +402,7 @@ def get_strg_config(form: dict) -> dict:
     bid_thresh       = [int(form[f'bt_{n}']) for n in range(8)]
     alone_margin     = [int(form[f'am_{n}']) for n in range(8)]
     def_alone_thresh = [int(form[f'dat_{n}']) for n in range(11)]
-    strg_config  = {
+    strgy_config  = {
         'hand_analysis'   : hand_analysis,
         'turn_card_value' : turn_card_value,
         'turn_card_coeff' : turn_card_coeff,
@@ -401,7 +411,7 @@ def get_strg_config(form: dict) -> dict:
         'def_alone_thresh': def_alone_thresh
     }
 
-    return strg_config
+    return strgy_config
 
 def get_hand() -> tuple[Hand, Card]:
     """Return a new randomly generated hand (sorted for display) and turn card
@@ -412,7 +422,7 @@ def get_hand() -> tuple[Hand, Card]:
     hand = Hand(sorted(cards, key=disp_key))
     return hand, turn
 
-def get_bidding(strg: Strategy, pos: int, hand: Hand, turn: Card) -> list[BidInfo]:
+def get_bidding(strgy: Strategy, pos: int, hand: Hand, turn: Card) -> list[BidInfo]:
     """Return list of ``BidInfo`` information for the specified seat position, one entry
     for each round of bidding
     """
@@ -428,7 +438,7 @@ def get_bidding(strg: Strategy, pos: int, hand: Hand, turn: Card) -> list[BidInf
         # construct minimum functional faux deal state (only bidding fields, and
         # `persist`, needed)
         deal = DealState(pos, hand, turn, bids, *NONES, persist)
-        bid = strg.bid(deal)  # this call updates `persist`!
+        bid = strgy.bid(deal)  # this call updates `persist`!
 
         if strength := persist.get('strength'):
             strength = round(strength, FLOAT_PREC)
@@ -497,7 +507,7 @@ def get_details(persist: dict) -> str:
 #########################
 
 # this is a little hacky, but does ensure that the coefficient structures are
-# aligned between `get_strg_comps` and `get_strg_config`
+# aligned between `get_strgy_comps` and `get_strgy_config`
 anly = HandAnalysisSmart(NULL_HAND)
 coeff_names = [c for c in anly.scoring_coeff]
 del anly

@@ -318,8 +318,8 @@
         </tr>
         <tr>
           <td class="td_lbl">Turn card value:</td>
-          {% if strg %}
-          {% for val in strg.turn_card_value %}
+          {% if strgy %}
+          {% for val in strgy.turn_card_value %}
           <td class="td_num"><input name="tcv_{{loop.index0}}" type="number" value="{{val}}"></td>
           {% endfor %}
           {% else %}
@@ -330,8 +330,8 @@
         </tr>
         <tr>
           <td class="td_lbl">Turn card coeff:</td>
-          {% if strg %}
-          {% for val in strg.turn_card_coeff %}
+          {% if strgy %}
+          {% for val in strgy.turn_card_coeff %}
           <td class="td_num"><input name="tcc_{{loop.index0}}" type="number" value="{{val}}"></td>
           {% endfor %}
           {% else %}
@@ -346,8 +346,8 @@
         </tr>
         <tr>
           <td class="td_lbl">Bid thresh:</td>
-          {% if strg %}
-          {% for val in strg.bid_thresh %}
+          {% if strgy %}
+          {% for val in strgy.bid_thresh %}
           <td class="td_num"><input name="bt_{{loop.index0}}" type="number" value="{{val}}"></td>
           {% endfor %}
           {% else %}
@@ -358,8 +358,8 @@
         </tr>
         <tr>
           <td class="td_lbl">Alone margin:</td>
-          {% if strg %}
-          {% for val in strg.alone_margin %}
+          {% if strgy %}
+          {% for val in strgy.alone_margin %}
           <td class="td_num"><input name="am_{{loop.index0}}" type="number" value="{{val}}"></td>
           {% endfor %}
           {% else %}
@@ -370,8 +370,8 @@
         </tr>
         <tr>
           <td class="td_lbl">Def alone thresh:</td>
-          {% if strg %}
-          {% for val in strg.def_alone_thresh %}
+          {% if strgy %}
+          {% for val in strgy.def_alone_thresh %}
           <td class="td_num"><input name="dat_{{loop.index0}}" type="number" value="{{val}}"></td>
           {% endfor %}
           {% else %}

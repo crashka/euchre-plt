@@ -39,13 +39,17 @@ Note that `--app smart_tuner` (no parent module) should be specified if running 
 Open a browser window and navigate to `localhost:5000`.  The usage of the application
 should be pretty self-explanatory.
 
-**Hint**: hover over "Strength" value in the Bidding Analysis section to get a detailed
+**Hint 1**: hover over "Strength" value in the Bidding Analysis section to get a detailed
 breakdown of the contribution from the various components scores; for example:
 
 <p align="center">
   <img src="resources/strength_details.png" alt="Strength details screenshot"
        style="width: 75%;">
 </p>
+
+**Hint 2**: click on individual cards in the Deal Info section (either "Hand" or "Turn
+card") to change to a different card (bidding analysis will be updated automatically).
+This feature can be used to examine/explore specific deal scenarios.
 
 ## YAML Generator
 
