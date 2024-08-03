@@ -22,10 +22,9 @@ To Do list:
 
 - Nits
 
-  - Update "Pick strategies" list to include newly created (i.e. exported) strategies
   - Fix trailing spaces in export parameter yaml generation
   - Handle special characters in new strategy names/comments (is this needed?)
-  - Don't clear out deal info and hide bidding when switching strategies
+  - Don't clear out deal info (and hide bidding) when switching strategies
 
 - Enhancements
 
@@ -71,23 +70,25 @@ CONFIG_PATH    = os.path.join(CONFIG_DIR, CONFIG_FILE)
 STRATEGY_PATH  = 'euchplt.strategy'
 STRATEGY_CLASS = 'StrategySmart'
 new_strgy_fmt  = "%s (modified)"
-_strategies    = None
+_strategies    = None  # see NOTE in `get_strategies()`
 
 def get_strategies() -> list[str]:
+    """Get list of relevant strategies (i.e. based on ``StrategySmart``)--includes both
+    package- and app-level configurations
     """
-    """
+    # NOTE: not pretty to use a global here, but okay for this use case (just a tool)
     global _strategies
     if _strategies:
         return _strategies
 
-    cfg.load(CONFIG_FILE, CONFIG_DIR)
+    cfg.load(CONFIG_FILE, CONFIG_DIR, reload=True)
     all_strategies = cfg.config('strategies')
     _strategies = [k for k, v in all_strategies.items()
                    if v.get('base_class') == STRATEGY_CLASS]
     return _strategies
 
 def reset_strategies() -> None:
-    """
+    """Force ``get_strategies()`` to do a reload on next call
     """
     global _strategies
     _strategies = None

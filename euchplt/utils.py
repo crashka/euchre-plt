@@ -35,7 +35,7 @@ class Config:
           my_param: alt_value  # overwrites value from `default` profile
     """
     config_dir:   str | None
-    filepaths:    list[str]        # list of file pathnames loaded
+    filepaths:    set[str]         # set of file pathnames loaded
     profile_data: dict[str, dict]  # config indexed by profile (including 'default')
 
     def __init__(self, files: str | Iterable[str], config_dir: str = None):
@@ -50,12 +50,12 @@ class Config:
             load_files = list(files)
 
         self.config_dir = config_dir
-        self.filepaths = []
+        self.filepaths = set()
         self.profile_data = {}
         for file in load_files:
             self.load(file)
 
-    def load(self, file: str, file_dir = None) -> bool:
+    def load(self, file: str, file_dir = None, reload=False) -> bool:
         """Load a config file, overwriting existing parameter entries at the section
         level (i.e. direct children within a section).  Deeper merging within these
         top-level parameters is not supported.  Note that additional config files
@@ -68,7 +68,7 @@ class Config:
             path = os.path.join(self.config_dir, file)
         else:
             path = os.path.realpath(file)
-        if path in self.filepaths:
+        if path in self.filepaths and not reload:
             return False
 
         with open(path, 'r') as f:
@@ -84,7 +84,7 @@ class Config:
                     self.profile_data[profile][section] = {}
                 self.profile_data[profile][section].update(cfg[profile][section])
 
-        self.filepaths.append(path)
+        self.filepaths.add(path)
         return True
 
     def config(self, section: str, profile: str = None) -> dict:
