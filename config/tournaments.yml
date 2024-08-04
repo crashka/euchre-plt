@@ -205,3 +205,26 @@ default:
         - Smart Team 4
         - Smart Team 5
         - Smart Team 6
+    demo_ladder:
+      tourn_class:     ChallengeLadder
+      tourn_params:
+        match_games:     5
+        passes:          10
+        round_matches:   20
+        reset_elo:       false
+        elo_params:
+          elo_db:          elo_rating_600.db
+          use_margin:      true
+          d_value:         600
+          k_factor:        8
+      teams:
+        - Simple Team 1
+        - Simple Team 2
+        - Simple Team 3
+        - Simple Team 4
+        - Smart Team 1
+        - Smart Team 2
+        - Smart Team 3
+        - Smart Team 4
+        - Smart Team 5
+        - Smart Team 6

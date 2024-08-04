@@ -20,21 +20,28 @@ from .elo_rating import EloRating
 
 """
 Formats:
-  - Head-to-head
-  - Round robin
-  - Challenge ladder
-  - Single elimination
-  - Double elimination
+
+- Head-to-head
+- Round robin
+- Challenge ladder
+- Single elimination
+- Double elimination
 
 Notes:
-  - Each entrant is a strategy (class + params); players will be generated
-    for each team (both on the same strategy)
-  - Multiple instances of the same strategy can (should?) be entered per tournament
-    to indicate determination of results
-  - Elo is computed within (and across?) tournaments
-    - Investigate win- and score-based ELO calculations
-  - Report cumulative match stats as well
-  - OPEN ISSUE: should we assign 'seats' at the match level?
+
+- Each entrant is a strategy (class + params); players will be generated
+  for each team (both on the same strategy)
+- Multiple instances of the same strategy can (should?) be entered per tournament
+  to indicate determination of results
+- Elo is computed within (and across?) tournaments
+  - Investigate win- and score-based ELO calculations
+- Report cumulative match stats as well
+- OPEN ISSUE: should we assign 'seats' at the match level?
+
+To Do:
+
+- Leaderboard stuff should be refactored fully into the base class
+- More cleanup of print routines/options
 """
 
 ######################
@@ -166,7 +173,7 @@ Leaderboard = dict[str, LBStats]          # indexed by team name
 
 # superset of tournament subdivisions that subclasses may coopt for
 # their own usage/interpretation (other than `MATCH`, of course)
-TournUnit = Enum('TournUnit', 'MATCH ROUND PASS')
+TournUnit = Enum('TournUnit', 'MATCH ROUND PASS TOURNAMENT')
 
 class Tournament:
     """Abstract base class, cannot be instantiated directly.
@@ -180,6 +187,8 @@ class Tournament:
     # make it all consistent at some point)!!!
     pos_stats:      set[GameStat]
     pos_comp_stats: set[CompStat]
+    # callbacks for each "unit" managed by base class
+    callbacks:      dict[TournUnit, list[Callable]]
 
     # state, etc.
     # NOTE: matches are appended by `play_match()`, but the parent class has
@@ -251,6 +260,14 @@ class Tournament:
             if missing := set(CompStatFormulas[stat]) - self.pos_stats:
                 raise ConfigError(f"Missing dependency {', '.join(missing)} for stat '{stat.name}'")
 
+        # callbacks may be added by the subclass or by the caller; they are invoked by the
+        # base class in the corresponding "tabulate" method (which must be called by the
+        # subclass)--callbacks take the same arguments as their corresponding "tabulate"
+        # call plus additional kwargs, as needed
+        self.callbacks = {}
+        for unit in TournUnit:
+            self.callbacks[unit] = []
+
         self.matches        = []
         self.team_score     = {name: [0, 0.0] for name in self.teams}
         self.team_score_opp = {name: {opp: [0, 0.0] for opp in self.teams if opp is not name}
@@ -266,7 +283,13 @@ class Tournament:
         self.lb_base        = None
         self.elo_rating     = None
 
-    def tabulate(self, match: Match) -> None:
+    def add_callback(self, unit: TournUnit, cb: Callable) -> None:
+        """Add callback at the specific tournament "unit" level; will be invoked by the
+        base class as part of the "tabulate" process
+        """
+        self.callbacks[unit].append(cb)
+
+    def tabulate(self, match: Match, **kwargs) -> None:
         """Tabulate the result of a single match.  Subclasses may choose to implement and
         invoke additional methods for tabulating after completing rounds, stages, or any
         other subdivision for the specific format.
@@ -290,6 +313,29 @@ class Tournament:
                     for j in range(8):
                         my_stat_list[j] += match_stat_list[j]
 
+        for cb in self.callbacks[TournUnit.MATCH]:
+            cb(match, **kwargs)
+
+    def tabulate_round(self, round_num: int, matches: list[Match], **kwargs) -> None:
+        """Base class only calls appropriate callbacks, since the meaning of a "round" is
+        up to the subclass
+        """
+        for cb in self.callbacks[TournUnit.ROUND]:
+            cb(round_num, matches, **kwargs)
+
+    def tabulate_pass(self, pass_num: int, matches: list[Match], **kwargs) -> None:
+        """Base class only calls appropriate callbacks, since the meaning of a "pass" is
+        up to the subclass
+        """
+        for cb in self.callbacks[TournUnit.PASS]:
+            cb(pass_num, matches, **kwargs)
+
+    def tabulate_tournament(self, **kwargs) -> None:
+        """Base class only calls appropriate callbacks
+        """
+        for cb in self.callbacks[TournUnit.TOURNAMENT]:
+            cb(**kwargs)
+
     @staticmethod
     def score_key(x):
         """Sort by wins then Elo points (this algo works because Elo points will
@@ -298,8 +344,8 @@ class Tournament:
         return x[1][0] * x[1][0] + x[1][1]
 
     def set_winner(self) -> None:
-        """This method is overrideable for tournament formats where the
-        results/winner(s) are determined in a way other than match wins
+        """This method is overrideable for tournament formats where the results/winner(s)
+        are determined in a way other than match wins
         """
         thresh = 0.1  # for floating point comparison
         # determine winner by number of matches won (element score_item[1][0])
@@ -315,7 +361,7 @@ class Tournament:
         self.results = [s[0] for s in scores]
 
     def set_lb_base(self, lb_current: Leaderboard) -> None:
-        """
+        """Set baseline for leaderboard, for tracking movement between updates
         """
         self.lb_base = {}
         for name in lb_current:
@@ -636,10 +682,11 @@ class RoundRobin(Tournament):
         """
         if self.elo_update == TournUnit.ROUND:
             self.elo_rating.update(matches, collective=True)
+        super().tabulate_round(round_num, matches)
 
     def tabulate_pass(self, pass_num: int, matches: list[Match]) -> None:
-        """Do collective Elo ratings updates, if requested (otherwise nothing else to
-        do, currently)
+        """Do collective Elo ratings updates (if requested), update leaderboards, and
+        perform team elimination (if/as specified)
         """
         if self.elo_update == TournUnit.PASS:
             self.elo_rating.update(matches, collective=True)
@@ -647,7 +694,6 @@ class RoundRobin(Tournament):
         num_passes = pass_num + 1
         leaderboard = self.get_leaderboard(set(self.teams.keys()) - self.eliminated)
         self.leaderboards.append(leaderboard)
-        self.print_lb(f"Pass {pass_num}")
 
         if self.elim_passes and num_passes % self.elim_passes == 0:
             # don't go below `elim_pct` teams remaining
@@ -659,7 +705,13 @@ class RoundRobin(Tournament):
                 self.elim_order.extend(eliminate)
                 self.eliminated.update(eliminate)
                 self.set_lb_base(leaderboard)
+        super().tabulate_pass(pass_num, matches)
         self.matches.clear()
+
+    def print_pass_update(self, pass_num: int, matches: list[Match]) -> None:
+        """Pass-level callback used to print leaderboard
+        """
+        self.print_lb(f"Pass {pass_num}")
 
     def set_winner(self) -> None:
         """
@@ -676,11 +728,23 @@ class RoundRobin(Tournament):
         self.winner = tuple(winners)
         self.results = [t[0] for t in lb_sorted] + list(reversed(self.elim_order))
         self.elo_rating.persist()
+        super().tabulate_tournament()
 
     def play(self, **kwargs) -> None:
-        """Perform configured number of passes for the tournament, where a pass is
-        a single round robin.  We do pass-level progress reporting before truncating
-        `self.matches` (in `tabulate_pass()`) to avoid infinite memory consumption.
+        """Implemented by iterating through round robin passes
+        """
+        self.add_callback(TournUnit.PASS, self.print_pass_update)
+        for _ in self.iter_passes(**kwargs):
+            pass
+
+    def iter_passes(self, **kwargs) -> Leaderboard:
+        """Generator returning the current leaderboard for each "pass" (single round
+        robin) through the tournament; for a pass, each team plays each other team in a
+        match up to ``match_games`` games.  The final leaderboard represents the overall
+        results for the tournament.
+
+        We truncate ``self.matches`` (in ``tabulate_pass()``) to avoid infinite memory
+        consumption.
         """
         for pass_num in range(self.passes):
             pass_start = len(self.matches)
@@ -693,6 +757,7 @@ class RoundRobin(Tournament):
                     self.play_match(matchup)  # note this invokes `tabulate()`
                 self.tabulate_round(round_num, self.matches[round_start:])
             self.tabulate_pass(pass_num, self.matches[pass_start:])
+            yield self.leaderboards[-1]
         self.set_winner()
 
 ###################
@@ -785,9 +850,15 @@ class ChallengeLadder(Tournament):
             loser  += " (c)"
 
         scores = [s[1] for s in score_items]
-        print(f"Round {round_num:2}: {winner} def. {loser}\t{scores[0]} - {scores[1]}")
-
+        super().tabulate_round(round_num, matches, teams=[winner, loser], scores=scores)
         self.round_score = {}
+
+    def print_round_update(self, round_num: int, matches: list[Match],
+                           teams: list[str], scores: list[int]) -> None:
+        """Round-level callback used to print last ladder traversal
+        """
+        winner, loser = teams
+        print(f"Round {round_num:2}: {winner} def. {loser}\t{scores[0]} - {scores[1]}")
 
     def tabulate_pass(self, pass_num: int, matches: list[Match]) -> None:
         """Recompute leaderboard stats and report standings after each pass
@@ -797,16 +868,22 @@ class ChallengeLadder(Tournament):
 
         team_pos = {t: pos for pos, t in enumerate(self.ladder)}
         self.ladder_hist.append(team_pos)
+
+        lb = self.get_leaderboard(self.teams, key=lambda s: team_pos[s[0]], reverse=False)
+        self.leaderboards.append(lb)
+        super().tabulate_pass(pass_num, matches)
+        self.matches.clear()
+
+    def print_pass_update(self, pass_num: int, matches: list[Match]) -> None:
+        """Pass-level callback used to print leaderboard
+        """
         print(f"Pass {pass_num} Results:")
         prev_pos = self.ladder_hist[-2]
         for pos, team in enumerate(self.ladder):
             move = prev_pos[team] - pos
             print(f"  {team} ({move:+d})")
 
-        lb = self.get_leaderboard(self.teams, key=lambda s: team_pos[s[0]], reverse=False)
-        self.leaderboards.append(lb)
         self.print_lb(f"Pass {pass_num}")
-        self.matches.clear()
 
     def set_winner(self) -> None:
         """
@@ -814,13 +891,25 @@ class ChallengeLadder(Tournament):
         self.winner = tuple((self.ladder[0],))
         self.results = self.ladder
         self.elo_rating.persist()
+        super().tabulate_tournament()
 
     def play(self, **kwargs) -> None:
-        """Perform configured number of passes for the tournament, where a pass is
-        a single runthrough of the challenge ladder, starting from the last position.
+        """Implemented by iterating through challenge ladder passes
+        """
+        self.add_callback(TournUnit.ROUND, self.print_round_update)
+        self.add_callback(TournUnit.PASS, self.print_pass_update)
+        for _ in self.iter_passes(**kwargs):
+            pass
+
+    def iter_passes(self, **kwargs) -> Leaderboard:
+        """Generator returning the current leaderboard for each "pass" (single traversal
+        of the challenge ladder, from bottom to top) through the tournament; for a pass,
+        each team plays at least once (more than once if advancing positions).  The final
+        leaderboard represents the overall results for the tournament.
+
         As with RoundRobin, we do pass-level progress reporting before truncating
-        `self.matches` to avoid infinite memory consumption.  Elo updates are hard-
-        wired to happen after each round of head-to-head challenge matches.
+        ``self.matches`` to avoid infinite memory consumption.  Elo updates are hard-wired
+        to happen after each round of head-to-head challenge matches.
         """
         num_teams = len(self.teams)
 
@@ -833,6 +922,7 @@ class ChallengeLadder(Tournament):
                     self.play_match(matchup)  # note this invokes `tabulate()`
                 self.tabulate_round(round_num, self.matches[round_start:])
             self.tabulate_pass(pass_num, self.matches[pass_start:])
+            yield self.leaderboards[-1]
         self.set_winner()
 
     def print(self, file: TextIO = sys.stdout, verbose: int = 0) -> None:
