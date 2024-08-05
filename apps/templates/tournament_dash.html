@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>{{title}}</title>
+
+  <style>
+   .section {
+     margin-top: 1.0rem;
+   }
+   .sect_lbl {
+     font-size: larger;
+     font-weight: bold;
+   }
+   .col_lbl {
+     width: 10.0rem;
+   }
+   .col_txt,
+   .col_num,
+   .col_dec {
+     width: 5.0rem;
+   }
+   .td_lbl,
+   .td_txt {
+     text-align: left;
+   }
+   .td_num,
+   .td_dec {
+     text-align: center;
+   }
+   .msg {
+     display: block;
+   }
+   .buttons {
+     margin-top: 1.0rem;
+   }
+   button[value="next_pass"] {
+     font-weight: bolder;
+   }
+  </style>
+
+</head>
+
+<body>
+  <div class="section">
+    <span class="sect_lbl">Leaderboard</span>
+    <!-- <pre class="data">{{lb_data}}</pre> -->
+    {% if lb_data %}
+    <table>
+      <colgroup>
+        {% for cls in lb_col_cls %}
+        <col class="{{cls}}">
+        {% endfor %}
+      </colgroup>
+      <tr>
+        {% for col in lb_header %}
+        <th class="{{lb_td_cls[loop.index0]}}">{{col}}</th>
+        {% endfor %}
+      </tr>
+      {% for row in lb_data %}
+      <tr>
+        {% for val in row %}
+        <td class="{{lb_td_cls[loop.index0]}}">
+          {{val}}
+        </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </table>
+    {% endif %}
+  </div>
+
+  <div class="section">
+    <span class="sect_lbl">Status</span>
+    <span class="msg">{{msg}}</span>
+  </div>
+
+  <form method="post">
+    <div class="buttons">
+      <button type="button" onclick="window.close();">Close window</button>
+      <button class="submit" value="next_pass">Next Pass</button>
+    </div>
+  </form>
+
+  <script src="/static/jquery-3.7.1.min.js"></script>
+  <script>
+   $(function() {
+     // add css and attributes
+     $(".submit").attr({
+       type: 'submit',
+       name: "submit_func"
+     });
+   });
+  </script>
+</body>
+
+</html>

@@ -417,7 +417,7 @@
                 <span class="container">
                   <input type="text" name="hand_{{loop.index0}}" class="inp_card" value="{{mycard.idx}}">
                   <span class="spn_card" title="Click to change...">{{mycard.disp}}</span>
-                  <select name="strategy" class="sel_card" title="Click to choose...">
+                  <select name="hand_{{loop.index0}}" class="sel_card" title="Click to choose...">
                     {% for card in cards %}
                     <option value="{{card.idx}}"{{" selected" if card.idx == mycard.idx else ""}}>{{card.disp}}</option>
                     {% endfor %}
@@ -435,7 +435,7 @@
               <span class="container">
                 <input type="text" name="turn_card" class="inp_card" value="{{turn.idx}}">
                 <span class="spn_card" title="Click to change...">{{turn.disp}}</span>
-                <select name="strategy" class="sel_card" title="Click to choose...">
+                <select name="turn_card" class="sel_card" title="Click to choose...">
                   {% for card in cards %}
                   <option value="{{card.idx}}"{{" selected" if card.idx == turn.idx else ""}}>{{card.disp}}</option>
                   {% endfor %}

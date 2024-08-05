@@ -21,7 +21,8 @@ setup(
             'tournament = euchplt.tournament:main',
             'bid_data = ml.bid_data:main',
             'play_data = ml.play_data:main',
-            'smart_tuner = apps.smart_tuner:main'
+            'smart_tuner = apps.smart_tuner:main',
+            'tournament_runner = apps.tournament_runner:main'
         ],
     }
 )

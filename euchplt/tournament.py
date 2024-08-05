@@ -1,23 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
-from enum import Enum
-from itertools import chain
-from collections.abc import Mapping, Iterator, Iterable, Callable
-from typing import TypeVar, TextIO
-from numbers import Number
-import random
-import csv
-import os
-
-from .utils import rankdata, parse_argv
-from .core import DEBUG, cfg, DataFile, ConfigError
-from .team import Team
-from .game import GameStat, POS_STATS
-from .match import MatchStatXtra, MatchStatIter, Match
-from .elo_rating import EloRating
-
 """
 Formats:
 
@@ -43,6 +26,23 @@ To Do:
 - Leaderboard stuff should be refactored fully into the base class
 - More cleanup of print routines/options
 """
+
+import sys
+from enum import Enum
+from itertools import chain
+from collections.abc import Mapping, Iterator, Iterable, Callable
+from typing import TypeVar, TextIO
+from numbers import Number
+import random
+import csv
+import os
+
+from .utils import rankdata, parse_argv
+from .core import DEBUG, cfg, DataFile, ConfigError
+from .team import Team
+from .game import GameStat, POS_STATS
+from .match import MatchStatXtra, MatchStatIter, Match
+from .elo_rating import EloRating
 
 ######################
 # TournStat/CompStat #
@@ -738,27 +738,36 @@ class RoundRobin(Tournament):
             pass
 
     def iter_passes(self, **kwargs) -> Leaderboard:
-        """Generator returning the current leaderboard for each "pass" (single round
-        robin) through the tournament; for a pass, each team plays each other team in a
-        match up to ``match_games`` games.  The final leaderboard represents the overall
-        results for the tournament.
-
-        We truncate ``self.matches`` (in ``tabulate_pass()``) to avoid infinite memory
-        consumption.
+        """Generator for iterating passes
         """
         for pass_num in range(self.passes):
-            pass_start = len(self.matches)
-            active_teams = set(self.teams.keys()) - self.eliminated
-            for round_num, matchups in enumerate(self.get_matchups(active_teams)):
-                round_start = len(self.matches)
-                for matchup in matchups:
-                    if None in matchup:
-                        continue
-                    self.play_match(matchup)  # note this invokes `tabulate()`
-                self.tabulate_round(round_num, self.matches[round_start:])
-            self.tabulate_pass(pass_num, self.matches[pass_start:])
-            yield self.leaderboards[-1]
-        self.set_winner()
+            yield self.run_pass(pass_num, **kwargs)
+
+    def run_pass(self, pass_num: int, **kwargs) -> Leaderboard:
+        """Run the specified "pass" (single round robin) for the tournament, and return
+        the resulting leaderboard; for a pass, each team plays each other team in a match
+        up to ``match_games`` games.  The final leaderboard represents the overall results
+        for the tournament.
+
+        Note, we truncate ``self.matches`` (in ``tabulate_pass()``) to avoid infinite memory
+        consumption.
+        """
+        assert pass_num == len(self.leaderboards)
+        active_teams = set(self.teams.keys()) - self.eliminated
+        pass_start = len(self.matches)
+
+        for round_num, matchups in enumerate(self.get_matchups(active_teams)):
+            round_start = len(self.matches)
+            for matchup in matchups:
+                if None in matchup:
+                    continue
+                self.play_match(matchup)  # note this invokes `tabulate()`
+            self.tabulate_round(round_num, self.matches[round_start:])
+        self.tabulate_pass(pass_num, self.matches[pass_start:])
+
+        if pass_num == self.passes - 1:
+            self.set_winner()
+        return self.leaderboards[-1]
 
 ###################
 # ChallengeLadder #
@@ -902,28 +911,36 @@ class ChallengeLadder(Tournament):
             pass
 
     def iter_passes(self, **kwargs) -> Leaderboard:
-        """Generator returning the current leaderboard for each "pass" (single traversal
-        of the challenge ladder, from bottom to top) through the tournament; for a pass,
-        each team plays at least once (more than once if advancing positions).  The final
+        """Generator for iterating passes
+        """
+        for pass_num in range(self.passes):
+            yield self.run_pass(pass_num, **kwargs)
+
+    def run_pass(self, pass_num: int, **kwargs) -> Leaderboard:
+        """Run the specified "pass" (single traversal of the challenge ladder, from bottom
+        to top) for the tournament, and return the resulting leaderboard; for a pass, each
+        team plays at least once (more than once if advancing positions).  The final
         leaderboard represents the overall results for the tournament.
 
-        As with RoundRobin, we do pass-level progress reporting before truncating
-        ``self.matches`` to avoid infinite memory consumption.  Elo updates are hard-wired
-        to happen after each round of head-to-head challenge matches.
+        As with RoundRobin, we do pass-level tabulation before truncating ``self.matches``
+        to avoid infinite memory consumption.  Elo updates are hard-wired to happen after
+        each round of head-to-head challenge matches.
         """
+        assert pass_num == len(self.leaderboards)
         num_teams = len(self.teams)
+        pass_start = len(self.matches)
 
-        for pass_num in range(self.passes):
-            pass_start = len(self.matches)
-            for round_num in range(num_teams - 1):
-                round_start = len(self.matches)
-                matchup = self.get_matchup(round_num)
-                while max(self.round_score.values()) < self.round_matches:
-                    self.play_match(matchup)  # note this invokes `tabulate()`
-                self.tabulate_round(round_num, self.matches[round_start:])
-            self.tabulate_pass(pass_num, self.matches[pass_start:])
-            yield self.leaderboards[-1]
-        self.set_winner()
+        for round_num in range(num_teams - 1):
+            round_start = len(self.matches)
+            matchup = self.get_matchup(round_num)
+            while max(self.round_score.values()) < self.round_matches:
+                self.play_match(matchup)  # note this invokes `tabulate()`
+            self.tabulate_round(round_num, self.matches[round_start:])
+        self.tabulate_pass(pass_num, self.matches[pass_start:])
+
+        if pass_num == self.passes - 1:
+            self.set_winner()
+        return self.leaderboards[-1]
 
     def print(self, file: TextIO = sys.stdout, verbose: int = 0) -> None:
         """

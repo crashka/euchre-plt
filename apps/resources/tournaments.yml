@@ -1,0 +1,4 @@
+---
+default:
+  tournaments:
+    Dummy Tournament: {}  # needed to be a valid config file
