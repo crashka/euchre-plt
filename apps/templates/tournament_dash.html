@@ -12,6 +12,9 @@
      font-size: larger;
      font-weight: bold;
    }
+   .elapsed {
+     margin-left: 2.0rem;
+   }
    .col_lbl {
      width: 10.0rem;
    }
@@ -35,13 +38,20 @@
      margin-top: 1.0rem;
    }
    button[value="next_pass"] {
-     font-weight: bolder;
+     display: none;
+   }
+   .context {
+     display: none;
    }
   </style>
 
 </head>
 
 <body>
+  <div class="section">
+    <span class="tourn">Tournament Name: <b>{{tourn.name}}</b></span>
+    <span class="elapsed">Elapsed Time: <span class="timer">{{timer}}</span></span>
+  </div>
   <div class="section">
     <span class="sect_lbl">Leaderboard</span>
     <!-- <pre class="data">{{lb_data}}</pre> -->
@@ -75,21 +85,58 @@
     <span class="msg">{{msg}}</span>
   </div>
 
-  <form method="post">
+  <form id="ctrl" method="post">
+    <input class="context start" type="number" name="start" value="{{start}}">
+    <input class="context" type="number" name="pass_num" value="{{tourn.pass_num}}">
     <div class="buttons">
-      <button type="button" onclick="window.close();">Close window</button>
+      <button type="button" onclick="">Cancel Run</button>
+      <button type="button" onclick="">Restart Run</button>
       <button class="submit" value="next_pass">Next Pass</button>
     </div>
   </form>
 
   <script src="/static/jquery-3.7.1.min.js"></script>
   <script>
+   function updTimer($timer, start) {
+     var elapsed = ((Date.now() - start) / 1000) | 0;
+     var min = (elapsed / 60) | 0;
+     var sec = (elapsed % 60) | 0;
+     sec = sec < 10 ? "0" + sec : sec;
+     $timer.text(min + ":" + sec);
+   };
+
+   function startTimer() {
+     var $timer = $(".timer");
+     var $start = $(".start");
+     var start = parseInt($start.val());
+     if (!start) {
+       start = Date.now();
+       $start.val(start);
+     }
+     var intervalId = setInterval(updTimer, 1000, $timer, start);
+     $timer.data('intervalId', intervalId)
+   };
+
+   // document ready
    $(function() {
      // add css and attributes
      $(".submit").attr({
        type: 'submit',
        name: "submit_func"
      });
+
+     // run timer and get next pass, unless tournament over
+     {% if not winner %}
+     startTimer();
+     $("button[value='next_pass']").trigger('click');
+     {% else %}
+     (function() {
+       var $timer = $(".timer");
+       var $start = $(".start");
+       var start = parseInt($start.val());
+       updTimer($timer, start);
+     })();
+     {% endif %}
    });
   </script>
 </body>

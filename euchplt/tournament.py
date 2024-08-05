@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
+"""Module for running various forms of tournaments for strategies and/or teams
+
 Formats:
 
 - Head-to-head
@@ -17,7 +18,9 @@ Notes:
 - Multiple instances of the same strategy can (should?) be entered per tournament
   to indicate determination of results
 - Elo is computed within (and across?) tournaments
+
   - Investigate win- and score-based ELO calculations
+
 - Report cumulative match stats as well
 - OPEN ISSUE: should we assign 'seats' at the match level?
 
@@ -191,6 +194,7 @@ class Tournament:
     callbacks:      dict[TournUnit, list[Callable]]
 
     # state, etc.
+    pass_num:       int
     # NOTE: matches are appended by `play_match()`, but the parent class has
     # no additional interest in this list; it is up to subclasses to figure
     # out how/whether they want to use it for reporting, analysis, etc.
@@ -268,6 +272,7 @@ class Tournament:
         for unit in TournUnit:
             self.callbacks[unit] = []
 
+        self.pass_num       = -1
         self.matches        = []
         self.team_score     = {name: [0, 0.0] for name in self.teams}
         self.team_score_opp = {name: {opp: [0, 0.0] for opp in self.teams if opp is not name}
@@ -329,6 +334,9 @@ class Tournament:
         """
         for cb in self.callbacks[TournUnit.PASS]:
             cb(pass_num, matches, **kwargs)
+
+        assert self.pass_num == pass_num - 1
+        self.pass_num = pass_num
 
     def tabulate_tournament(self, **kwargs) -> None:
         """Base class only calls appropriate callbacks
@@ -749,6 +757,10 @@ class RoundRobin(Tournament):
         up to ``match_games`` games.  The final leaderboard represents the overall results
         for the tournament.
 
+        This interface is a little clunky (in that ``pass_num`` is actually not needed,
+        since it is kept in the object instance), but we'll keep it this way (for now) to
+        ensure integrity on the caller side.
+
         Note, we truncate ``self.matches`` (in ``tabulate_pass()``) to avoid infinite memory
         consumption.
         """
@@ -922,9 +934,13 @@ class ChallengeLadder(Tournament):
         team plays at least once (more than once if advancing positions).  The final
         leaderboard represents the overall results for the tournament.
 
-        As with RoundRobin, we do pass-level tabulation before truncating ``self.matches``
-        to avoid infinite memory consumption.  Elo updates are hard-wired to happen after
-        each round of head-to-head challenge matches.
+        This interface is a little clunky (in that ``pass_num`` is actually not needed,
+        since it is kept in the object instance), but we'll keep it this way (for now) to
+        ensure integrity on the caller side (same as with ``RoundRobin``).
+
+        Also as with ``RoundRobin``, we clear ``self.matches`` after doing pass-level
+        tabulation to avoid excessive memory consumption.  Elo updates are hard-wired to
+        happen after each round of head-to-head challenge matches.
         """
         assert pass_num == len(self.leaderboards)
         num_teams = len(self.teams)

@@ -85,16 +85,15 @@ def get_db_file(tourn_id: str) -> str:
     """
     return f"tourn-{tourn_id}.db"
 
-def save_tournament(tourn_id: str, tourn: Tournament, pass_num: int = -1) -> None:
+def save_tournament(tourn_id: str, tourn: Tournament) -> None:
     """Persist the tournament information (including stats)
     """
     db_file = get_db_file(tourn_id)
     db_path = os.path.join(RESOURCES_DIR, db_file)
     with shelve.open(db_path, flag='c') as db:
         db['tourn'] = tourn
-        db['pass_num'] = pass_num
 
-def retrieve_tournament(tourn_id: str) -> tuple[Tournament, int]:
+def retrieve_tournament(tourn_id: str) -> Tournament:
     """Retrieve the tournament information (including stats)
     """
     db_file = get_db_file(tourn_id)
@@ -102,7 +101,7 @@ def retrieve_tournament(tourn_id: str) -> tuple[Tournament, int]:
     with shelve.open(db_path) as db:
         # ATTN: can probably do this without the comprehension loop!!!
         data = {k: v for k, v in db.items()}
-    return data.get('tourn'), data.get('pass_num')
+    return data.get('tourn')
 
 FLOAT_PREC = 1
 
@@ -122,6 +121,9 @@ SUBMIT_FUNCS = [
     'run_tourn',
     'next_pass'
 ]
+
+INIT_TIMER = "0:00"
+INIT_START = 0  # to make parseInt() work
 
 @app.get("/")
 def index():
@@ -171,13 +173,16 @@ def run_tourn(form: dict) -> str:
     save_tournament(tourn_id, tourn)
     session['tourn_id'] = tourn_id
 
-    run_msg = f"Running tournament \"{tourn.name}\" ({tourn.__class__.__name__})"
+    run_msg = "Starting tournament..."
     context = {
         'tourn':      tourn,
         'lb_col_cls': None,
         'lb_td_cls':  None,
         'lb_header':  None,
         'lb_data':    None,
+        'timer':      INIT_TIMER,
+        'start':      INIT_START,
+        'winner':     None,
         'msg':        run_msg
     }
     return render_dashboard(context)
@@ -197,20 +202,22 @@ td_map = {
 def next_pass(form: dict) -> str:
     """
     """
+    winner = None
     tourn_id = session['tourn_id']
-    tourn, pass_num = retrieve_tournament(tourn_id)
-    pass_num += 1
+    tourn = retrieve_tournament(tourn_id)
+    # REVISIT: clunky use of local `pass_num`, see note in `RoundRobin.run_pass()`!!!
+    pass_num = tourn.pass_num + 1
     assert pass_num < tourn.passes
 
     lb = tourn.run_pass(pass_num)
-    save_tournament(tourn_id, tourn, pass_num)
-    if pass_num < tourn.passes - 1:
+    save_tournament(tourn_id, tourn)
+    if pass_num + 1 < tourn.passes:
         assert pass_num + 1 == len(tourn.leaderboards)
-        pass_msg = f"Completed pass {pass_num + 1}"
+        pass_msg = f"Completed pass {pass_num + 1} of {tourn.passes}"
     else:
         plural = "s" if len(tourn.winner) > 1 else ""
-        winner_str = f"winner{plural}: {', '.join(tourn.winner)}"
-        pass_msg = f"Tournament \"{tourn.name}\" complete, {winner_str}"
+        winner = ', '.join(tourn.winner)
+        pass_msg = f"Tournament \"{tourn.name}\" complete, winner{plural}: {winner}"
 
     stats_row = next(iter(lb.values()))
     # note that all of the following include team info in the [0] position
@@ -226,12 +233,20 @@ def next_pass(form: dict) -> str:
                         if k in LB_PRINT_STATS]
         lb_data.append(row)
 
+    # this won't be perfectly correlated with client side timer, so sometimes
+    # glitchy, but as close as we can get
+    elapsed = int(time()) - int(form.get('start')) // 1000
+    timer = f"{elapsed // 60}:{elapsed % 60:02d}"
+
     context = {
         'tourn':      tourn,
         'lb_col_cls': lb_col_cls,
         'lb_td_cls':  lb_td_cls,
         'lb_header':  lb_header,
         'lb_data':    lb_data,
+        'timer':      timer,
+        'start':      form.get('start'),
+        'winner':     winner,
         'msg':        pass_msg
     }
 

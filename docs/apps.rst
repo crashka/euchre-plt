@@ -10,3 +10,8 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: apps.to_yaml
+
+:mod:`apps.tournament_runner` -- Tournament Runner
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: apps.tournament_runner
