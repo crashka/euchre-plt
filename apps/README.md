@@ -97,3 +97,41 @@ Supported types in the input data include: `list`, `dict`, and scalars (`str`,
 YAML representation).
 
 The full interface is documented at [module-apps.to_yaml](https://crashka.github.io/euchre-plt/_build/html/apps.html#module-apps.to_yaml).
+
+## Tournament Runner
+
+Simple form-based web app to run tournaments.
+
+### Setup
+
+Same as for Smart Tuner [Setup](#setup), above.
+
+### Start the server
+
+For local usage:
+
+```bash
+$ python -m apps.tournament_runner
+```
+
+or:
+
+```bash
+$ flask --app apps.tournament_runner run [--debug]
+```
+
+Note that `--app tournament_runner` (no parent module) should be specified if running
+from the `apps/` subdirectory.
+
+### Run the application
+
+Open a browser window and navigate to `localhost:5000`.  The usage of the application
+should be pretty self-explanatory.
+
+Here is a sample dashboard result after running the `"demo"` tournament (configured in
+`config/tournaments.yml`):
+
+<p align="center">
+  <img src="resources/demo_results_dash.png" alt="Demo results dashboard"
+       style="width: 75%;">
+</p>

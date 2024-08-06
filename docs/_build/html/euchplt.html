@@ -170,7 +170,11 @@
 <li class="toctree-l3"><a class="reference internal" href="#euchplt.tournament.Tournament"><code class="docutils literal notranslate"><span class="pre">Tournament</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.new"><code class="docutils literal notranslate"><span class="pre">Tournament.new()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.__init__"><code class="docutils literal notranslate"><span class="pre">Tournament.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.add_callback"><code class="docutils literal notranslate"><span class="pre">Tournament.add_callback()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.tabulate"><code class="docutils literal notranslate"><span class="pre">Tournament.tabulate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.tabulate_round"><code class="docutils literal notranslate"><span class="pre">Tournament.tabulate_round()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.tabulate_pass"><code class="docutils literal notranslate"><span class="pre">Tournament.tabulate_pass()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.tabulate_tournament"><code class="docutils literal notranslate"><span class="pre">Tournament.tabulate_tournament()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.score_key"><code class="docutils literal notranslate"><span class="pre">Tournament.score_key()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.set_winner"><code class="docutils literal notranslate"><span class="pre">Tournament.set_winner()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.set_lb_base"><code class="docutils literal notranslate"><span class="pre">Tournament.set_lb_base()</span></code></a></li>
@@ -193,8 +197,11 @@
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.RoundRobin.tabulate"><code class="docutils literal notranslate"><span class="pre">RoundRobin.tabulate()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.RoundRobin.tabulate_round"><code class="docutils literal notranslate"><span class="pre">RoundRobin.tabulate_round()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.RoundRobin.tabulate_pass"><code class="docutils literal notranslate"><span class="pre">RoundRobin.tabulate_pass()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.RoundRobin.print_pass_update"><code class="docutils literal notranslate"><span class="pre">RoundRobin.print_pass_update()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.RoundRobin.set_winner"><code class="docutils literal notranslate"><span class="pre">RoundRobin.set_winner()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.RoundRobin.play"><code class="docutils literal notranslate"><span class="pre">RoundRobin.play()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.RoundRobin.iter_passes"><code class="docutils literal notranslate"><span class="pre">RoundRobin.iter_passes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.RoundRobin.run_pass"><code class="docutils literal notranslate"><span class="pre">RoundRobin.run_pass()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#euchplt.tournament.ChallengeLadder"><code class="docutils literal notranslate"><span class="pre">ChallengeLadder</span></code></a><ul>
@@ -202,9 +209,13 @@
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.ChallengeLadder.get_matchup"><code class="docutils literal notranslate"><span class="pre">ChallengeLadder.get_matchup()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.ChallengeLadder.tabulate"><code class="docutils literal notranslate"><span class="pre">ChallengeLadder.tabulate()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.ChallengeLadder.tabulate_round"><code class="docutils literal notranslate"><span class="pre">ChallengeLadder.tabulate_round()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.ChallengeLadder.print_round_update"><code class="docutils literal notranslate"><span class="pre">ChallengeLadder.print_round_update()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.ChallengeLadder.tabulate_pass"><code class="docutils literal notranslate"><span class="pre">ChallengeLadder.tabulate_pass()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.ChallengeLadder.print_pass_update"><code class="docutils literal notranslate"><span class="pre">ChallengeLadder.print_pass_update()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.ChallengeLadder.set_winner"><code class="docutils literal notranslate"><span class="pre">ChallengeLadder.set_winner()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.ChallengeLadder.play"><code class="docutils literal notranslate"><span class="pre">ChallengeLadder.play()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.ChallengeLadder.iter_passes"><code class="docutils literal notranslate"><span class="pre">ChallengeLadder.iter_passes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.ChallengeLadder.run_pass"><code class="docutils literal notranslate"><span class="pre">ChallengeLadder.run_pass()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.ChallengeLadder.print"><code class="docutils literal notranslate"><span class="pre">ChallengeLadder.print()</span></code></a></li>
 </ul>
 </li>
@@ -988,6 +999,34 @@ for individual games, as well as printing match stats</p>
 </section>
 <section id="module-euchplt.tournament">
 <span id="euchplt-tournament-tournament"></span><h2><a class="reference internal" href="#module-euchplt.tournament" title="euchplt.tournament"><code class="xref py py-mod docutils literal notranslate"><span class="pre">euchplt.tournament</span></code></a> – Tournament<a class="headerlink" href="#module-euchplt.tournament" title="Link to this heading"></a></h2>
+<p>Module for running various forms of tournaments for strategies and/or teams</p>
+<p>Formats:</p>
+<ul class="simple">
+<li><p>Head-to-head</p></li>
+<li><p>Round robin</p></li>
+<li><p>Challenge ladder</p></li>
+<li><p>Single elimination</p></li>
+<li><p>Double elimination</p></li>
+</ul>
+<p>Notes:</p>
+<ul class="simple">
+<li><p>Each entrant is a strategy (class + params); players will be generated
+for each team (both on the same strategy)</p></li>
+<li><p>Multiple instances of the same strategy can (should?) be entered per tournament
+to indicate determination of results</p></li>
+<li><p>Elo is computed within (and across?) tournaments</p>
+<ul>
+<li><p>Investigate win- and score-based ELO calculations</p></li>
+</ul>
+</li>
+<li><p>Report cumulative match stats as well</p></li>
+<li><p>OPEN ISSUE: should we assign ‘seats’ at the match level?</p></li>
+</ul>
+<p>To Do:</p>
+<ul class="simple">
+<li><p>Leaderboard stuff should be refactored fully into the base class</p></li>
+<li><p>More cleanup of print routines/options</p></li>
+</ul>
 <dl class="py class">
 <dt class="sig sig-object py" id="euchplt.tournament.TournStatXtra">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.tournament.</span></span><span class="sig-name descname"><span class="pre">TournStatXtra</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names=&lt;not</span> <span class="pre">given&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.tournament.TournStatXtra" title="Link to this definition"></a></dt>
@@ -1045,11 +1084,38 @@ instantiated <cite>Team</cite> objects (format must be consistent within the ite
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="euchplt.tournament.Tournament.add_callback">
+<span class="sig-name descname"><span class="pre">add_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.tournament.TournUnit" title="euchplt.tournament.TournUnit"><span class="pre">TournUnit</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.tournament.Tournament.add_callback" title="Link to this definition"></a></dt>
+<dd><p>Add callback at the specific tournament “unit” level; will be invoked by the
+base class as part of the “tabulate” process</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="euchplt.tournament.Tournament.tabulate">
-<span class="sig-name descname"><span class="pre">tabulate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">match</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.match.Match" title="euchplt.match.Match"><span class="pre">Match</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.tournament.Tournament.tabulate" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">tabulate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">match</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.match.Match" title="euchplt.match.Match"><span class="pre">Match</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.tournament.Tournament.tabulate" title="Link to this definition"></a></dt>
 <dd><p>Tabulate the result of a single match.  Subclasses may choose to implement and
 invoke additional methods for tabulating after completing rounds, stages, or any
 other subdivision for the specific format.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.tournament.Tournament.tabulate_round">
+<span class="sig-name descname"><span class="pre">tabulate_round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_num</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matches</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.match.Match" title="euchplt.match.Match"><span class="pre">Match</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.tournament.Tournament.tabulate_round" title="Link to this definition"></a></dt>
+<dd><p>Base class only calls appropriate callbacks, since the meaning of a “round” is
+up to the subclass</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.tournament.Tournament.tabulate_pass">
+<span class="sig-name descname"><span class="pre">tabulate_pass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pass_num</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matches</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.match.Match" title="euchplt.match.Match"><span class="pre">Match</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.tournament.Tournament.tabulate_pass" title="Link to this definition"></a></dt>
+<dd><p>Base class only calls appropriate callbacks, since the meaning of a “pass” is
+up to the subclass</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.tournament.Tournament.tabulate_tournament">
+<span class="sig-name descname"><span class="pre">tabulate_tournament</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.tournament.Tournament.tabulate_tournament" title="Link to this definition"></a></dt>
+<dd><p>Base class only calls appropriate callbacks</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1062,14 +1128,15 @@ always be less than wins)</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.tournament.Tournament.set_winner">
 <span class="sig-name descname"><span class="pre">set_winner</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.tournament.Tournament.set_winner" title="Link to this definition"></a></dt>
-<dd><p>This method is overrideable for tournament formats where the
-results/winner(s) are determined in a way other than match wins</p>
+<dd><p>This method is overrideable for tournament formats where the results/winner(s)
+are determined in a way other than match wins</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.tournament.Tournament.set_lb_base">
 <span class="sig-name descname"><span class="pre">set_lb_base</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lb_current</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.tournament.LBStat" title="euchplt.tournament.LBStat"><span class="pre">LBStat</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Number</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.tournament.Tournament.set_lb_base" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Set baseline for leaderboard, for tracking movement between updates</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.tournament.Tournament.lb_key">
@@ -1178,8 +1245,14 @@ once per round, this is the same as per-match tabulation</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.tournament.RoundRobin.tabulate_pass">
 <span class="sig-name descname"><span class="pre">tabulate_pass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pass_num</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matches</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.match.Match" title="euchplt.match.Match"><span class="pre">Match</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.tournament.RoundRobin.tabulate_pass" title="Link to this definition"></a></dt>
-<dd><p>Do collective Elo ratings updates, if requested (otherwise nothing else to
-do, currently)</p>
+<dd><p>Do collective Elo ratings updates (if requested), update leaderboards, and
+perform team elimination (if/as specified)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.tournament.RoundRobin.print_pass_update">
+<span class="sig-name descname"><span class="pre">print_pass_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pass_num</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matches</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.match.Match" title="euchplt.match.Match"><span class="pre">Match</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.tournament.RoundRobin.print_pass_update" title="Link to this definition"></a></dt>
+<dd><p>Pass-level callback used to print leaderboard</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1190,9 +1263,27 @@ do, currently)</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.tournament.RoundRobin.play">
 <span class="sig-name descname"><span class="pre">play</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.tournament.RoundRobin.play" title="Link to this definition"></a></dt>
-<dd><p>Perform configured number of passes for the tournament, where a pass is
-a single round robin.  We do pass-level progress reporting before truncating
-<cite>self.matches</cite> (in <cite>tabulate_pass()</cite>) to avoid infinite memory consumption.</p>
+<dd><p>Implemented by iterating through round robin passes</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.tournament.RoundRobin.iter_passes">
+<span class="sig-name descname"><span class="pre">iter_passes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.tournament.LBStat" title="euchplt.tournament.LBStat"><span class="pre">LBStat</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Number</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.tournament.RoundRobin.iter_passes" title="Link to this definition"></a></dt>
+<dd><p>Generator for iterating passes</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.tournament.RoundRobin.run_pass">
+<span class="sig-name descname"><span class="pre">run_pass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pass_num</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.tournament.LBStat" title="euchplt.tournament.LBStat"><span class="pre">LBStat</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Number</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.tournament.RoundRobin.run_pass" title="Link to this definition"></a></dt>
+<dd><p>Run the specified “pass” (single round robin) for the tournament, and return
+the resulting leaderboard; for a pass, each team plays each other team in a match
+up to <code class="docutils literal notranslate"><span class="pre">match_games</span></code> games.  The final leaderboard represents the overall results
+for the tournament.</p>
+<p>This interface is a little clunky (in that <code class="docutils literal notranslate"><span class="pre">pass_num</span></code> is actually not needed,
+since it is kept in the object instance), but we’ll keep it this way (for now) to
+ensure integrity on the caller side.</p>
+<p>Note, we truncate <code class="docutils literal notranslate"><span class="pre">self.matches</span></code> (in <code class="docutils literal notranslate"><span class="pre">tabulate_pass()</span></code>) to avoid infinite memory
+consumption.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1223,9 +1314,21 @@ a single round robin.  We do pass-level progress reporting before truncating
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="euchplt.tournament.ChallengeLadder.print_round_update">
+<span class="sig-name descname"><span class="pre">print_round_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">round_num</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matches</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.match.Match" title="euchplt.match.Match"><span class="pre">Match</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">teams</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scores</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.tournament.ChallengeLadder.print_round_update" title="Link to this definition"></a></dt>
+<dd><p>Round-level callback used to print last ladder traversal</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="euchplt.tournament.ChallengeLadder.tabulate_pass">
 <span class="sig-name descname"><span class="pre">tabulate_pass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pass_num</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matches</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.match.Match" title="euchplt.match.Match"><span class="pre">Match</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.tournament.ChallengeLadder.tabulate_pass" title="Link to this definition"></a></dt>
 <dd><p>Recompute leaderboard stats and report standings after each pass</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.tournament.ChallengeLadder.print_pass_update">
+<span class="sig-name descname"><span class="pre">print_pass_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pass_num</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matches</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.match.Match" title="euchplt.match.Match"><span class="pre">Match</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.tournament.ChallengeLadder.print_pass_update" title="Link to this definition"></a></dt>
+<dd><p>Pass-level callback used to print leaderboard</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1236,11 +1339,28 @@ a single round robin.  We do pass-level progress reporting before truncating
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.tournament.ChallengeLadder.play">
 <span class="sig-name descname"><span class="pre">play</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.tournament.ChallengeLadder.play" title="Link to this definition"></a></dt>
-<dd><p>Perform configured number of passes for the tournament, where a pass is
-a single runthrough of the challenge ladder, starting from the last position.
-As with RoundRobin, we do pass-level progress reporting before truncating
-<cite>self.matches</cite> to avoid infinite memory consumption.  Elo updates are hard-
-wired to happen after each round of head-to-head challenge matches.</p>
+<dd><p>Implemented by iterating through challenge ladder passes</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.tournament.ChallengeLadder.iter_passes">
+<span class="sig-name descname"><span class="pre">iter_passes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.tournament.LBStat" title="euchplt.tournament.LBStat"><span class="pre">LBStat</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Number</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.tournament.ChallengeLadder.iter_passes" title="Link to this definition"></a></dt>
+<dd><p>Generator for iterating passes</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.tournament.ChallengeLadder.run_pass">
+<span class="sig-name descname"><span class="pre">run_pass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pass_num</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.tournament.LBStat" title="euchplt.tournament.LBStat"><span class="pre">LBStat</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Number</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.tournament.ChallengeLadder.run_pass" title="Link to this definition"></a></dt>
+<dd><p>Run the specified “pass” (single traversal of the challenge ladder, from bottom
+to top) for the tournament, and return the resulting leaderboard; for a pass, each
+team plays at least once (more than once if advancing positions).  The final
+leaderboard represents the overall results for the tournament.</p>
+<p>This interface is a little clunky (in that <code class="docutils literal notranslate"><span class="pre">pass_num</span></code> is actually not needed,
+since it is kept in the object instance), but we’ll keep it this way (for now) to
+ensure integrity on the caller side (same as with <code class="docutils literal notranslate"><span class="pre">RoundRobin</span></code>).</p>
+<p>Also as with <code class="docutils literal notranslate"><span class="pre">RoundRobin</span></code>, we clear <code class="docutils literal notranslate"><span class="pre">self.matches</span></code> after doing pass-level
+tabulation to avoid excessive memory consumption.  Elo updates are hard-wired to
+happen after each round of head-to-head challenge matches.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2622,7 +2742,7 @@ list of file names (no spaces)</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.utils.Config.load">
-<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#euchplt.utils.Config.load" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reload</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#euchplt.utils.Config.load" title="Link to this definition"></a></dt>
 <dd><p>Load a config file, overwriting existing parameter entries at the section
 level (i.e. direct children within a section).  Deeper merging within these
 top-level parameters is not supported.  Note that additional config files

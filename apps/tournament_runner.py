@@ -19,6 +19,12 @@ usage of the application should be pretty self-explanatory.
 
 To Do list:
 
+- Get parameter overrides to work
+- Implement "Cancel Run" and "Restart Run" buttons
+- Show interesting aggregate stats below buttons
+- Download details stats for individual teams
+- Clean up initial "runner" page (or perhaps better yet, merge with dashboard)
+- Ability to create/save out new tournament configurations
 """
 
 from numbers import Number
@@ -119,7 +125,8 @@ def round_val(val: Number) -> Number:
 
 SUBMIT_FUNCS = [
     'run_tourn',
-    'next_pass'
+    'next_pass',
+    'cancel_run'
 ]
 
 INIT_TIMER = "0:00"
@@ -218,7 +225,7 @@ td_map = {
 }
 
 def next_pass(form: dict) -> str:
-    """
+    """Run the next pass for the tournament and render the leaderboard and chart updates
     """
     winner = None
     tourn_id = session['tourn_id']
@@ -276,8 +283,13 @@ def next_pass(form: dict) -> str:
         'winner':     winner,
         'msg':        pass_msg
     }
-
     return render_dashboard(context)
+
+def cancel_run(form: dict) -> str:
+    """Cancel the run for the tournament and re-render the latest leaderboard and chart
+    updates
+    """
+    raise NotImplementedError("coming soon..")
 
 ################
 # App Routines #
@@ -293,8 +305,7 @@ def render_app(context: dict) -> str:
     return render_template(APP_TEMPLATE, **context)
 
 def render_dashboard(context: dict) -> str:
-    """Render the dashboard, from which the tournament will be run and tracked (assuming
-    we can successfully serialize it!)
+    """Render the dashboard, from which the tournament will be run and tracked
     """
     context['title'] = DASH_NAME + f" - {context['tourn'].name}"
     return render_template(DASH_TEMPLATE, **context)
