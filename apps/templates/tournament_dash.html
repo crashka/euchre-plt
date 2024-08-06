@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
   <head>
     <title>{{title}}</title>
 
@@ -184,12 +183,22 @@
            title: {
              display: true,
              text: {{stat|tojson}}
+           },
+           legend: {
+             position: 'right',
+             labels: {
+               boxWidth: 10,
+               font: {
+                 size: 10
+               }
+             }
            }
          },
          animation: false,
          maintainAspectRatio: false,
          scales: {
            y: {
+             // TODO: make this `true` for certain charts (e.g. "Win %")!!!
              beginAtZero: false
            }
          }
@@ -198,7 +207,5 @@
      {% endfor %}
      {% endif %}
     </script>
-
   </body>
-
 </html>
