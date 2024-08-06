@@ -1,144 +1,204 @@
 <!DOCTYPE html>
 <html>
 
-<head>
-  <title>{{title}}</title>
+  <head>
+    <title>{{title}}</title>
 
-  <style>
-   .section {
-     margin-top: 1.0rem;
-   }
-   .sect_lbl {
-     font-size: larger;
-     font-weight: bold;
-   }
-   .elapsed {
-     margin-left: 2.0rem;
-   }
-   .col_lbl {
-     width: 10.0rem;
-   }
-   .col_txt,
-   .col_num,
-   .col_dec {
-     width: 5.0rem;
-   }
-   .td_lbl,
-   .td_txt {
-     text-align: left;
-   }
-   .td_num,
-   .td_dec {
-     text-align: center;
-   }
-   .msg {
-     display: block;
-   }
-   .buttons {
-     margin-top: 1.0rem;
-   }
-   button[value="next_pass"] {
-     display: none;
-   }
-   .context {
-     display: none;
-   }
-  </style>
-
-</head>
-
-<body>
-  <div class="section">
-    <span class="tourn">Tournament Name: <b>{{tourn.name}}</b></span>
-    <span class="elapsed">Elapsed Time: <span class="timer">{{timer}}</span></span>
-  </div>
-  <div class="section">
-    <span class="sect_lbl">Leaderboard</span>
-    <!-- <pre class="data">{{lb_data}}</pre> -->
-    {% if lb_data %}
-    <table>
-      <colgroup>
-        {% for cls in lb_col_cls %}
-        <col class="{{cls}}">
-        {% endfor %}
-      </colgroup>
-      <tr>
-        {% for col in lb_header %}
-        <th class="{{lb_td_cls[loop.index0]}}">{{col}}</th>
-        {% endfor %}
-      </tr>
-      {% for row in lb_data %}
-      <tr>
-        {% for val in row %}
-        <td class="{{lb_td_cls[loop.index0]}}">
-          {{val}}
-        </td>
-        {% endfor %}
-      </tr>
-      {% endfor %}
-    </table>
-    {% endif %}
-  </div>
-
-  <div class="section">
-    <span class="sect_lbl">Status</span>
-    <span class="msg">{{msg}}</span>
-  </div>
-
-  <form id="ctrl" method="post">
-    <input class="context start" type="number" name="start" value="{{start}}">
-    <input class="context" type="number" name="pass_num" value="{{tourn.pass_num}}">
-    <div class="buttons">
-      <button type="button" onclick="">Cancel Run</button>
-      <button type="button" onclick="">Restart Run</button>
-      <button class="submit" value="next_pass">Next Pass</button>
-    </div>
-  </form>
-
-  <script src="/static/jquery-3.7.1.min.js"></script>
-  <script>
-   function updTimer($timer, start) {
-     var elapsed = ((Date.now() - start) / 1000) | 0;
-     var min = (elapsed / 60) | 0;
-     var sec = (elapsed % 60) | 0;
-     sec = sec < 10 ? "0" + sec : sec;
-     $timer.text(min + ":" + sec);
-   };
-
-   function startTimer() {
-     var $timer = $(".timer");
-     var $start = $(".start");
-     var start = parseInt($start.val());
-     if (!start) {
-       start = Date.now();
-       $start.val(start);
+    <style>
+     .container {
+       width: 50rem;
+       float: left;
      }
-     var intervalId = setInterval(updTimer, 1000, $timer, start);
-     $timer.data('intervalId', intervalId)
-   };
+     .section {
+       margin-top: 1.0rem;
+     }
+     .sect_lbl {
+       font-size: larger;
+       font-weight: bold;
+     }
+     .elapsed {
+       margin-left: 2.0rem;
+     }
+     .col_lbl {
+       width: 10.0rem;
+     }
+     .col_txt,
+     .col_num,
+     .col_dec {
+       width: 5.0rem;
+     }
+     .td_lbl,
+     .td_txt {
+       text-align: left;
+     }
+     .td_num,
+     .td_dec {
+       text-align: center;
+     }
+     .msg {
+       display: block;
+     }
+     .buttons {
+       margin-top: 1.0rem;
+     }
+     button[value="next_pass"] {
+       display: none;
+     }
+     .context {
+       display: none;
+     }
+     .chart {
+       height: 16rem;
+       width: 45rem;
+     }
+    </style>
+  </head>
 
-   // document ready
-   $(function() {
-     // add css and attributes
-     $(".submit").attr({
-       type: 'submit',
-       name: "submit_func"
-     });
+  <body>
+    <div class="container">
+      <div class="section">
+        <span class="tourn">Tournament Name: <b>{{tourn.name}}</b></span>
+        <span class="elapsed">Elapsed Time: <span class="timer">{{timer}}</span></span>
+      </div>
+      <div class="section">
+        <span class="sect_lbl">Leaderboard</span>
+        <!-- <pre class="data">{{lb_data}}</pre> -->
+        {% if lb_data %}
+        <table>
+          <colgroup>
+            {% for cls in lb_col_cls %}
+            <col class="{{cls}}">
+            {% endfor %}
+          </colgroup>
+          <tr>
+            {% for col in lb_header %}
+            <th class="{{lb_td_cls[loop.index0]}}">{{col}}</th>
+            {% endfor %}
+          </tr>
+          {% for row in lb_data %}
+          <tr>
+            {% for val in row %}
+            <td class="{{lb_td_cls[loop.index0]}}">
+              {{val}}
+            </td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </table>
+        {% endif %}
+      </div>
 
-     // run timer and get next pass, unless tournament over
-     {% if not winner %}
-     startTimer();
-     $("button[value='next_pass']").trigger('click');
-     {% else %}
-     (function() {
+      <div class="section">
+        <span class="sect_lbl">Status</span>
+        <span class="msg">{{msg}}</span>
+      </div>
+
+      <form id="ctrl" method="post">
+        <input class="context start" type="number" name="start" value="{{start}}">
+        <input class="context" type="number" name="pass_num" value="{{tourn.pass_num}}">
+        <div class="buttons">
+          <button type="button" onclick="">Cancel Run</button>
+          <button type="button" onclick="">Restart Run</button>
+          <button class="submit" value="next_pass">Next Pass</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="container section">
+      <div class="chart">
+        {% for stat in ch_data['stats'] %}
+        <canvas id="ch_{{loop.index0}}"></canvas>
+        {% endfor %}
+      </div>
+    </div>
+
+    <script src="/static/jquery-3.7.1.min.js"></script>
+    <script>
+     function updTimer($timer, start) {
+       var elapsed = ((Date.now() - start) / 1000) | 0;
+       var min = (elapsed / 60) | 0;
+       var sec = (elapsed % 60) | 0;
+       sec = sec < 10 ? "0" + sec : sec;
+       $timer.text(min + ":" + sec);
+     };
+
+     function startTimer() {
        var $timer = $(".timer");
        var $start = $(".start");
        var start = parseInt($start.val());
-       updTimer($timer, start);
-     })();
+       if (!start) {
+         start = Date.now();
+         $start.val(start);
+       }
+       var intervalId = setInterval(updTimer, 1000, $timer, start);
+       $timer.data('intervalId', intervalId)
+     };
+
+     // document ready
+     $(function() {
+       // add css and attributes
+       $(".submit").attr({
+         type: 'submit',
+         name: "submit_func"
+       });
+
+       // run timer and get next pass, unless tournament over
+       {% if not winner %}
+       startTimer();
+       $("button[value='next_pass']").trigger('click');
+       {% else %}
+       (function() {
+         var $timer = $(".timer");
+         var $start = $(".start");
+         var start = parseInt($start.val());
+         updTimer($timer, start);
+       })();
+       {% endif %}
+     });
+    </script>
+
+    <script src="/static/chart.umd.min.js"></script>
+    <script>
+     {% if ch_data %}
+     {% for stat in ch_data['stats'] %}
+     const ctx{{loop.index0}} = document.getElementById('ch_{{loop.index0}}');
+
+     new Chart(ctx{{loop.index0}}, {
+       type: 'line',
+       data: {
+         labels: {{ch_labels|tojson}},
+         datasets: [
+           {% for team in ch_data['teams'] %}
+           {% set stat_teams = ch_data['stats'][stat] %}
+           {
+             label: {{team|tojson}},
+             data: {{stat_teams[team]|tojson}},
+             pointStyle: false,
+             borderWidth: 1
+           },
+           {% endfor %}
+         ]
+       },
+       options: {
+         plugins: {
+           title: {
+             display: true,
+             text: {{stat|tojson}}
+           }
+         },
+         animation: false,
+         maintainAspectRatio: false,
+         scales: {
+           y: {
+             beginAtZero: false
+           }
+         }
+       }
+     });
+     {% endfor %}
      {% endif %}
-   });
-  </script>
-</body>
+    </script>
+
+  </body>
 
 </html>
