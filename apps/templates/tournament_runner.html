@@ -1,129 +1,187 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <title>{{title}}</title>
 
-<head>
-  <title>{{title}}</title>
+    <style>
+     .container {
+       overflow: hidden;
+     }
+     .section {
+       margin-top: 1.0rem;
+     }
+     .section_lbl {
+       font-size: larger;
+       font-weight: bold;
+     }
+     .sel_tournament {
+       width: 10rem;
+     }
+     form {
+       overflow: hidden;
+     }
+     .params {
+       width: 30%;
+       float: left;
+     }
+     .buttons {
+       clear: both;
+     }
+     .td_lbl {
+       text-align: right;
+     }
+     .td_txt,
+     .td_num,
+     .td_dec {
+       text-align: left;
+     }
+     input[type="number"] {
+       width: 3rem;
+     }
+     input::-webkit-outer-spin-button,
+     input::-webkit-inner-spin-button {
+       -webkit-appearance: none;
+       margin: 0;
+     }
+     .refs {
+       margin-top: 1.2rem;
+       font-size: smaller;
+     }
+     .refs ul {
+       margin-top: 0.1rem;
+       padding: 0;
+       list-style-type: none;
+     }
+    </style>
+  </head>
 
-  <style>
-   .section {
-     margin-top: 0.6rem;
-     overflow: hidden;
-   }
-   .section_lbl {
-     font-size: larger;
-     font-weight: bold;
-   }
-   .sel_tournament {
-     width: 10rem;
-   }
-   .td_lbl {
-     text-align: right;
-   }
-   .td_txt,
-   .td_num,
-   .td_dec {
-     text-align: left;
-   }
-   input[type="number"] {
-     width: 3rem;
-   }
-   input::-webkit-outer-spin-button,
-   input::-webkit-inner-spin-button {
-     -webkit-appearance: none;
-     margin: 0;
-   }
-   .refs {
-     margin-top: 1.2rem;
-     font-size: smaller;
-   }
-   .refs ul {
-     margin-top: 0.1rem;
-     padding: 0;
-     list-style-type: none;
-   }
-  </style>
-</head>
-
-<body>
-  <form action="/tournament" method="post">
-    <div class="section">
-      <span>Pick tournament:</span>
-      <select name="tourn_name" class="sel_tournament" title="{{help_txt['tn_0']}}">
-        {% if tourn_name %}
-        {% for tourn in tourn_list %}
-        <option value="{{tourn}}"{{" selected" if tourn == tourn_name else ""}}>{{tourn}}</option>
-        {% endfor %}
-        {% else %}
-        <option value="" disabled selected></option>
-        {% for tourn in tourn_list %}
-        <option value="{{tourn}}">{{tourn}}</option>
-        {% endfor %}
-        {% endif %}
-      </select>
-    </div>
-    <div class="section">
-      <span class="section_lbl">Tournament Params</span>
-      <table class="tourn_params">
-        <tr>
-          <td class="td_lbl">Format:</td>
-          <td class="td_txt">
-            {% if tourn_fmt %}
-            <input name="tourn_fmt" type="text" value="{{tourn_fmt}}" disabled>
+  <body>
+    <form action="/tournament" method="post">
+      <div class="section">
+        <span>Pick tournament:</span>
+        <select name="tourn_name" class="sel_tournament" title="{{help_txt['tn_0']}}">
+          {% if tourn_name %}
+          {% for tourn in tourn_list %}
+          <option value="{{tourn}}"{{" selected" if tourn == tourn_name else ""}}>{{tourn}}</option>
+          {% endfor %}
+          {% else %}
+          <option value="" disabled selected></option>
+          {% for tourn in tourn_list %}
+          <option value="{{tourn}}">{{tourn}}</option>
+          {% endfor %}
+          {% endif %}
+        </select>
+      </div>
+      {% if tourn %}
+      <div class="container">
+        <div class="section params">
+          <span class="section_lbl">Tournament Params</span>
+          <table class="tourn_params">
+            <tr>
+              <td class="td_lbl">Format:</td>
+              <td class="td_txt">
+                <input name="tourn_fmt" type="text" value="{{tourn_fmt}}" disabled>
+              </td>
+            </tr>
+            <tr>
+              <td class="td_lbl">Match games:</td>
+              <td class="td_num">
+                <input name="match_games" type="number" value="{{tourn.match_games}}">
+              </td>
+            </tr>
+            <tr>
+              <td class="td_lbl">Passes:</td>
+              <td class="td_num">
+                <input name="passes" type="number" value="{{tourn.passes}}">
+              </td>
+            </tr>
+            {% if chal_ladder %}
+            <tr>
+              <td class="td_lbl">Round matches:</td>
+              <td class="td_num">
+                <input name="round_matches" type="number" value="{{tourn.round_matches}}">
+              </td>
+            </tr>
             {% endif %}
-          </td>
-        </tr>
-        <tr>
-          <td class="td_lbl">Match games:</td>
-          <td class="td_num"><input name="match_games" type="number" value="{{match_games}}"></td>
-        </tr>
-        <tr>
-          <td class="td_lbl">Passes:</td>
-          <td class="td_num"><input name="passes" type="number" value="{{passes}}"></td>
-        </tr>
-        <tr>
-          <td class="td_lbl">Reset Elo?</td>
-          <td><input type="checkbox" name="reset_elo" value="yes"{{" checked" if reset_elo else ""}}></td>
-        </tr>
-      </table>
+            {% if round_robin %}
+            <tr>
+              <td class="td_lbl">Elim Passes:</td>
+              <td class="td_num">
+                <input name="elim_passes" type="number" value="{{tourn.elim_passes if tourn.elim_passes else ""}}">
+              </td>
+            </tr>
+            <tr>
+              <td class="td_lbl">Elim Pct:</td>
+              <td class="td_num">
+                <input name="elim_pct" type="number" value="{{tourn.elim_pct if tourn.elim_pct else ""}}"></td>
+            </tr>
+            {% endif %}
+            <tr>
+              <td class="td_lbl">Reset Elo?</td>
+              <td>
+                <input type="checkbox" name="reset_elo" value="yes"{{" checked" if tourn.reset_elo else ""}}>
+              </td>
+            </tr>
+          </table>
+        </div>
+        {% if elo_rating %}
+        <div class="section params">
+          <span class="section_lbl">Elo Params</span>
+          <table class="elo_params">
+            <tr>
+              <td class="td_lbl">Use Margin?</td>
+              <td><input type="checkbox" name="use_margin" value="yes"{{" checked" if elo_rating.use_margin else ""}}></td>
+            </tr>
+            <tr>
+              <td class="td_lbl">D Value:</td>
+              <td class="td_num"><input name="d_value" type="number" value="{{elo_rating.d_value}}"></td>
+            </tr>
+            <tr>
+              <td class="td_lbl">K Factor:</td>
+              <td class="td_num"><input name="k_factor" type="number" value="{{elo_rating.k_factor}}"></td>
+            </tr>
+          </table>
+        </div>
+        {% endif %}  {# if elo_rating #}
+      </div>
+      <div class="section buttons">
+        <button class="submit" value="run_tourn" title="{{help_txt['bt_0']}}">Run Tournament</button>
+      </div>
+      {% endif %}  {# if tourn #}
+    </form>
+    <div class="refs">
+      Reference Links:
+      <ul>
+        {% for name, link in ref_links.items() %}
+        <li><a href="{{link}}" target='_blank'>{{name}}</a></li>
+        {% endfor %}
+      </ul>
     </div>
-    <div class="section">
-      <button class="submit" value="run_tourn" title="{{help_txt['bt_0']}}">Run Tournament</button>
-    </div>
-  </form>
-  <div class="refs">
-    Reference Links:
-    <ul>
-      {% for name, link in ref_links.items() %}
-      <li><a href="{{link}}" target='_blank'>{{name}}</a></li>
-      {% endfor %}
-    </ul>
-  </div>
 
-  <script src="/static/jquery-3.7.1.min.js"></script>
-  <script>
-   $(function() {
-     // add css and attributes
-     $(".submit").attr({
-       type: 'submit',
-       name: "submit_func"
-     });
+    <script src="/static/jquery-3.7.1.min.js"></script>
+    <script>
+     $(function() {
+       // add css and attributes
+       $(".submit").attr({
+         type: 'submit',
+         name: "submit_func"
+       });
 
-     // tournament section
-     $(".sel_tournament").on('change', function() {
-       var value = $(this).val();
-       var curpage = window.location.origin + window.location.pathname;
-       window.location.href = curpage + "?tourn_name=" + encodeURIComponent(value);
-     });
+       // tournament section
+       $(".sel_tournament").on('change', function() {
+         var value = $(this).val();
+         var curpage = window.location.origin + window.location.pathname;
+         window.location.href = curpage + "?tourn_name=" + encodeURIComponent(value);
+       });
 
-     // buttons section
-     $("button[value!='run_tourn']").on('click', function() {
-       $("form").attr({target: '_self', onsubmit: null});
+       // buttons section
+       $("button[value!='run_tourn']").on('click', function() {
+         $("form").attr({target: '_self', onsubmit: null});
+       });
+       $("button[value='run_tourn']").on('click', function() {
+         $("form").attr({target: '_blank', onsubmit: null});
+       });
      });
-     $("button[value='run_tourn']").on('click', function() {
-       $("form").attr({target: '_blank', onsubmit: null});
-     });
-   });
-  </script>
-</body>
-
+    </script>
+  </body>
 </html>

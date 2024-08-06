@@ -19,7 +19,7 @@ usage of the application should be pretty self-explanatory.
 
 To Do list:
 
-- Get parameter overrides to work
+- Ability to create custom tournaments (based on strategies)
 - Implement "Cancel Run" and "Restart Run" buttons
 - Show interesting aggregate stats below buttons
 - Download details stats for individual teams
@@ -35,8 +35,9 @@ import shelve
 
 from flask import Flask, session, request, render_template, abort
 
+from euchplt.utils import typecast
 from euchplt.core import cfg
-from euchplt.tournament import Tournament, LBStat, LB_PRINT_STATS
+from euchplt.tournament import Tournament, LBStat, LB_PRINT_STATS, RoundRobin, ChallengeLadder
 
 #########
 # Setup #
@@ -56,6 +57,21 @@ CONFIG_FILE   = 'tournaments.yml'
 CONFIG_PATH   = os.path.join(RESOURCES_DIR, CONFIG_FILE)
 
 TOURN_CLASSES = {'RoundRobin', 'ChallengeLadder'}
+
+TOURN_PARAMS = [
+    'match_games',
+    'passes',
+    'round_matches',
+    'elim_passes',
+    'elim_pct',
+    'reset_elo'
+]
+
+ELO_PARAMS = [
+    'use_margin',
+    'd_value',
+    'k_factor'
+]
 
 _tournaments  = None  # see NOTE in `get_tournaments()`
 
@@ -112,8 +128,8 @@ def retrieve_tourn_info(tourn_id: str) -> dict:
 FLOAT_PREC = 1
 
 def round_val(val: Number) -> Number:
-    """Provide the appropriate level of rounding for the leaderboard or stat value (leave
-    as a number)
+    """Provide the appropriate level of rounding for the leaderboard or stat value (does
+    not change the number type); passthrough for non-numeric types (e.g. bool or str)
     """
     if isinstance(val, float):
         return round(val, FLOAT_PREC)
@@ -126,7 +142,8 @@ def round_val(val: Number) -> Number:
 SUBMIT_FUNCS = [
     'run_tourn',
     'next_pass',
-    'cancel_run'
+    'cancel_run',
+    'restart_run'
 ]
 
 INIT_TIMER = "0:00"
@@ -144,25 +161,25 @@ def index():
     """Get the configuration info for specified tournament (or an empty form if
     ``tourn_name`` is not specified in the request)
     """
+    tourn       = None
+    tourn_name  = None
     tourn_fmt   = None
-    match_games = None
-    passes      = None
-    reset_elo   = False
+    elo_rating  = None
 
     tourn_name = request.args.get('tourn_name')
     if tourn_name:
-        tourn = Tournament.new(tourn_name)
-        tourn_fmt   = tourn.__class__.__name__
-        match_games = tourn.match_games
-        passes      = tourn.passes
-        reset_elo   = tourn.reset_elo
+        tourn      = Tournament.new(tourn_name)
+        tourn_name = tourn.name
+        tourn_fmt  = tourn.__class__.__name__
+        elo_rating = tourn.elo_rating
 
     context = {
+        'tourn':       tourn,
         'tourn_name':  tourn_name,
         'tourn_fmt':   tourn_fmt,
-        'match_games': match_games,
-        'passes':      passes,
-        'reset_elo':   reset_elo
+        'elo_rating':  elo_rating,
+        'round_robin': isinstance(tourn, RoundRobin),
+        'chal_ladder': isinstance(tourn, ChallengeLadder),
     }
     return render_app(context)
 
@@ -177,12 +194,24 @@ def submit():
     return globals()[func](request.form)
 
 def run_tourn(form: dict) -> str:
-    """Compute bidding for selected position and deal context (i.e. hand and turn card),
-    using current analysis and strategy parameters
+    """Start the tournament specified in the form by rendering the initial (empty)
+    dashboard, which will then initiate running the individual passes.
     """
+    tourn_params = {}
+    elo_params = {}
+    for param in TOURN_PARAMS:
+        if value := form.get(param):
+            tourn_params[param] = round_val(typecast(value))
+    for param in ELO_PARAMS:
+        if value := form.get(param):
+            elo_params[param] = round_val(typecast(value))
+    if elo_params:
+        d_value = elo_params['d_value']
+        elo_params['elo_db'] = f"elo_rating_{d_value}.db"
+        tourn_params['elo_params'] = elo_params
+
     tourn_name = form.get('tourn_name')
-    # TODO: get override parameters from form, used to instantiate tournament!!!
-    tourn = Tournament.new(tourn_name)
+    tourn = Tournament.new(tourn_name, **tourn_params)
     tourn_id = gen_tourn_id(tourn)
     session['tourn_id'] = tourn_id
 
@@ -288,6 +317,13 @@ def next_pass(form: dict) -> str:
 def cancel_run(form: dict) -> str:
     """Cancel the run for the tournament and re-render the latest leaderboard and chart
     updates
+    """
+    raise NotImplementedError("coming soon..")
+
+def restart_run(form: dict) -> str:
+    """Restart the run for the tournament (assumed to be either completed or canceled) by
+    re-rendering the initial (empty) dashboard, which then will initiate running the
+    individual passes.
     """
     raise NotImplementedError("coming soon..")
 

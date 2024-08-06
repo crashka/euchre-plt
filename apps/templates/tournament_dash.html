@@ -40,7 +40,8 @@
      .buttons {
        margin-top: 1.0rem;
      }
-     button[value="next_pass"] {
+     button[value="next_pass"],
+     button[value="cancel_run"] {
        display: none;
      }
      .context {
@@ -77,9 +78,7 @@
           {% for row in lb_data %}
           <tr>
             {% for val in row %}
-            <td class="{{lb_td_cls[loop.index0]}}">
-              {{val}}
-            </td>
+            <td class="{{lb_td_cls[loop.index0]}}">{{val}}</td>
             {% endfor %}
           </tr>
           {% endfor %}
@@ -96,9 +95,11 @@
         <input class="context start" type="number" name="start" value="{{start}}">
         <input class="context" type="number" name="pass_num" value="{{tourn.pass_num}}">
         <div class="buttons">
-          <button type="button" onclick="">Cancel Run</button>
-          <button type="button" onclick="">Restart Run</button>
+          <button type="button" name="cancel_local">Cancel Run</button>
+          <button class="submit" value="restart_run">Restart Run</button>
+          <!-- the next two are hidden -->
           <button class="submit" value="next_pass">Next Pass</button>
+          <button class="submit" value="cancel_run">Cancel Run</button>
         </div>
       </form>
     </div>
@@ -113,6 +114,7 @@
 
     <script src="/static/jquery-3.7.1.min.js"></script>
     <script>
+     // timer stuff
      function updTimer($timer, start) {
        var elapsed = ((Date.now() - start) / 1000) | 0;
        var min = (elapsed / 60) | 0;

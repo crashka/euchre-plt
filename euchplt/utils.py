@@ -177,25 +177,28 @@ def rankdata(a: Sequence[Number], method: str ='average', reverse: bool = True) 
             minrank  = 0
     return newarray
 
+def typecast(val: str) -> str | Number | bool:
+    """Simple logic for casting a string value to the appropriate type; usable for
+    parameters coming from a program command line or HTML form
+    """
+    if val.isdecimal():
+        return int(val)
+    if val.isnumeric():
+        return float(val)
+    if val.lower() in ['false', 'f', 'no', 'n']:
+        return False
+    if val.lower() in ['true', 't', 'yes', 'y']:
+        return True
+    if val.lower() in ['null', 'none', 'nil']:
+        return None
+    return val if len(val) > 0 else None
+
 def parse_argv(argv: list[str]) -> tuple[list, dict]:
     """Takes a list of arguments (typically a slice of sys.argv), which may be a
     combination of bare agruments or kwargs-style constructions (e.g. "key=value")
     and returns a tuple of `args` and `kwargs`.  For both `args` and `kwargs`, we
     attempt to cast the value to the proper type (e.g. int, float, bool, or None).
     """
-    def typecast(val: str) -> str | Number | bool:
-        if val.isdecimal():
-            return int(val)
-        if val.isnumeric():
-            return float(val)
-        if val.lower() in ['false', 'f', 'no', 'n']:
-            return False
-        if val.lower() in ['true', 't', 'yes', 'y']:
-            return True
-        if val.lower() in ['null', 'none', 'nil']:
-            return None
-        return val if len(val) > 0 else None
-
     args = []
     kwargs = {}
     args_done = False
