@@ -19,17 +19,17 @@ usage of the application should be pretty self-explanatory.
 
 To Do list:
 
-- Ability to create custom tournaments (based on strategies)
+- "Select all" button (or link) for `tournament_runner` page
 - Implement "Cancel Run" and "Restart Run" buttons
 - Show interesting aggregate stats below buttons
-- Download details stats for individual teams
-- Clean up initial "runner" page (or perhaps better yet, merge with dashboard)
+- Ability to download detailed stats for individual teams
 - Ability to create/save out new tournament configurations
 """
 
 from numbers import Number
 from collections.abc import Iterator
 import os.path
+from importlib import import_module
 from time import time
 import shelve
 
@@ -37,7 +37,11 @@ from flask import Flask, session, request, render_template, abort
 
 from euchplt.utils import typecast
 from euchplt.core import cfg
+from euchplt.player import Player
+from euchplt.team import Team
+from euchplt.strategy import Strategy, StrategyRandom
 from euchplt.tournament import Tournament, LBStat, LB_PRINT_STATS, RoundRobin, ChallengeLadder
+from .smart_tuner import get_strategies
 
 #########
 # Setup #
@@ -56,22 +60,26 @@ RESOURCES_DIR = os.path.join(APP_DIR, 'resources')
 CONFIG_FILE   = 'tournaments.yml'
 CONFIG_PATH   = os.path.join(RESOURCES_DIR, CONFIG_FILE)
 
+TOURN_MODPATH = 'euchplt.tournament'
+TOURN_MODULE  = import_module(TOURN_MODPATH)
 TOURN_CLASSES = {'RoundRobin', 'ChallengeLadder'}
 
-TOURN_PARAMS = [
-    'match_games',
-    'passes',
-    'round_matches',
-    'elim_passes',
-    'elim_pct',
-    'reset_elo'
-]
+# key = input name; value = default (form input domain, i.e. string representation), if
+# `form.get(param) is None`
+TOURN_PARAMS = {
+    'match_games':   'null',
+    'passes':        'null',
+    'round_matches': 'null',
+    'elim_passes':   'null',
+    'elim_pct':      'null',
+    'reset_elo':     'false'
+}
 
-ELO_PARAMS = [
-    'use_margin',
-    'd_value',
-    'k_factor'
-]
+ELO_PARAMS = {
+    'use_margin':    'false',
+    'd_value':       'null',
+    'k_factor':      'null'
+}
 
 _tournaments  = None  # see NOTE in `get_tournaments()`
 
@@ -156,30 +164,71 @@ CHART_LB_STATS = [
     LBStat.CUR_ELO
 ]
 
+COL_MAP = {
+    str:   "col_txt",
+    int:   "col_num",
+    float: "col_dec"
+}
+
+TD_MAP = {
+    str:   "td_txt",
+    int:   "td_num",
+    float: "td_dec"
+}
+
+# REVISIT: this is pretty stupid, need to find a neater way to do this (e.g. allow dummy,
+# non-runnable tournaments to be instantiated without specifying teams)!!!
+DUMMY_PLAYERS = [
+    Player("Dummy 1", StrategyRandom()),
+    Player("Dummy 2", StrategyRandom()),
+    Player("Dummy 3", StrategyRandom()),
+    Player("Dummy 4", StrategyRandom())
+]
+
+DUMMY_TEAMS = [
+    Team("Dummy 1", DUMMY_PLAYERS[:2]),
+    Team("Dummy 2", DUMMY_PLAYERS[2:])
+]
+
+def create_team(strat_name: str) -> Team:
+    """Create an ad hoc team based on a configured strategy (specified by name)
+    """
+    strat1 = Strategy.new(strat_name)
+    strat2 = Strategy.new(strat_name)
+    player1 = Player(strat_name + '_a', strat1)
+    player2 = Player(strat_name + '_b', strat2)
+    return Team(strat_name, [player1, player2])
+
 @app.get("/")
 def index():
     """Get the configuration info for specified tournament (or an empty form if
-    ``tourn_name`` is not specified in the request)
+    ``sel_tourn`` is not specified in the request)
     """
     tourn       = None
-    tourn_name  = None
     tourn_fmt   = None
     elo_rating  = None
+    custom      = False
 
-    tourn_name = request.args.get('tourn_name')
-    if tourn_name:
-        tourn      = Tournament.new(tourn_name)
-        tourn_name = tourn.name
+    sel_tourn = request.args.get('sel_tourn')
+    if sel_tourn:
+        if sel_tourn in SEL_CUSTOM:
+            tourn_cls = SEL_CUSTOM[sel_tourn]
+            tourn = tourn_cls(sel_tourn, DUMMY_TEAMS)
+            custom = True
+        else:
+            tourn = Tournament.new(sel_tourn)
+
         tourn_fmt  = tourn.__class__.__name__
         elo_rating = tourn.elo_rating
 
     context = {
         'tourn':       tourn,
-        'tourn_name':  tourn_name,
         'tourn_fmt':   tourn_fmt,
         'elo_rating':  elo_rating,
         'round_robin': isinstance(tourn, RoundRobin),
         'chal_ladder': isinstance(tourn, ChallengeLadder),
+        'custom':      custom,
+        'strategies':  get_strategies(get_all=True)
     }
     return render_app(context)
 
@@ -199,11 +248,14 @@ def run_tourn(form: dict) -> str:
     """
     tourn_params = {}
     elo_params = {}
-    for param in TOURN_PARAMS:
-        if value := form.get(param):
+    # NOTE: form input values always come in as a string, so empty input = '' and numeric
+    # zero = '0'; `form.get(param)` is `None` only if `param` input is not sent from the
+    # form (e.g. unchecked checkbox)
+    for param, dflt_val in TOURN_PARAMS.items():
+        if value := form.get(param, dflt_val):
             tourn_params[param] = round_val(typecast(value))
-    for param in ELO_PARAMS:
-        if value := form.get(param):
+    for param, dflt_val in ELO_PARAMS.items():
+        if value := form.get(param, dflt_val):
             elo_params[param] = round_val(typecast(value))
     if elo_params:
         d_value = elo_params['d_value']
@@ -211,10 +263,21 @@ def run_tourn(form: dict) -> str:
         tourn_params['elo_params'] = elo_params
 
     tourn_name = form.get('tourn_name')
-    tourn = Tournament.new(tourn_name, **tourn_params)
+    tourn_fmt  = form.get('tourn_fmt')
+    custom     = typecast(form.get('custom'))
+    if custom:
+        teams = []
+        for idx in range(len(get_strategies(get_all=True))):
+            if strategy := form.get(f'strat_{idx}'):
+                teams.append(create_team(strategy))
+        tourn_cls = getattr(TOURN_MODULE, tourn_fmt)
+        tourn = tourn_cls(tourn_name, teams, **tourn_params)
+    else:
+        tourn = Tournament.new(tourn_name, **tourn_params)
     tourn_id = gen_tourn_id(tourn)
     session['tourn_id'] = tourn_id
 
+    # initialize chart data structure (appended to after each pass)
     ch_data = {}
     ch_data['teams'] = list(tourn.teams)  # team names
     ch_data['stats'] = {}
@@ -241,18 +304,6 @@ def run_tourn(form: dict) -> str:
     }
     return render_dashboard(context)
 
-col_map = {
-    str:   "col_txt",
-    int:   "col_num",
-    float: "col_dec"
-}
-
-td_map = {
-    str:   "td_txt",
-    int:   "td_num",
-    float: "td_dec"
-}
-
 def next_pass(form: dict) -> str:
     """Run the next pass for the tournament and render the leaderboard and chart updates
     """
@@ -277,9 +328,9 @@ def next_pass(form: dict) -> str:
 
     stats_row = next(iter(lb.values()))
     # note that all of the following include team info in the [0] position
-    lb_col_cls = ["col_lbl"] + [col_map[type(v)] for k, v in stats_row.items()
+    lb_col_cls = ["col_lbl"] + [COL_MAP[type(v)] for k, v in stats_row.items()
                                 if k in LB_PRINT_STATS]
-    lb_td_cls  = ["td_lbl"]  + [td_map[type(v)] for k, v in stats_row.items()
+    lb_td_cls  = ["td_lbl"]  + [TD_MAP[type(v)] for k, v in stats_row.items()
                                 if k in LB_PRINT_STATS]
     lb_header  = ["Team"]    + [str(k) for k in stats_row.keys()
                                 if k in LB_PRINT_STATS]
@@ -331,11 +382,21 @@ def restart_run(form: dict) -> str:
 # App Routines #
 ################
 
+SEL_SEP = "----------------"
+
+SEL_CUSTOM = {
+    "Custom (round robin)": RoundRobin,
+    "Custom (challenge ladder)": ChallengeLadder
+}
+
 def render_app(context: dict) -> str:
     """Common post-processing of context before rendering the main app page through Jinja
     """
+    tourn_list = get_tournaments() + [SEL_SEP] + list(SEL_CUSTOM)
+
     context['title']      = APP_NAME
-    context['tourn_list'] = get_tournaments()
+    context['tourn_list'] = tourn_list
+    context['sel_sep']    = SEL_SEP
     context['help_txt']   = help_txt
     context['ref_links']  = ref_links
     return render_template(APP_TEMPLATE, **context)

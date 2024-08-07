@@ -44,9 +44,6 @@
      button[value="cancel_run"] {
        display: none;
      }
-     .context {
-       display: none;
-     }
      .chart {
        height: 16rem;
        width: 45rem;
@@ -92,8 +89,8 @@
       </div>
 
       <form id="ctrl" method="post">
-        <input class="context start" type="number" name="start" value="{{start}}">
-        <input class="context" type="number" name="pass_num" value="{{tourn.pass_num}}">
+        <input class="start" type="hidden" name="start" value="{{start}}">
+        <input type="hidden" name="pass_num" value="{{tourn.pass_num}}">
         <div class="buttons">
           <button type="button" name="cancel_local">Cancel Run</button>
           <button class="submit" value="restart_run">Restart Run</button>

@@ -25,21 +25,21 @@ class PlayerNotice(Enum):
 ##########
 
 class Player:
-    """A player maybe be defined by an entry in the config file (identified by
-    `name`); or if an instantiated `strategy` object, we will create an ad hoc
-    player (in which case `name` is just a label with no additional meaning or
-    association)
+    """A player maybe be defined by an entry in the config file (identified by ``name``)
+    or by a specified strategy (either an instantiated ``Strategy`` object or a configured
+    strategy name)--in the latter case (strategy specification), the player name needs to
+    unique across instantiations (though we are not currently enforcing at this level).
 
-    For now, we just delegate calls to the Strategy class.  LATER: we probably
-    need to rethink the design of this class (perhaps if/when we add human and/or
-    remote players)!!!
+    For now, we just delegate calls to the ``Strategy`` class.  LATER: we probably need to
+    rethink the design of this class (perhaps if/when we add human and/or remote
+    players)!!!
     """
     name:       str
     strategy:   Strategy
 
     disamb:     ClassVar[list[str]] = [c for c in 'abcdefghijklmnop']
 
-    def __init__(self, name: str, strategy: Strategy = None):
+    def __init__(self, name: str, strategy: Strategy | str = None):
         """
         """
         if not strategy:
@@ -55,9 +55,14 @@ class Player:
                 name += self.disamb.pop(0)
             self.name = name
             self.strategy = Strategy.new(strategy_name)
-        else:
+        elif isinstance(strategy, Strategy):
             self.name = name
             self.strategy = strategy
+        else:
+            # configured strategy (by strategy name)
+            assert isinstance(strategy, str)
+            self.name = name  # player name
+            self.strategy = Strategy.new(strategy)
 
     def __str__(self):
         return self.name

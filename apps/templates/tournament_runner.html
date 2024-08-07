@@ -15,17 +15,20 @@
        font-weight: bold;
      }
      .sel_tournament {
-       width: 10rem;
+       width: 12rem;
      }
      form {
        overflow: hidden;
      }
      .params {
-       width: 30%;
+       width: 27rem;
        float: left;
      }
      .buttons {
        clear: both;
+     }
+     table {
+       margin-top: 0.3rem;
      }
      .td_lbl {
        text-align: right;
@@ -35,6 +38,13 @@
      .td_dec {
        text-align: left;
      }
+     input[readonly] {
+       border: thin solid grey;
+       background-color: #F0F0F0;
+     }
+     input[type="text"] {
+       width: 12rem;
+     }
      input[type="number"] {
        width: 3rem;
      }
@@ -42,6 +52,19 @@
      input::-webkit-inner-spin-button {
        -webkit-appearance: none;
        margin: 0;
+     }
+     .strategies {
+       margin-top: 0.3rem;
+       width: 40rem;
+     }
+     .strategy {
+       width: 10rem;
+       float: left;
+     }
+     .strategy input[type="checkbox"] {
+       position: relative;
+       top: 0.1rem;
+       margin-right: 0.2rem;
      }
      .refs {
        margin-top: 1.2rem;
@@ -59,15 +82,15 @@
     <form action="/tournament" method="post">
       <div class="section">
         <span>Pick tournament:</span>
-        <select name="tourn_name" class="sel_tournament" title="{{help_txt['tn_0']}}">
-          {% if tourn_name %}
-          {% for tourn in tourn_list %}
-          <option value="{{tourn}}"{{" selected" if tourn == tourn_name else ""}}>{{tourn}}</option>
+        <select name="sel_tourn" class="sel_tournament" title="{{help_txt['tn_0']}}">
+          {% if tourn %}
+          {% for tourn_name in tourn_list %}
+          <option value="{{tourn_name}}"{{" selected" if tourn_name == tourn.name else ""}}{{" disabled" if tourn_name == sel_sep else ""}}>{{tourn_name}}</option>
           {% endfor %}
           {% else %}
           <option value="" disabled selected></option>
-          {% for tourn in tourn_list %}
-          <option value="{{tourn}}">{{tourn}}</option>
+          {% for tourn_name in tourn_list %}
+          <option value="{{tourn_name}}"{{" disabled" if tourn == sel_sep else ""}}>{{tourn_name}}</option>
           {% endfor %}
           {% endif %}
         </select>
@@ -78,9 +101,15 @@
           <span class="section_lbl">Tournament Params</span>
           <table class="tourn_params">
             <tr>
+              <td class="td_lbl">Name:</td>
+              <td class="td_txt">
+                <input name="tourn_name" type="text" value="{{tourn.name}}"{{" readonly" if not custom else ""}}>
+              </td>
+            </tr>
+            <tr>
               <td class="td_lbl">Format:</td>
               <td class="td_txt">
-                <input name="tourn_fmt" type="text" value="{{tourn_fmt}}" disabled>
+                <input name="tourn_fmt" type="text" value="{{tourn_fmt}}" readonly>
               </td>
             </tr>
             <tr>
@@ -144,6 +173,20 @@
         </div>
         {% endif %}  {# if elo_rating #}
       </div>
+      <input type="hidden" name="custom" value="{{custom}}">
+      {% if custom %}
+      <div class="section">
+        <span class="section_lbl">Pick Strategies</span>
+        <div class="container strategies">
+          {% for strategy in strategies %}
+          <label class="strategy">
+            <input type="checkbox" name="strat_{{loop.index0}}" value="{{strategy}}">
+            {{strategy}}
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
       <div class="section buttons">
         <button class="submit" value="run_tourn" title="{{help_txt['bt_0']}}">Run Tournament</button>
       </div>
@@ -171,7 +214,7 @@
        $(".sel_tournament").on('change', function() {
          var value = $(this).val();
          var curpage = window.location.origin + window.location.pathname;
-         window.location.href = curpage + "?tourn_name=" + encodeURIComponent(value);
+         window.location.href = curpage + "?sel_tourn=" + encodeURIComponent(value);
        });
 
        // buttons section

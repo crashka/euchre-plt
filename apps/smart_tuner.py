@@ -72,17 +72,22 @@ STRATEGY_CLASS = 'StrategySmart'
 new_strgy_fmt  = "%s (modified)"
 _strategies    = None  # see NOTE in `get_strategies()`
 
-def get_strategies() -> list[str]:
+def get_strategies(get_all: bool = False) -> list[str]:
     """Get list of relevant strategies (i.e. based on ``StrategySmart``)--includes both
     package- and app-level configurations
+
+    Note, the ``get_all`` flag was added as a hack for outside callers and doesn't affect
+    internal usage (though forces the local config to get reloaded)
     """
     # NOTE: not pretty to use a global here, but okay for this use case (just a tool)
     global _strategies
-    if _strategies:
+    if _strategies and not get_all:
         return _strategies
 
     cfg.load(CONFIG_FILE, CONFIG_DIR, reload=True)
     all_strategies = cfg.config('strategies')
+    if get_all:
+        return [k for k, v in all_strategies.items() if v.get('base_class')]
     _strategies = [k for k, v in all_strategies.items()
                    if v.get('base_class') == STRATEGY_CLASS]
     return _strategies
