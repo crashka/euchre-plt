@@ -19,7 +19,7 @@ usage of the application should be pretty self-explanatory.
 
 To Do list:
 
-- "Select all" button (or link) for `tournament_runner` page
+- Charting for pass-level stats (e.g. wins for the pass)
 - Implement "Cancel Run" and "Restart Run" buttons
 - Show interesting aggregate stats below buttons
 - Ability to download detailed stats for individual teams
@@ -248,14 +248,14 @@ def run_tourn(form: dict) -> str:
     """
     tourn_params = {}
     elo_params = {}
-    # NOTE: form input values always come in as a string, so empty input = '' and numeric
-    # zero = '0'; `form.get(param)` is `None` only if `param` input is not sent from the
-    # form (e.g. unchecked checkbox)
-    for param, dflt_val in TOURN_PARAMS.items():
-        if value := form.get(param, dflt_val):
+    # NOTE: form input values always come in as a string, so empty input is '' and numeric
+    # zero is '0'; `form.get(param) is None` only if `param` input value is not sent from
+    # the form at all (e.g. unchecked checkbox)
+    for param, dflt in TOURN_PARAMS.items():
+        if value := form.get(param, dflt):
             tourn_params[param] = round_val(typecast(value))
-    for param, dflt_val in ELO_PARAMS.items():
-        if value := form.get(param, dflt_val):
+    for param, dflt in ELO_PARAMS.items():
+        if value := form.get(param, dflt):
             elo_params[param] = round_val(typecast(value))
     if elo_params:
         d_value = elo_params['d_value']

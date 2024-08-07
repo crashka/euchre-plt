@@ -30,6 +30,9 @@
      table {
        margin-top: 0.3rem;
      }
+     .pname {
+       width: 7.5rem;
+     }
      .td_lbl {
        text-align: right;
      }
@@ -54,7 +57,7 @@
        margin: 0;
      }
      .strategies {
-       margin-top: 0.3rem;
+       margin-top: 0.5rem;
        width: 40rem;
      }
      .strategy {
@@ -65,6 +68,13 @@
        position: relative;
        top: 0.1rem;
        margin-right: 0.2rem;
+     }
+     .links {
+       margin-top: 0.5rem;
+     }
+     .links a {
+       display: inline-block;
+       width: 6rem;
      }
      .refs {
        margin-top: 1.2rem;
@@ -100,6 +110,10 @@
         <div class="section params">
           <span class="section_lbl">Tournament Params</span>
           <table class="tourn_params">
+            <colgroup>
+              <col class="pname">
+              <col class="pval">
+            </colgroup>
             <tr>
               <td class="td_lbl">Name:</td>
               <td class="td_txt">
@@ -157,6 +171,10 @@
         <div class="section params">
           <span class="section_lbl">Elo Params</span>
           <table class="elo_params">
+            <colgroup>
+              <col class="pname">
+              <col class="pval">
+            </colgroup>
             <tr>
               <td class="td_lbl">Use Margin?</td>
               <td><input type="checkbox" name="use_margin" value="yes"{{" checked" if elo_rating.use_margin else ""}}></td>
@@ -184,6 +202,10 @@
             {{strategy}}
           </label>
           {% endfor %}
+        </div>
+        <div class="links">
+          <a href="#" onClick="return false;">Deselect All</a>
+          <a href="#" onClick="return false;">Select All</a>
         </div>
       </div>
       {% endif %}
@@ -215,6 +237,14 @@
          var value = $(this).val();
          var curpage = window.location.origin + window.location.pathname;
          window.location.href = curpage + "?sel_tourn=" + encodeURIComponent(value);
+       });
+
+       // links section
+       $(".links a:contains('Select')").on('click', function() {
+         $(".strategy input").prop("checked", true);
+       });
+       $(".links a:contains('Deselect')").on('click', function() {
+         $(".strategy input").prop("checked", false);
        });
 
        // buttons section
