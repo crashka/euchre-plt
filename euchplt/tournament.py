@@ -151,6 +151,12 @@ class LBStat(Enum):
     WIN_PCT      = "Win %"
     ELO_PTS      = "Elo Points"
     CUR_ELO      = "Elo Rating"
+    INT_MATCHES  = "Matches (interval)"
+    INT_WINS     = "Wins (interval)"
+    INT_LOSSES   = "Losses (interval)"
+    INT_WIN_PCT  = "Win % (interval)"
+    INT_ELO_PTS  = "Elo Points (interval)"
+    DELTA_ELO    = "Elo Rating (delta)"
     WINS_RANK    = "Wins Rank"
     WIN_PCT_RANK = "Win % Rank"
     ELO_PTS_RANK = "Elo Points Rank"
@@ -209,6 +215,7 @@ class Tournament:
     eliminated:     set[str]                 # team names
     leaderboards:   list[Leaderboard]
     lb_base:        Leaderboard | None
+    lb_prev:        Leaderboard | None
     elo_rating:     EloRating | None
 
     @classmethod
@@ -286,6 +293,7 @@ class Tournament:
         self.eliminated     = set()
         self.leaderboards   = []
         self.lb_base        = None
+        self.lb_prev        = None
         self.elo_rating     = None
 
     def add_callback(self, unit: TournUnit, cb: Callable) -> None:
@@ -369,17 +377,33 @@ class Tournament:
         self.results = [s[0] for s in scores]
 
     def set_lb_base(self, lb_current: Leaderboard) -> None:
-        """Set baseline for leaderboard, for tracking movement between updates
+        """Set baseline for leaderboard, for tracking movement between resets
+        (e.g. elimination events, for RoundRobin)
         """
         self.lb_base = {}
-        for name in lb_current:
+        for name, cur_stats in lb_current.items():
             stats = self.team_stats[name]
             score = self.team_score[name]
             base_stats = {}
             base_stats[LBStat.MATCHES] = stats[TS.MATCHES_PLAYED]
             base_stats[LBStat.WINS]    = score[0]
             base_stats[LBStat.ELO_PTS] = score[1]
+            prev_stats[LBStat.CUR_ELO] = cur_stats[LBStat.CUR_ELO]
             self.lb_base[name] = base_stats
+
+    def set_lb_prev(self, lb_current: Leaderboard) -> None:
+        """Set pass-level baseline for leaderboard, for tracking movement between updates
+        """
+        self.lb_prev = {}
+        for name, cur_stats in lb_current.items():
+            stats = self.team_stats[name]
+            score = self.team_score[name]
+            prev_stats = {}
+            prev_stats[LBStat.MATCHES] = stats[TS.MATCHES_PLAYED]
+            prev_stats[LBStat.WINS]    = score[0]
+            prev_stats[LBStat.ELO_PTS] = score[1]
+            prev_stats[LBStat.CUR_ELO] = cur_stats[LBStat.CUR_ELO]
+            self.lb_prev[name] = prev_stats
 
     @staticmethod
     def lb_key(x):
@@ -405,6 +429,11 @@ class Tournament:
         cur_elo_vec = []
 
         for idx, name in enumerate(teams):
+            team_idx[name] = idx
+            stats          = self.team_stats[name]
+            score          = self.team_score[name]
+
+            # compute current leaderboard stats relative to baseline (if set)
             if self.lb_base:
                 base_stats = self.lb_base[name]
                 match_off  = base_stats[LBStat.MATCHES]
@@ -415,9 +444,6 @@ class Tournament:
                 wins_off   = 0
                 pts_off    = 0
 
-            team_idx[name] = idx
-            stats          = self.team_stats[name]
-            score          = self.team_score[name]
             matches        = stats[TS.MATCHES_PLAYED] - match_off
             wins           = score[0] - wins_off
             losses         = matches - wins
@@ -425,6 +451,32 @@ class Tournament:
             elo_pts        = score[1] - pts_off
             cur_elo        = self.elo_rating.team_ratings[name] if self.elo_rating else -1
             lb_stats[name] = [matches, wins, losses, win_pct, elo_pts, cur_elo]
+
+            # compute leaderboard stats for the interval; NOTE, we are reusing
+            # some variables here for convenience/consistency, but this really
+            # needs to be refactored at some point--BEWARE the subtle changes
+            # here (related to Elo) compared to baseline processing above!!!
+            if self.lb_prev:
+                prev_stats = self.lb_prev[name]
+                match_off  = prev_stats[LBStat.MATCHES]
+                wins_off   = prev_stats[LBStat.WINS]
+                pts_off    = prev_stats[LBStat.ELO_PTS]
+                elo_off    = prev_stats[LBStat.CUR_ELO]
+            else:
+                match_off  = 0
+                wins_off   = 0
+                pts_off    = 0
+                elo_off    = 1500
+
+            matches        = stats[TS.MATCHES_PLAYED] - match_off
+            wins           = score[0] - wins_off
+            losses         = matches - wins
+            win_pct        = wins / matches * 100.0
+            elo_pts        = score[1] - pts_off
+            int_elo        = cur_elo - elo_off
+            int_stats      = [matches, wins, losses, win_pct, elo_pts, int_elo]
+            lb_stats[name].extend(int_stats)
+
             wins_vec.append(wins)
             win_pct_vec.append(win_pct)
             elo_pts_vec.append(elo_pts)
@@ -700,19 +752,20 @@ class RoundRobin(Tournament):
             self.elo_rating.update(matches, collective=True)
 
         num_passes = pass_num + 1
-        leaderboard = self.get_leaderboard(set(self.teams.keys()) - self.eliminated)
-        self.leaderboards.append(leaderboard)
+        lb = self.get_leaderboard(set(self.teams.keys()) - self.eliminated)
+        self.leaderboards.append(lb)
+        self.set_lb_prev(lb)
 
         if self.elim_passes and num_passes % self.elim_passes == 0:
             # don't go below `elim_pct` teams remaining
             if len(self.teams) - len(self.eliminated) >= self.elim_num * 2:
-                lb_iter = leaderboard.items()
+                lb_iter = lb.items()
                 lb_sorted = sorted(lb_iter, key=self.lb_key, reverse=True)
                 leader_teams = [s[0] for s in lb_sorted if s[0] not in self.eliminated]
                 eliminate = list(reversed(leader_teams[-self.elim_num:]))
                 self.elim_order.extend(eliminate)
                 self.eliminated.update(eliminate)
-                self.set_lb_base(leaderboard)
+                self.set_lb_base(lb)
         super().tabulate_pass(pass_num, matches)
         self.matches.clear()
 
@@ -892,6 +945,8 @@ class ChallengeLadder(Tournament):
 
         lb = self.get_leaderboard(self.teams, key=lambda s: team_pos[s[0]], reverse=False)
         self.leaderboards.append(lb)
+        self.set_lb_prev(lb)
+
         super().tabulate_pass(pass_num, matches)
         self.matches.clear()
 

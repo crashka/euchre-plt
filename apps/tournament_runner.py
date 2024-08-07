@@ -19,7 +19,7 @@ usage of the application should be pretty self-explanatory.
 
 To Do list:
 
-- Charting for pass-level stats (e.g. wins for the pass)
+- Chart-specific axis settings (e.g. min, max, ticks)
 - Implement "Cancel Run" and "Restart Run" buttons
 - Show interesting aggregate stats below buttons
 - Ability to download detailed stats for individual teams
@@ -160,7 +160,7 @@ INIT_START = 0  # to make parseInt() work
 POS_STAT = "Position"
 
 CHART_LB_STATS = [
-    LBStat.WIN_PCT,
+    LBStat.INT_WIN_PCT,
     LBStat.CUR_ELO
 ]
 
