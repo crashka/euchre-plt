@@ -452,6 +452,11 @@ class Tournament:
             cur_elo        = self.elo_rating.team_ratings[name] if self.elo_rating else -1
             lb_stats[name] = [matches, wins, losses, win_pct, elo_pts, cur_elo]
 
+            wins_vec.append(wins)
+            win_pct_vec.append(win_pct)
+            elo_pts_vec.append(elo_pts)
+            cur_elo_vec.append(cur_elo)
+
             # compute leaderboard stats for the interval; NOTE, we are reusing
             # some variables here for convenience/consistency, but this really
             # needs to be refactored at some point--BEWARE the subtle changes
@@ -476,11 +481,6 @@ class Tournament:
             int_elo        = cur_elo - elo_off
             int_stats      = [matches, wins, losses, win_pct, elo_pts, int_elo]
             lb_stats[name].extend(int_stats)
-
-            wins_vec.append(wins)
-            win_pct_vec.append(win_pct)
-            elo_pts_vec.append(elo_pts)
-            cur_elo_vec.append(cur_elo)
 
         wins_rank    = rankdata(wins_vec, method='min')
         win_pct_rank = rankdata(win_pct_vec, method='min')

@@ -48,7 +48,7 @@ from .smart_tuner import get_strategies
 #########
 
 app = Flask(__name__)
-app.config.from_prefixed_env('EUCH')
+app.config.from_prefixed_env()
 
 APP_NAME      = "Tournament Runner"
 APP_TEMPLATE  = "tournament_runner.html"
@@ -160,7 +160,7 @@ INIT_START = 0  # to make parseInt() work
 POS_STAT = "Position"
 
 CHART_LB_STATS = [
-    LBStat.INT_WIN_PCT,
+    LBStat.INT_ELO_PTS,
     LBStat.CUR_ELO
 ]
 
@@ -430,4 +430,4 @@ ref_links = {
 ############
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5001)

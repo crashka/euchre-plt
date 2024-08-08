@@ -106,9 +106,35 @@ Simple form-based web app to run tournaments.
 
 Same as for Smart Tuner [Setup](#setup), above.
 
+In addition, a secret key should be generated in order to support Flask Sessions (see
+[here](https://flask.palletsprojects.com/en/2.3.x/quickstart/#sessions)).  The key then
+needs to be set in your environment before starting the server, thus:
+
+```bash
+$ export FLASK_SECRET_KEY=<your secret key>
+```
+
+Or, if running from an IDE, the environment variable should be specified in the the launch
+(or run) configuration; e.g. for VSCode, the `launch.json` entry should look something
+like this:
+
+```json
+    {
+        "name": "tournament_runner",
+        "type": "debugpy",
+        "request": "launch",
+        "module": "apps.tournament_runner",
+        "args": [],
+        "cwd": "${workspaceFolder}/data",
+        "env": {
+            "FLASK_SECRET_KEY": "<your secret key>"
+        }
+    }
+```
+
 ### Start the server
 
-For local usage:
+For local usage (with the server listening on port 5001):
 
 ```bash
 $ python -m apps.tournament_runner
@@ -117,7 +143,7 @@ $ python -m apps.tournament_runner
 or:
 
 ```bash
-$ flask --app apps.tournament_runner run [--debug]
+$ flask --app apps.tournament_runner run [--debug] [-p <port>]
 ```
 
 Note that `--app tournament_runner` (no parent module) should be specified if running
@@ -125,8 +151,9 @@ from the `apps/` subdirectory.
 
 ### Run the application
 
-Open a browser window and navigate to `localhost:5000`.  The usage of the application
-should be pretty self-explanatory.
+Open a browser window and navigate to `localhost:5001` (or whatever port number was
+specified for the `flask` command).  The usage of the application should be pretty
+self-explanatory.
 
 Here is a sample dashboard result after running the `"demo"` tournament (configured in
 `config/tournaments.yml`):
