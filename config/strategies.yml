@@ -27,6 +27,23 @@ default:
       base_class:       StrategySimple
       strategy_params:
         aggressive:       0x03
+    Smart 0:
+      comments:         "original defaults for HandAnalysisSmart"
+      module_path:      euchplt.strategy
+      base_class:       StrategySmart
+      strategy_params:
+        hand_analysis:
+          trump_values:      [0, 0, 0, 1, 2, 4, 7, 10]
+          suit_values:       [0, 0, 0, 1, 5, 10]
+          num_trump_scores:  [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+          off_aces_scores:   [0.0, 0.2, 0.5, 1.0]
+          voids_scores:      [0.0, 0.3, 0.7, 1.0]
+          scoring_coeff:
+            trump_score:      40
+            max_suit_score:   10
+            num_trump_score:  20
+            off_aces_score:   15
+            voids_score:      15
     Smart 1:
       comments:         "base StrategySmart configuration"
       module_path:      euchplt.strategy

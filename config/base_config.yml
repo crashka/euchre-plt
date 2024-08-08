@@ -79,7 +79,7 @@ default:
       elo_update:      pass
       elo_params:
         elo_db:          elo_rating.db
-        use_margin:      false
+        use_margin:      true
         d_value:         400
         k_factor:        10
       # base class params
@@ -115,7 +115,7 @@ default:
       elo_update:      pass
       elo_params:
         elo_db:          elo_rating.db
-        use_margin:      false
+        use_margin:      true
         d_value:         400
         k_factor:        10
       # base class params
