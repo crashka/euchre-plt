@@ -3,6 +3,10 @@
 This module contains various applications that either support or provide friendlier access
 to the `euchre-plt` underlying functionality.
 
+[Smart Tuner](#smart-tuner)  
+[YAML Generator](#yaml-generator)  
+[Tournament Runner](#tournament-runner)  
+
 ## Smart Tuner
 
 Simple form-based web app to evaluate bidding strategies for `StrategySmart`—useful

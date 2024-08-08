@@ -148,13 +148,13 @@
             {% endif %}
             {% if round_robin %}
             <tr>
-              <td class="td_lbl">Elim Passes:</td>
+              <td class="td_lbl">Elim passes:</td>
               <td class="td_num">
                 <input name="elim_passes" type="number" value="{{tourn.elim_passes if tourn.elim_passes else ""}}">
               </td>
             </tr>
             <tr>
-              <td class="td_lbl">Elim Pct:</td>
+              <td class="td_lbl">Elim pct:</td>
               <td class="td_num">
                 <input name="elim_pct" type="number" value="{{tourn.elim_pct if tourn.elim_pct else ""}}"></td>
             </tr>
@@ -176,15 +176,15 @@
               <col class="pval">
             </colgroup>
             <tr>
-              <td class="td_lbl">Use Margin?</td>
+              <td class="td_lbl">Use margin?</td>
               <td><input type="checkbox" name="use_margin" value="yes"{{" checked" if elo_rating.use_margin else ""}}></td>
             </tr>
             <tr>
-              <td class="td_lbl">D Value:</td>
+              <td class="td_lbl">D value:</td>
               <td class="td_num"><input name="d_value" type="number" value="{{elo_rating.d_value}}"></td>
             </tr>
             <tr>
-              <td class="td_lbl">K Factor:</td>
+              <td class="td_lbl">K factor:</td>
               <td class="td_num"><input name="k_factor" type="number" value="{{elo_rating.k_factor}}"></td>
             </tr>
           </table>
