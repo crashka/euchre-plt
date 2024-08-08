@@ -388,7 +388,7 @@ class Tournament:
             base_stats[LBStat.MATCHES] = stats[TS.MATCHES_PLAYED]
             base_stats[LBStat.WINS]    = score[0]
             base_stats[LBStat.ELO_PTS] = score[1]
-            prev_stats[LBStat.CUR_ELO] = cur_stats[LBStat.CUR_ELO]
+            base_stats[LBStat.CUR_ELO] = cur_stats[LBStat.CUR_ELO]
             self.lb_base[name] = base_stats
 
     def set_lb_prev(self, lb_current: Leaderboard) -> None:

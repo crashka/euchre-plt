@@ -22,18 +22,19 @@ To Do list:
 - Chart-specific axis settings (e.g. min, max, ticks)
 - Implement "Cancel Run" and "Restart Run" buttons
 - Show interesting aggregate stats below buttons
-- Ability to download detailed stats for individual teams
 - Ability to create/save out new tournament configurations
 """
 
 from numbers import Number
-from collections.abc import Iterator
-import os.path
-from importlib import import_module
-from time import time
 import shelve
+import os.path
+import re
+import csv
+from io import StringIO
+from time import time
+from importlib import import_module
 
-from flask import Flask, session, request, render_template, abort
+from flask import Flask, session, request, render_template, Response, abort
 
 from euchplt.utils import typecast
 from euchplt.core import cfg
@@ -80,6 +81,30 @@ ELO_PARAMS = {
     'd_value':       'null',
     'k_factor':      'null'
 }
+
+# csv "dialect", currently hardwired (later can specify in `/stats` call, if adding
+# support for more interesting formats)
+STATS_FMT = 'excel'
+
+FMT_MIMETYPE = {
+    'excel':     'text/csv',
+    'excel-tab': 'text/csv',
+    'unix':      'text/csv',
+}
+
+FMT_FILETYPE = {
+    'excel':     '.csv',
+    'excel-tab': '.tsv',
+    'unix':      '.csv',
+}
+
+def get_stats_file(name: str) -> str:
+    """Generate name of stats file for the specified tournament name (or any name, for
+    that matter); collapses all non-alphanumerics to dashes, lowercase the string, and
+    adds appropriate suffix and filetype
+    """
+    norm_name = re.sub(r'[^A-Za-z0-9]+', '-', name).strip('-').lower()
+    return f"{norm_name}_stats.{FMT_FILETYPE[STATS_FMT]}"
 
 _tournaments  = None  # see NOTE in `get_tournaments()`
 
@@ -300,7 +325,8 @@ def run_tourn(form: dict) -> str:
         'timer':      INIT_TIMER,
         'start':      INIT_START,
         'winner':     None,
-        'msg':        run_msg
+        'msg':        run_msg,
+        'stats_file': get_stats_file(tourn.name)
     }
     return render_dashboard(context)
 
@@ -361,7 +387,8 @@ def next_pass(form: dict) -> str:
         'timer':      timer,
         'start':      form.get('start'),
         'winner':     winner,
-        'msg':        pass_msg
+        'msg':        pass_msg,
+        'stats_file': get_stats_file(tourn.name)
     }
     return render_dashboard(context)
 
@@ -377,6 +404,35 @@ def restart_run(form: dict) -> str:
     individual passes.
     """
     raise NotImplementedError("coming soon..")
+
+@app.get("/stats")
+def download_stats():
+    """Return detailed tournament stats, in CSV format
+    """
+    dialect = STATS_FMT
+    mimetype = FMT_MIMETYPE[dialect]
+
+    tourn_id = session['tourn_id']
+    info = retrieve_tourn_info(tourn_id)
+    tourn = info.get('tourn')
+    assert tourn
+
+    # it's okay to download stats for tournaments that did not (or have not) run to
+    # completion; we note the number of passes (out of `tourn.passes` total)
+    passes_complete = tourn.pass_num + 1
+
+    buffer = StringIO()
+    header = tourn.stats_header()
+    writer = csv.DictWriter(buffer, fieldnames=header, dialect=dialect,
+                            lineterminator=os.linesep)
+    writer.writeheader()
+    for row in tourn.iter_stats():
+        writer.writerow(row)
+
+    stats_out = buffer.getvalue()
+    buffer.close()
+
+    return Response(stats_out, mimetype=mimetype)
 
 ################
 # App Routines #

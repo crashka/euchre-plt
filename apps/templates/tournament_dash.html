@@ -37,7 +37,8 @@
      .msg {
        display: block;
      }
-     .buttons {
+     .buttons,
+     .links {
        margin-top: 1.0rem;
      }
      button[value="next_pass"],
@@ -97,6 +98,9 @@
           <!-- the next two are hidden -->
           <button class="submit" value="next_pass">Next Pass</button>
           <button class="submit" value="cancel_run">Cancel Run</button>
+        </div>
+        <div class="links">
+          <a href="/stats" download="{{stats_file}}">Download Stats</a>
         </div>
       </form>
     </div>

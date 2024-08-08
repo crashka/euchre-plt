@@ -204,8 +204,8 @@
           {% endfor %}
         </div>
         <div class="links">
-          <a href="#" onClick="return false;">Deselect All</a>
-          <a href="#" onClick="return false;">Select All</a>
+          <a href="#" onClick="return false;">Unselect all</a>
+          <a href="#" onClick="return false;">Select all</a>
         </div>
       </div>
       {% endif %}
@@ -243,7 +243,7 @@
        $(".links a:contains('Select')").on('click', function() {
          $(".strategy input").prop("checked", true);
        });
-       $(".links a:contains('Deselect')").on('click', function() {
+       $(".links a:contains('Unselect')").on('click', function() {
          $(".strategy input").prop("checked", false);
        });
 
