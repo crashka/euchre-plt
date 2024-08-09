@@ -182,9 +182,11 @@ stats_file_sfx = [
 class StatsReport(NamedTuple):
     """Stats report definition
     """
-    id:       int
-    name:     str
-    file_sfx: str
+    id:          int   # contiguous, starting from 0
+    name:        str   # human-friendly name for the report
+    file_sfx:    str   # tacked onto the end of basename (munged `name`)
+    comp_stats:  bool  # computed stats included?
+    pos_details: bool  # position details included?
 
     def filename(self, tourn_name: str) -> str:
         """Get file name for the report, based on the tournament name (after collapsing
@@ -194,10 +196,10 @@ class StatsReport(NamedTuple):
         return basename + self.file_sfx + STATS_FILETYPE
 
 STATS_REPORTS = [
-    StatsReport(0, "Base Stats", '_stats'),
-    StatsReport(1, "Base Stats (w/ pos details)", '_statsdet'),
-    StatsReport(2, "Computed Stats", '_comps'),
-    StatsReport(3, "Computed Stats (w/ pos details)", '_compsdet')
+    StatsReport(0, "Base Stats",                      '_stats',    False, False),
+    StatsReport(1, "Base Stats (w/ pos details)",     '_statsdet', False, True),
+    StatsReport(2, "Computed Stats",                  '_comps',    True,  False),
+    StatsReport(3, "Computed Stats (w/ pos details)", '_compsdet', True,  True)
 ]
 
 ################
@@ -450,11 +452,10 @@ def download_stats(report_id):
     # completion; we note the number of passes (out of `tourn.passes` total)
     passes_complete = tourn.pass_num + 1
 
-    # FIX: this is arcane, need to make report definitions more explicit!!!
-    pos_details = bool(report_id % 2)
-    comp_stats = bool(report_id // 2)
-
-    if comp_stats:
+    # for now, whether this throws an `IndexError` is our validation mechanism for
+    # `report_id`
+    report = STATS_REPORTS[report_id]
+    if report.comp_stats:
         stats_hdr  = tourn.comp_stats_header
         stats_iter = tourn.iter_comp_stats
     else:
@@ -465,7 +466,7 @@ def download_stats(report_id):
     writer = csv.DictWriter(buffer, fieldnames=stats_hdr(), dialect=STATS_FMT,
                             lineterminator=os.linesep)
     writer.writeheader()
-    for row in stats_iter(pos_details):
+    for row in stats_iter(report.pos_details):
         writer.writerow(row)
     stats_out = buffer.getvalue()
     buffer.close()
