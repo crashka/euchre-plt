@@ -386,6 +386,26 @@ class Tournament:
         self.winner = tuple(winners)
         self.results = [s[0] for s in scores]
 
+    def play_match(self, matchup: Iterable[str]) -> None:
+        """Uniform/common method for conducting a match within the tournament
+        """
+        teams = (self.teams[t] for t in matchup)
+        match = Match(teams, match_games=self.match_games)
+        self.matches.append(match)
+        match.play()
+        self.tabulate(match)
+
+    def play(self, **kwargs) -> None:
+        """Abstract method to be implemented by all subclasses, who should
+        then invoke `play_match()` to conduct each of the matchups created
+        for the tournament type
+        """
+        raise NotImplementedError("Can't call abstract method")
+
+    #-------------------#
+    # Leaderboard Stuff #
+    #-------------------#
+
     def set_lb_base(self, lb_current: Leaderboard) -> None:
         """Set baseline for leaderboard, for tracking movement between resets
         (e.g. elimination events, for RoundRobin)
@@ -504,21 +524,9 @@ class Tournament:
         lb_sorted = sorted(lb_out.items(), key=key, reverse=reverse)
         return dict(lb_sorted)
 
-    def play_match(self, matchup: Iterable[str]) -> None:
-        """Uniform/common method for conducting a match within the tournament
-        """
-        teams = (self.teams[t] for t in matchup)
-        match = Match(teams, match_games=self.match_games)
-        self.matches.append(match)
-        match.play()
-        self.tabulate(match)
-
-    def play(self, **kwargs) -> None:
-        """Abstract method to be implemented by all subclasses, who should
-        then invoke `play_match()` to conduct each of the matchups created
-        for the tournament type
-        """
-        raise NotImplementedError("Can't call abstract method")
+    #-----------------#
+    # Reporting Stuff #
+    #-----------------#
 
     def print(self, file: TextIO = sys.stdout, verbose: int = 0) -> None:
         """This method can be overridden by subclasses to add additional information, but
