@@ -136,8 +136,10 @@ CompStatFormulas = {
     CS.DEF_ALONE_LOSE_PCT : (GS.DEF_ALONE_LOSSES,  GS.DEF_ALONES)
 }
 
-# generate list of CompStat entries that can be computed by position
-# (i.e. both operands are in POS_STATS)
+CSF = CompStatFormulas
+
+# generate list of CompStat entries that can be computed by position (i.e. both operands
+# are in POS_STATS)
 POS_COMP_STATS = set(stat for stat, opnds in CompStatFormulas.items() if POS_STATS >= set(opnds))
 
 #####################
@@ -175,6 +177,14 @@ LB_PRINT_STATS = {LBStat.WINS,
 
 LBStats     = dict[LBStat, list[Number]]  # LB stats for a team
 Leaderboard = dict[str, LBStats]          # indexed by team name
+
+# header keys used for printing/iterating stats
+STAT_COL      = 'Base Stat'
+COMP_STAT_COL = 'Computed Stat'
+TEAM_COL      = 'Team'
+
+# formatting for position detail in stats reports
+POS_INDENT    = 4
 
 ##############
 # Tournament #
@@ -511,8 +521,8 @@ class Tournament:
         raise NotImplementedError("Can't call abstract method")
 
     def print(self, file: TextIO = sys.stdout, verbose: int = 0) -> None:
-        """This method can be overridden by subclasses to add additional information,
-        but parent function should be invoked at the top
+        """This method can be overridden by subclasses to add additional information, but
+        this parent function should be invoked (either at the top or the bottom)
         """
         verbose = max(verbose, DEBUG)
 
@@ -523,20 +533,20 @@ class Tournament:
                 for j, player in enumerate(team.players):
                     print(f"    {player}", file=file)
 
-        self.print_score(file=file, vs_opp=(verbose > 0))
+        self.print_score(file=file, opp_details=(verbose > 0))
         if verbose:
-            self.print_stats(file=file, by_pos=(verbose > 1))
+            self.print_stats(file=file, pos_details=(verbose > 1))
         if self.elo_rating:
             self.elo_rating.print(file=file, verbose=verbose)
 
-    def print_score(self, file: TextIO = sys.stdout, vs_opp: bool = False) -> None:
-        """Include record against all other teams, if `vs_opp` is specified
+    def print_score(self, file: TextIO = sys.stdout, opp_details: bool = False) -> None:
+        """Include record against all other teams, if ``opp_details`` is specified
         """
         print("Tournament Score:", file=file)
         for name in self.results:
             score = self.team_score[name]
             print(f"  {name}: {score[0]} ({score[1]:.2f})", file=file)
-            if vs_opp:
+            if opp_details:
                 for opp_name, score in self.team_score_opp[name].items():
                     opp_score = self.team_score_opp[opp_name][name]
                     print(f"    vs {opp_name}: {score[0]} - {opp_score[0]} "
@@ -548,10 +558,9 @@ class Tournament:
         plural = "s" if len(self.winner) > 1 else ""
         print(f"Tournament Winner{plural}:\n  {', '.join(self.winner)}")
 
-    def print_stats(self, file: TextIO = sys.stdout, by_pos: bool = False) -> None:
+    def print_stats(self, file: TextIO = sys.stdout, pos_details: bool = False) -> None:
         """
         """
-        CSF = CompStatFormulas
         NOT_APPLICABLE = "n/a"
         print("Tournament Stats:", file=file)
         for name in self.teams:
@@ -559,7 +568,7 @@ class Tournament:
             print(f"  {name}:", file=file)
             for stat in TournStatIter():
                 print(f"    {stat.value + ':':24} {base_stats[stat]:8}", file=file)
-                if by_pos and stat in self.pos_stats:
+                if pos_details and stat in self.pos_stats:
                     pos_stat = self.team_pos_stats[name][stat]
                     stat_tot = sum(pos_stat)
                     for i in range(8):
@@ -573,7 +582,7 @@ class Tournament:
                     print(f"    {stat.value + ':':24}   ", NOT_APPLICABLE, file=file)
                     continue
                 print(f"    {stat.value + ':':24} {num / den * 100.0:7.2f}%", file=file)
-                if by_pos and stat in self.pos_comp_stats:
+                if pos_details and stat in self.pos_comp_stats:
                     nums = self.team_pos_stats[name][CSF[stat][0]]
                     dens = self.team_pos_stats[name][CSF[stat][1]]
                     for i in range(8):
@@ -603,50 +612,121 @@ class Tournament:
             print(f"  {name:15}\t{stats_str}", file=file)
 
     def stats_header(self) -> list[str]:
-        """Header fields must correspond to the keys for `iter_stats()` yield
+        """Header fields used as the keys for the ``iter_stats()`` generator; the field
+        name for stat name is ``'Statistic'``
+        """
+        return [STAT_COL] + list(self.teams)
+
+    def iter_stats(self, pos_details: bool = False) -> dict[str, Number]:
+        """Generator for base stats, yields a dict of stat values indexed by team name;
+        the key for stat name is ``'Base Stat'``
+        """
+        indent = ' ' * POS_INDENT
+        for stat in TournStatIter():
+            stat_rec = {STAT_COL: str(stat)}
+            pos_stat_recs = ([{STAT_COL: f"{indent}{str(stat)} (pos {i})"} for i in range(8)]
+                             if pos_details else None)
+            for name in self.teams:
+                base_stats = self.team_stats[name]
+                stat_rec[name] = base_stats[stat]
+                if pos_stat_recs and stat in self.pos_stats:
+                    pos_stat = self.team_pos_stats[name][stat]
+                    #stat_tot = sum(pos_stat)
+                    for i in range(8):
+                        pos_stat_recs[i][name] = pos_stat[i]
+            yield stat_rec
+            if pos_stat_recs and stat in self.pos_stats:
+                for i in range(8):
+                    yield pos_stat_recs[i]
+
+    def comp_stats_header(self) -> list[str]:
+        """Header fields used as the keys for the ``iter_comp_stats()`` generator; the
+        field name for stat name is ``'Computed Stat'``
+        """
+        return [COMP_STAT_COL] + list(self.teams)
+
+    def iter_comp_stats(self, pos_details: bool = False) -> dict[str, Number]:
+        """Generator for computed stats, yields a dict of stat values indexed by team
+        name; the key for stat name is ``'Statistic'``
+        """
+        indent = ' ' * POS_INDENT
+        for stat in CompStat:
+            stat_rec = {COMP_STAT_COL: str(stat)}
+            pos_stat_recs = ([{COMP_STAT_COL: f"{indent}{str(stat)} (pos {i})"} for i in range(8)]
+                             if pos_details else None)
+
+            for name in self.teams:
+                base_stats = self.team_stats[name]
+                num = base_stats[CSF[stat][0]]
+                den = base_stats[CSF[stat][1]]
+                if not den:
+                    continue
+                stat_rec[name] = f"{num / den:.3f}"
+
+                if pos_stat_recs and stat in self.pos_comp_stats:
+                    nums = self.team_pos_stats[name][CSF[stat][0]]
+                    dens = self.team_pos_stats[name][CSF[stat][1]]
+                    for i in range(8):
+                        if not dens[i]:
+                            continue
+                        pos_stat_recs[i][name] = f"{nums[i] / dens[i]:.3f}"
+            yield stat_rec
+            if pos_stat_recs and stat in self.pos_comp_stats:
+                for i in range(8):
+                    yield pos_stat_recs[i]
+
+    def team_stats_header(self, pos_details: bool = False) -> list[str]:
+        """Header fields used as the keys for the `iter_team_stats()` generator; the field
+        name for team name is ``'Team'``
         """
         def expand(stat_iter: Iterable[AllStat]) -> str:
             for stat in stat_iter:
                 yield str(stat)
-                if stat in self.pos_stats | self.pos_comp_stats:
+                if pos_details and stat in self.pos_stats | self.pos_comp_stats:
                     for i in range(8):
                         yield str(stat) + f" (Pos {i})"
 
-        TEAM_COL = 'Team'
         fields = [TEAM_COL] + list(expand(AllStatIter()))
         return fields
 
-    def iter_stats(self) -> dict[str, Number]:
-        """Keys for stats output correspond to the field names returned by `stats_header()`
+    def iter_team_stats(self, pos_details: bool = False) -> dict[str, Number]:
+        """Generator for iterating over teams and returning a dict of stats, by name; the
+        key for team name is ``'Team'``
         """
-        def stats_gen(stats_map: StatsMap, pos_stats_map: StatsMap) -> tuple[str, int]:
+        stats_map = None
+        pos_stats_map = None
+
+        def stats_gen() -> tuple[str, int]:
+            """Expects ``stats_map``, and optionally ``pos_stats_map``, to be set
+            """
             for stat, value in stats_map.items():
                 yield str(stat), value
-                if stat in self.pos_stats:
+                if pos_stats_map and stat in self.pos_stats:
                     pos_stat = pos_stats_map[stat]
                     for i in range(8):
                         field_name = str(stat) + f" (Pos {i})"
                         yield field_name, pos_stat[i]
 
-        def comp_stats_gen(stats_map: StatsMap, pos_stats_map: StatsMap) -> tuple[str, int]:
+        def comp_stats_gen() -> tuple[str, int]:
+            """Expects ``stats_map``, and optionally ``pos_stats_map``, to be set
             """
-            """
-            CSF = CompStatFormulas
             for stat in CSF:
                 num = stats_map[CSF[stat][0]]
                 den = stats_map[CSF[stat][1]]
                 yield str(stat), num / den if den else None
-                if stat in self.pos_comp_stats:
+                if pos_stats_map and stat in self.pos_comp_stats:
                     nums = pos_stats_map[CSF[stat][0]]
                     dens = pos_stats_map[CSF[stat][1]]
                     for i in range(8):
                         field_name = str(stat) + f" (Pos {i})"
                         yield field_name, nums[i] / dens[i] if dens[i] else None
 
-        TEAM_COL = 'Team'
         for name in self.teams:
-            base_stats = stats_gen(self.team_stats[name], self.team_pos_stats[name])
-            comp_stats = comp_stats_gen(self.team_stats[name], self.team_pos_stats[name])
+            stats_map = self.team_stats[name]
+            if pos_details:
+                pos_stats_map = self.team_pos_stats[name]
+            base_stats = stats_gen()
+            comp_stats = comp_stats_gen()
             stats_row = {TEAM_COL: name} | dict(base_stats) | dict(comp_stats)
             yield stats_row
 
@@ -1126,11 +1206,11 @@ def run_tournament(*args, **kwargs) -> int:
     tourney.print(verbose=verbose)
     if stats_file:
         with open(DataFile(stats_file), 'w', newline='') as file:
-            header = tourney.stats_header()
+            header = tourney.team_stats_header(bool(verbose))
             writer = csv.DictWriter(file, fieldnames=header, dialect='excel-tab',
                                     lineterminator=os.linesep)
             writer.writeheader()
-            for row in tourney.iter_stats():
+            for row in tourney.iter_team_stats(bool(verbose)):
                 writer.writerow(row)
     if elo_file:
         with open(DataFile(elo_file), 'w', newline='') as file:

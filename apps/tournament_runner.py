@@ -25,6 +25,7 @@ To Do list:
 - Ability to create/save out new tournament configurations
 """
 
+from typing import NamedTuple
 from numbers import Number
 import shelve
 import os.path
@@ -61,6 +62,10 @@ RESOURCES_DIR = os.path.join(APP_DIR, 'resources')
 CONFIG_FILE   = 'tournaments.yml'
 CONFIG_PATH   = os.path.join(RESOURCES_DIR, CONFIG_FILE)
 
+####################
+# Tournament Stuff #
+####################
+
 TOURN_MODPATH = 'euchplt.tournament'
 TOURN_MODULE  = import_module(TOURN_MODPATH)
 TOURN_CLASSES = {'RoundRobin', 'ChallengeLadder'}
@@ -81,30 +86,6 @@ ELO_PARAMS = {
     'd_value':       'null',
     'k_factor':      'null'
 }
-
-# csv "dialect", currently hardwired (later can specify in `/stats` call, if adding
-# support for more interesting formats)
-STATS_FMT = 'excel'
-
-FMT_MIMETYPE = {
-    'excel':     'text/csv',
-    'excel-tab': 'text/csv',
-    'unix':      'text/csv',
-}
-
-FMT_FILETYPE = {
-    'excel':     '.csv',
-    'excel-tab': '.tsv',
-    'unix':      '.csv',
-}
-
-def get_stats_file(name: str) -> str:
-    """Generate name of stats file for the specified tournament name (or any name, for
-    that matter); collapses all non-alphanumerics to dashes, lowercase the string, and
-    adds appropriate suffix and filetype
-    """
-    norm_name = re.sub(r'[^A-Za-z0-9]+', '-', name).strip('-').lower()
-    return f"{norm_name}_stats.{FMT_FILETYPE[STATS_FMT]}"
 
 _tournaments  = None  # see NOTE in `get_tournaments()`
 
@@ -167,6 +148,57 @@ def round_val(val: Number) -> Number:
     if isinstance(val, float):
         return round(val, FLOAT_PREC)
     return val
+
+################
+# Report Stuff #
+################
+
+# csv "dialect", currently hardwired (later can specify in `/stats` call, if adding
+# support for more interesting formats)
+STATS_FMT = 'excel'
+
+FMT_MIMETYPE = {
+    'excel':     'text/csv',
+    'excel-tab': 'text/csv',
+    'unix':      'text/csv',
+}
+
+FMT_FILETYPE = {
+    'excel':     '.csv',
+    'excel-tab': '.tsv',
+    'unix':      '.csv',
+}
+
+STATS_MIMETYPE = FMT_MIMETYPE[STATS_FMT]
+STATS_FILETYPE = FMT_FILETYPE[STATS_FMT]
+
+stats_file_sfx = [
+    '_stats',
+    '_statsdet',
+    '_comps',
+    '_compsdet'
+]
+
+class StatsReport(NamedTuple):
+    """Stats report definition
+    """
+    id:       int
+    name:     str
+    file_sfx: str
+
+    def filename(self, tourn_name: str) -> str:
+        """Get file name for the report, based on the tournament name (after collapsing
+        all non-alphanumerics to dashes and downcasing)
+        """
+        basename = re.sub(r'[^A-Za-z0-9]+', '-', tourn_name).strip('-').lower()
+        return basename + self.file_sfx + STATS_FILETYPE
+
+STATS_REPORTS = [
+    StatsReport(0, "Base Stats", '_stats'),
+    StatsReport(1, "Base Stats (w/ pos details)", '_statsdet'),
+    StatsReport(2, "Computed Stats", '_comps'),
+    StatsReport(3, "Computed Stats (w/ pos details)", '_compsdet')
+]
 
 ################
 # Flask Routes #
@@ -326,7 +358,7 @@ def run_tourn(form: dict) -> str:
         'start':      INIT_START,
         'winner':     None,
         'msg':        run_msg,
-        'stats_file': get_stats_file(tourn.name)
+        'stats_rpts': STATS_REPORTS
     }
     return render_dashboard(context)
 
@@ -388,7 +420,7 @@ def next_pass(form: dict) -> str:
         'start':      form.get('start'),
         'winner':     winner,
         'msg':        pass_msg,
-        'stats_file': get_stats_file(tourn.name)
+        'stats_rpts': STATS_REPORTS
     }
     return render_dashboard(context)
 
@@ -405,13 +437,10 @@ def restart_run(form: dict) -> str:
     """
     raise NotImplementedError("coming soon..")
 
-@app.get("/stats")
-def download_stats():
-    """Return detailed tournament stats, in CSV format
+@app.get("/stats/<int:report_id>")
+def download_stats(report_id):
+    """Return specified stats report for the tournament, in CSV format
     """
-    dialect = STATS_FMT
-    mimetype = FMT_MIMETYPE[dialect]
-
     tourn_id = session['tourn_id']
     info = retrieve_tourn_info(tourn_id)
     tourn = info.get('tourn')
@@ -421,18 +450,27 @@ def download_stats():
     # completion; we note the number of passes (out of `tourn.passes` total)
     passes_complete = tourn.pass_num + 1
 
+    # FIX: this is arcane, need to make report definitions more explicit!!!
+    pos_details = bool(report_id % 2)
+    comp_stats = bool(report_id // 2)
+
+    if comp_stats:
+        stats_hdr  = tourn.comp_stats_header
+        stats_iter = tourn.iter_comp_stats
+    else:
+        stats_hdr  = tourn.stats_header
+        stats_iter = tourn.iter_stats
+
     buffer = StringIO()
-    header = tourn.stats_header()
-    writer = csv.DictWriter(buffer, fieldnames=header, dialect=dialect,
+    writer = csv.DictWriter(buffer, fieldnames=stats_hdr(), dialect=STATS_FMT,
                             lineterminator=os.linesep)
     writer.writeheader()
-    for row in tourn.iter_stats():
+    for row in stats_iter(pos_details):
         writer.writerow(row)
-
     stats_out = buffer.getvalue()
     buffer.close()
 
-    return Response(stats_out, mimetype=mimetype)
+    return Response(stats_out, mimetype=STATS_MIMETYPE)
 
 ################
 # App Routines #

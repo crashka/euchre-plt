@@ -45,6 +45,11 @@
      button[value="cancel_run"] {
        display: none;
      }
+     .links ul {
+       margin-top: 0.1rem;
+       padding: 0;
+       list-style-type: none;
+     }
      .chart {
        height: 16rem;
        width: 45rem;
@@ -99,9 +104,17 @@
           <button class="submit" value="next_pass">Next Pass</button>
           <button class="submit" value="cancel_run">Cancel Run</button>
         </div>
+        {% if lb_data %}
         <div class="links">
-          <a href="/stats" download="{{stats_file}}">Download Stats</a>
+          <span>Downloads:</span>
+          <ul>
+            {% for rpt in stats_rpts %}
+            {% set rpt_file = rpt.filename(tourn.name) %}
+            <li><a href="/stats/{{rpt.id}}" download="{{rpt_file}}">{{rpt.name}}</a></li>
+            {% endfor %}
+          </ul>
         </div>
+        {% endif %}
       </form>
     </div>
 
