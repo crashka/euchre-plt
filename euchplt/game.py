@@ -66,17 +66,23 @@ POS_STATS = set(GameStat) - NON_POS_STATS
 # Game #
 ########
 
-NUM_TEAMS    = 2
-TEAM_PLAYERS = 2
-GAME_POINTS  = 10
+NUM_TEAMS        = 2
+TEAM_PLAYERS     = 2
+DFLT_GAME_POINTS = 10
 
 class Game(object):
-    """
+    """Note that ``game_points`` (number of points needed to win the game) can be
+    specified in the constructor, but I actually think the default value of ``10`` is a
+    sacred number (in its relationship to the scoring mechanism) that we never want to
+    override
     """
     # params/config
-    teams:     list[Team]
+    teams:       list[Team]
+    game_points: int
 
     # state
+    seats:     list[Player]
+    dealer:    int                         # index into `seats`
     deals:     list[Deal]                  # sequential
     score:     list[int]                   # (points) indexed as `teams`
     stats:     list[dict[GameStat, int]]   # each stat indexed as `teams`
@@ -89,10 +95,21 @@ class Game(object):
         self.teams = list(teams)
         if len(self.teams) != NUM_TEAMS:
             raise LogicError(f"Expected {NUM_TEAMS} teams, got {len(self.teams)}")
+        self.game_points = kwargs.get('game_points') or DFLT_GAME_POINTS
+
+        # Note, we keep the players in order here (tm0-pl0, tm1-pl0, etc.), it
+        # is up to the caller to specify who actually sits where
+        self.seats = [t.players[n] for n in range(TEAM_PLAYERS) for t in self.teams]
+        assert len(self.seats) == NUM_PLAYERS
+        # "flip for deal", if dealer not specified
+        self.dealer = kwargs.get('dealer')
+        if self.dealer is None:
+            self.dealer = random.randrange(NUM_PLAYERS)
+
         self.deals     = []
-        self.score     = []
-        self.stats     = [{stat: 0 for stat in GameStat} for _ in range(NUM_TEAMS)]
-        self.pos_stats = [{stat: [0] * 8 for stat in POS_STATS} for _ in range(NUM_TEAMS)]
+        self.score     = [0] * NUM_TEAMS
+        self.stats     = [{stat: 0 for stat in GameStat} for _ in self.teams]
+        self.pos_stats = [{stat: [0] * 8 for stat in POS_STATS} for _ in self.teams]
         self.winner    = None
 
     def player_team(self, player: Player) -> tuple[int, Team]:
@@ -195,7 +212,7 @@ class Game(object):
         """
         winner = None
         for i, team_score in enumerate(self.score):
-            if team_score >= GAME_POINTS:
+            if team_score >= self.game_points:
                 winner = i, self.teams[i]
                 break
         if not winner:
@@ -203,19 +220,11 @@ class Game(object):
         self.winner = winner
 
     def play(self) -> None:
+        """Play sequence of deals until ``self.game_points`` is reached by one team
         """
-        """
-        # Note, we keep the players in order here (tm0-pl0, tm1-pl0, etc.), it
-        # is up to the caller to specify who actually sits where
-        seats = [t.players[n] for n in range(TEAM_PLAYERS) for t in self.teams]
-        assert len(seats) == NUM_PLAYERS
-        # "flip for deal" (indexed relative to `seats`)
-        dealer_idx = random.randrange(NUM_PLAYERS)
-
-        self.score = [0] * NUM_TEAMS
-        while max(self.score) < GAME_POINTS:
-            bidder_idx = (dealer_idx + 1) % NUM_PLAYERS
-            players = seats[bidder_idx:] + seats[:bidder_idx]
+        while max(self.score) < self.game_points:
+            bidder = (self.dealer + 1) % NUM_PLAYERS  # i.e. *opening* bidder
+            players = self.seats[bidder:] + self.seats[:bidder]
             deck = get_deck()
             deal = Deal(players, deck)
             self.deals.append(deal)
@@ -225,7 +234,7 @@ class Game(object):
             if not deal.is_passed():
                 deal.play_cards()
             self.tabulate(players, deal)
-            dealer_idx = (dealer_idx + 1) % NUM_PLAYERS
+            self.dealer = bidder
 
         self.set_winner()
 

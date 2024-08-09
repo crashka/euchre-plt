@@ -92,7 +92,14 @@ class Match(object):
         self.winner = winner
 
     def play(self) -> None:
-        """
+        """Play a sequence of games until ``self.match_games`` is reached by one team; we
+        are currently re-flipping for dealer for each game (is this the right thing to
+        do???)
+
+        Note that the ``Game`` constructor supports specifying the index of the dealer, in
+        case we wanted to continue the deal sequence between games (i.e. we would pass in
+        the previous ``game.dealer``)
+
         """
         while max(self.score) < self.match_games:
             game = Game(self.teams)

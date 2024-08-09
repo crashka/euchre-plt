@@ -20,6 +20,7 @@ usage of the application should be pretty self-explanatory.
 To Do list:
 
 - Show (and edit?) teams for pre-configured tournaments
+- Show tournament parameters on dashboard
 - Chart-specific axis settings (e.g. min, max, ticks)
 - Implement "Cancel Run" and "Restart Run" buttons
 - Show interesting aggregate stats below buttons

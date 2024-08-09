@@ -9,7 +9,6 @@ See ``to_yaml()`` for usage.
 
 import sys
 from numbers import Number
-from typing import NamedTuple
 from collections.abc import Mapping, Sequence
 import fileinput
 
