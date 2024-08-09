@@ -28,6 +28,7 @@ To Do list:
 
 - Enhancements
 
+  - Configure rulesets for play strategy
   - Highlight params/coeffs that have been changed from the base config
   - Show more of the underlying computation for hand strength (e.g. individual component
     scores before coefficient weighting)

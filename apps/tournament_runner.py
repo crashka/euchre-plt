@@ -500,6 +500,7 @@ def render_dashboard(context: dict) -> str:
     """Render the dashboard, from which the tournament will be run and tracked
     """
     context['title'] = DASH_NAME + f" - {context['tourn'].name}"
+    context['help_txt'] = help_txt
     return render_template(DASH_TEMPLATE, **context)
 
 #########################
@@ -512,6 +513,12 @@ help_txt = {
 
     # submit buttons
     'bt_0': "Start tournament and track using the dashboard",
+
+    # download links
+    'dl_0': "directly tabulated counts (integer)",
+    'dl_1': "directly tabulated counts (integer)",
+    'dl_2': "format in Excel as 'Percent' (with decimal places = 1)",
+    'dl_3': "format in Excel as 'Percent' (with decimal places = 1)"
 }
 
 euchplt_pfx = "https://crashka.github.io/euchre-plt/_build/html/euchplt.html#"
