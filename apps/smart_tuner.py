@@ -39,7 +39,6 @@ from typing import NamedTuple
 from collections.abc import Hashable, Sequence
 from numbers import Number
 import os.path
-import json
 
 from flask import Flask, request, render_template, abort
 
@@ -167,6 +166,7 @@ setattr(Card, 'disp', property(card_disp))
 setattr(Bid, 'disp', property(Bid.__str__))
 
 CARDS_BY_SUIT = sorted(CARDS, key=disp_key)
+RANKS = [r.tag for r in ALL_RANKS]
 
 def all_distinct(seq: Sequence[Hashable]) -> bool:
     """Return `True` if all elements of input sequence are distinct (implemented by adding
@@ -241,7 +241,7 @@ def export_params(form: dict) -> str:
 
     Later, we may support automatically creating the new entry in the config file
     """
-    return compute(form, export=True)
+    return compute(form, export=True, revert=False)
 
 def evaluate(form: dict) -> str:
     """Compute bidding for selected position and deal context (i.e. hand and turn card),
@@ -289,6 +289,7 @@ def render_app(context: dict) -> str:
     context['title']      = APP_NAME
     context['strategies'] = get_strategies()
     context['cards']      = CARDS_BY_SUIT
+    context['ranks']      = RANKS
     context['help_txt']   = help_txt
     context['ref_links']  = ref_links
     return render_template(APP_TEMPLATE, **context)
@@ -322,7 +323,7 @@ def compute(form: dict, **kwargs) -> str:
     turn:   Card = kwargs.get('turn')
     revert: bool = bool(kwargs.get('revert', False))
     export: bool = bool(kwargs.get('export', False))
-    do_bid: bool = bool(kwargs.get('do_bid', True))
+    assert not (revert and export)
 
     # set and validate `strategy`
     if not (strategy := form.get('strategy')):
@@ -341,10 +342,6 @@ def compute(form: dict, **kwargs) -> str:
         if not all_distinct(cards + [turn]):
             abort(400, "Duplicated cards not allowed")
 
-    if export:
-        revert = False
-        do_bid = False
-
     strgy_config = get_strgy_config(form) if not revert else {}
     strgy, anly, coeff = get_strgy_comps(strategy, hand, **strgy_config)
     base_strgy, base_anly, _ = get_strgy_comps(strategy, hand)
@@ -352,12 +349,12 @@ def compute(form: dict, **kwargs) -> str:
     # highlight the ones that have been modified, and show the associated changes
     # in hand strength values as well!!!
 
-    if do_bid:
-        bidding = get_bidding(strgy, pos, hand, turn)
-        base_bidding = get_bidding(base_strgy, pos, hand, turn)
-    elif export:
+    if export:
         strat_name = new_strgy_fmt % (strategy)
         return render_export(strat_name, strgy_config)
+
+    bidding = get_bidding(strgy, pos, hand, turn)
+    base_bidding = get_bidding(base_strgy, pos, hand, turn)
 
     context = {
         'strategy':     form['strategy'],
@@ -476,31 +473,37 @@ def get_details(persist: dict) -> str:
     """Extract component sub-strength and turn card strength info from the strategy
     persistence store, and generate explanatory detail text
     """
+    TURN_SCORE = 'turn_card_score**'
     coeff_list = coeff_names.copy()
     sub_strgths = persist.get('sub_strgths')
     assert sub_strgths
-    turn_strength = persist.get('turn_strength') or 0.0
-    hand_strength = persist.get('strength') - turn_strength
-    turn_pct = turn_strength / hand_strength * 100.0
-    if turn_strength:
-        sub_strgths['turn_card_score**'] = turn_strength
-        coeff_list += ['turn_card_score**']
+    turn_strength = persist.get('turn_strength') or (0.0, 0.0, 0.0)
+    hand_strength = persist.get('strength') - turn_strength[0]
+    turn_pct = turn_strength[0] / hand_strength * 100.0
+    if turn_strength[0]:
+        sub_strgths[TURN_SCORE] = turn_strength
+        coeff_list += [TURN_SCORE]
 
     lines = []
     # note we are hard-wiring the precision for this output (`FLOAT_PREC` is more
     # about aligning form-filling data with input precision in the template)
     lines.append(f"Hand Strength: {hand_strength:.2f}")
     lines.append("")
+    lines.append("Subscore [0.0-1.0] (and Coeff):")
+    for coeff_key in coeff_list:
+        comp_val, raw_val, coeff = sub_strgths[coeff_key]
+        lines.append(f"  {coeff_key}:  {raw_val:.2f} ({coeff:d})")
+    lines.append("")
     lines.append("Component Strength Val:")
-    for coeff in coeff_list:
-        comp_val = sub_strgths[coeff]
-        lines.append(f"  {coeff}:  {comp_val:.2f}")
+    for coeff_key in coeff_list:
+        comp_val, raw_val, coeff = sub_strgths[coeff_key]
+        lines.append(f"  {coeff_key}:  {comp_val:.2f}")
     lines.append("")
     lines.append("Component Strength Pct:")
-    for coeff in coeff_list:
-        comp_val = sub_strgths[coeff]
+    for coeff_key in coeff_list:
+        comp_val, raw_val, coeff = sub_strgths[coeff_key]
         comp_pct = comp_val / hand_strength * 100.0
-        lines.append(f"  {coeff}:  {comp_pct:.1f}%")
+        lines.append(f"  {coeff_key}:  {comp_pct:.1f}%")
     if turn_strength:
         lines.append("")
         lines.append("(** turn_card_score not counted\n" +

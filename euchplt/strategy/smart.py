@@ -9,7 +9,7 @@ import inspect
 from ..core import ConfigError, LogicError, log
 from ..card import Rank, Suit, SUITS, Card, right, ace
 from ..euchre import Hand, Bid, PASS_BID, NULL_BID, defend_suit, Trick, DealState
-from ..analysis import SUIT_CTX, HandAnalysisSmart, PlayAnalysis
+from ..analysis import SUIT_CTX, StrengthTuple, HandAnalysisSmart, PlayAnalysis
 from .base import Strategy
 
 #############
@@ -451,17 +451,20 @@ class StrategySmart(Strategy):
         ctx = SUIT_CTX[turn_card.suit]
         return turn_card.effcard(ctx).rank
 
-    def get_turn_strength(self, deal: DealState, bid_pos: int) -> float:
+    def get_turn_strength(self, deal: DealState, bid_pos: int) -> StrengthTuple:
         """Get the strength contribution (or penalty!) for the turn card (scaled to the
         overall hand strength), given the current deal context.  Value is positive or
         negative depending on whether partner or opponent (respectively) is the dealer.
         Note that this call is only valid for first round bidding from a non-dealer
         position.
+
+        Return value is a tuple of (strength, raw value, and coefficient).
         """
         turn_rank = self.turn_card_rank(deal.turn_card)
         turn_value = self.turn_card_value[turn_rank.idx] / sum(self.turn_card_value)
-        turn_strength = turn_value * self.turn_card_coeff[bid_pos]
-        return turn_strength * (1.0 if deal.is_partner_dealer else -1.0)
+        turn_coeff = self.turn_card_coeff[bid_pos] * (1 if deal.is_partner_dealer else -1)
+        turn_strength = turn_value * turn_coeff
+        return turn_strength, turn_value, turn_coeff
 
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """General logic:
@@ -500,11 +503,11 @@ class StrategySmart(Strategy):
         discard       = None
         new_hand      = None
         best_suit     = None
-        strength      = None
-        turn_strength = None
+        strength      = None  # float
+        turn_strength = None  # StrengthTuple
         thresh_margin = None
         alone         = False
-        sub_strgths   = {}
+        sub_strgths   = {}    # dict[str, StrengthTuple], indexed by subscore name
 
         if def_bid:
             if deal.is_partner_caller:
@@ -541,9 +544,8 @@ class StrategySmart(Strategy):
                 strength = analysis.hand_strength(turn_suit, sub_strgths)
                 # this call takes dealer position into account (partner or opponent)
                 turn_strength = self.get_turn_strength(deal, bid_pos)
-                strength += turn_strength
-                log.debug(f"{'turn card adj':15}: "
-                         f"{'+' if deal.is_partner_dealer else '-'}{turn_strength:.2f}")
+                strength += turn_strength[0]
+                log.debug(f"{'turn card adj':15}: {turn_strength[0]:.2f}")
                 log.debug(f"{'adj_strength':15}: {strength:6.2f}")
                 thresh_margin = strength - self.bid_thresh[bid_pos]
                 if thresh_margin >= 0.0:

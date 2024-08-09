@@ -9,6 +9,8 @@ from .base import HandAnalysis
 # HandAnalysisSmart #
 #####################
 
+StrengthTuple = tuple[float, float, int]  # strength, raw_value, coeff
+
 class HandAnalysisSmart(HandAnalysis):
     """Extends ``HandAnalysis`` to determine a "hand strength" score given a trump suit
     context, for use in bidding.  This score is used in the associated ``StartegySmart``
@@ -109,7 +111,8 @@ class HandAnalysisSmart(HandAnalysis):
         """Return the overall hand strength score given a trump suit context, based on
         parameters and multiplier coefficients specified for the instance (base config
         plus constructor overrides).  If ``comp_vals`` is specified (as a dict), the
-        contribution from the individual components will be written to it.
+        contribution from the individual components will be written to it as a
+        StrengthTuple (see above), indexed by score name.
         """
         # KINDA HACKY: local variables need to align with keys in `self.scoring_coeff`
         # (enforced by the assert in the loop, below)
@@ -138,8 +141,8 @@ class HandAnalysisSmart(HandAnalysis):
         for score, coeff in self.scoring_coeff.items():
             raw_value = locals()[score]
             assert isinstance(raw_value, float)
-            score_value = locals()[score] * coeff
-            sub_strengths[score] = score_value
+            score_value = raw_value * coeff
+            sub_strengths[score] = (score_value, raw_value, coeff)  # StrengthTuple
             log.debug(f"  {score:15}: {score_value:6.2f} ({raw_value:.2f} * {coeff:d})")
             strength += score_value
         log.debug(f"{'hand_strength':15}: {strength:6.2f}")

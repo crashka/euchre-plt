@@ -20,7 +20,7 @@
      width: 10rem;
    }
    .tbl_params {
-     margin-top: 0.75rem;
+     margin-top: 0.5rem;
    }
    .tbl_results {
      margin-top: 0.25rem;
@@ -151,27 +151,17 @@
       <table class="tbl_params">
         <colgroup>
           <col class="col_lbl">
+          {% for _ in ranks %}
           <col class="col_num">
-          <col class="col_num">
-          <col class="col_num">
-          <col class="col_num">
-          <col class="col_num">
-          <col class="col_num">
-          <col class="col_num">
-          <col class="col_num">
+          {% endfor %}
           <col class="col_spc">
           <col class="col_num">
         </colgroup>
         <tr>
           <th></th>
-          <th>9</th>
-          <th>10</th>
-          <th>J</th>
-          <th>Q</th>
-          <th>K</th>
-          <th>A</th>
-          <th>L</th>
-          <th>R</th>
+          {% for rank in ranks %}
+          <th>{{rank}}</th>
+          {% endfor %}
           <th></th>
           <th>Coeff</th>
         </tr>
@@ -209,12 +199,9 @@
       <table class="tbl_params">
         <colgroup>
           <col class="col_lbl">
+          {% for _ in range(6) %}
           <col class="col_num">
-          <col class="col_num">
-          <col class="col_num">
-          <col class="col_num">
-          <col class="col_num">
-          <col class="col_num">
+          {% endfor %}
           <col class="col_num">
           <col class="col_num">
           <col class="col_spc">
@@ -222,12 +209,9 @@
         </colgroup>
         <tr>
           <th></th>
-          <th>0</th>
-          <th>1</th>
-          <th>2</th>
-          <th>3</th>
-          <th>4</th>
-          <th>5</th>
+          {% for idx in range(6) %}
+          <th>{{idx}}</th>
+          {% endfor %}
           <th></th>
           <th></th>
           <th></th>
@@ -292,28 +276,15 @@
       <table class="tbl_params">
         <colgroup>
           <col class="col_lbl">
+          {% for _ in ranks %}
           <col class="col_num">
-          <col class="col_num">
-          <col class="col_num">
-          <col class="col_num">
-          <col class="col_num">
-          <col class="col_num">
-          <col class="col_num">
-          <col class="col_num">
-          <col class="col_num">
-          <col class="col_num">
-          <col class="col_num">
+          {% endfor %}
         </colgroup>
         <tr>
-          <th class="td_lbl">(bid_pos)</th>
-          <th>0</th>
-          <th>1</th>
-          <th>2</th>
-          <th>3</th>
-          <th>4</th>
-          <th>5</th>
-          <th>6</th>
-          <th>7</th>
+          <th></th>
+          {% for rank in ranks %}
+          <th>{{rank}}</th>
+          {% endfor %}
         </tr>
         <tr>
           <td class="td_lbl">Turn card value:</td>
@@ -327,6 +298,23 @@
           {% endfor %}
           {% endif %}
         </tr>
+      </table>
+      <table class="tbl_params">
+        <colgroup>
+          <col class="col_lbl">
+          {% for _ in range(8) %}
+          <col class="col_num">
+          {% endfor %}
+          <col class="col_num">
+          <col class="col_num">
+          <col class="col_num">
+        </colgroup>
+        <tr>
+          <th class="td_lbl">(bid_pos)</th>
+          {% for idx in range(8) %}
+          <th>{{idx}}</th>
+          {% endfor %}
+        </tr>
         <tr>
           <td class="td_lbl">Turn card coeff:</td>
           {% if strgy %}
@@ -338,10 +326,6 @@
           <td class="td_num"><input name="tcc_{{idx}}" type="number"></td>
           {% endfor %}
           {% endif %}
-          <td class="td_num"></td>
-          <td class="td_num"></td>
-          <td class="td_num"></td>
-          <td class="td_num"></td>
         </tr>
         <tr>
           <td class="td_lbl">Bid thresh:</td>

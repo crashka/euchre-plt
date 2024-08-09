@@ -6,4 +6,4 @@ strategy that requires additional or specialized functionality.
 """
 
 from .base import SuitCtx, SUIT_CTX, HandAnalysis, PlayAnalysis
-from .smart import HandAnalysisSmart
+from .smart import StrengthTuple, HandAnalysisSmart
