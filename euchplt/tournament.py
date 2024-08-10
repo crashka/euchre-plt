@@ -625,7 +625,7 @@ class Tournament:
         """
         return [STAT_COL] + list(self.teams)
 
-    def iter_stats(self, pos_details: bool = False) -> dict[str, Number]:
+    def iter_stats(self, pos_details: bool = False) -> Iterator[dict[str, Number]]:
         """Generator for base stats, yields a dict of stat values indexed by team name;
         the key for stat name is ``'Base Stat'``
         """
@@ -653,7 +653,7 @@ class Tournament:
         """
         return [COMP_STAT_COL] + list(self.teams)
 
-    def iter_comp_stats(self, pos_details: bool = False) -> dict[str, Number]:
+    def iter_comp_stats(self, pos_details: bool = False) -> Iterator[dict[str, Number]]:
         """Generator for computed stats, yields a dict of stat values indexed by team
         name; the key for stat name is ``'Statistic'``
         """
@@ -687,7 +687,7 @@ class Tournament:
         """Header fields used as the keys for the `iter_team_stats()` generator; the field
         name for team name is ``'Team'``
         """
-        def expand(stat_iter: Iterable[AllStat]) -> str:
+        def expand(stat_iter: Iterable[AllStat]) -> Iterator[str]:
             for stat in stat_iter:
                 yield str(stat)
                 if pos_details and stat in self.pos_stats | self.pos_comp_stats:
@@ -697,14 +697,14 @@ class Tournament:
         fields = [TEAM_COL] + list(expand(AllStatIter()))
         return fields
 
-    def iter_team_stats(self, pos_details: bool = False) -> dict[str, Number]:
+    def iter_team_stats(self, pos_details: bool = False) -> Iterator[dict[str, Number]]:
         """Generator for iterating over teams and returning a dict of stats, by name; the
         key for team name is ``'Team'``
         """
         stats_map = None
         pos_stats_map = None
 
-        def stats_gen() -> tuple[str, int]:
+        def stats_gen() -> Iterator[tuple[str, int]]:
             """Expects ``stats_map``, and optionally ``pos_stats_map``, to be set
             """
             for stat, value in stats_map.items():
@@ -715,7 +715,7 @@ class Tournament:
                         field_name = str(stat) + f" (Pos {i})"
                         yield field_name, pos_stat[i]
 
-        def comp_stats_gen() -> tuple[str, int]:
+        def comp_stats_gen() -> Iterator[tuple[str, int]]:
             """Expects ``stats_map``, and optionally ``pos_stats_map``, to be set
             """
             for stat in CSF:

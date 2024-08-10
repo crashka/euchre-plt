@@ -32,14 +32,14 @@ class Config:
           my_param: value
       alt_profile:
         my_section:
-          my_param: alt_value  # overwrites value from `default` profile
+          my_param: alt_value  # overwrites value from ``default`` profile
     """
     config_dir:   str | None
     filepaths:    set[str]         # set of file pathnames loaded
     profile_data: dict[str, dict]  # config indexed by profile (including 'default')
 
     def __init__(self, files: str | Iterable[str], config_dir: str = None):
-        """Note that `files` can be specified as an iterable, or a comma-separated
+        """Note that ``files`` can be specified as an iterable, or a comma-separated
         list of file names (no spaces)
         """
         if isinstance(files, str):
@@ -60,7 +60,7 @@ class Config:
         level (i.e. direct children within a section).  Deeper merging within these
         top-level parameters is not supported.  Note that additional config files
         can be loaded at any time.  A config file that has already been loaded will
-        be politely skipped, with a `False` return value being the only rebuke.
+        be politely skipped, with a ``False`` return value being the only rebuke.
         """
         if file_dir:
             path = os.path.join(file_dir, file)
@@ -87,11 +87,12 @@ class Config:
         self.filepaths.add(path)
         return True
 
-    def config(self, section: str, profile: str = None) -> dict:
-        """Get parameters for configuration section (empty dict is returned if
-        section is not found).  If `profile` is specified, the parameter values
-        for that profile override values from the 'default' profile (which must
-        exist).
+    def config(self, section: str, profile: str = None, safe: bool = False) -> dict:
+        """Get parameters for configuration section (empty dict is returned if section is
+        not found).  If ``profile`` is specified, the parameter values for that profile
+        override values from the `'default'` profile (which must exist).  If the ``safe``
+        flag is specified, a deep copy is returned so the caller will not inadvertently
+        change the cached config.
         """
         if DEFAULT_PROFILE not in self.profile_data:
             raise RuntimeError(f"Default profile ('{DEFAULT_PROFILE}') never loaded")
@@ -103,10 +104,7 @@ class Config:
             profile_data = self.profile_data[profile]
             profile_params = profile_data.get(section, {})
             ret_params.update(profile_params)
-        # return a deep copy, otherwise caller can change the cached config (which
-        # might have its use cases, but not what we want here)--an alternative to
-        # consider is to return an immutable dict (see `werkzeug.ImmutableDict`)
-        return deepcopy(ret_params)
+        return deepcopy(ret_params) if safe else ret_params
 
 #########################
 # Trace logging support #
@@ -146,12 +144,12 @@ def rankdata(a: Sequence[Number], method: str ='average', reverse: bool = True) 
     """Standalone implementation of scipy.stats.rankdata, adapted from
     https://stackoverflow.com/a/3071441, with the following added:
 
-    - `method` arg, with support for 'average' (default) and 'min'
-    - `reverse` flag, with `True` (default) signifying descending sort order
-      (i.e. the highest value in `a` has a rank of 1, as opposed to `len(a)`)
+    - ``method`` arg, with support for 'average' (default) and 'min'
+    - ``reverse`` flag, with ``True`` (default) signifying descending sort order
+      (i.e. the highest value in ``a`` has a rank of 1, as opposed to `len(a)`)
 
-    Note that return rankings with be type `float` for method='average'
-    and `int` for method='min'.
+    Note that return rankings with be type ``float`` for ``method='average'``
+    and ``int`` for ``method='min'``.
     """
     def rank_simple(vector):
         return sorted(range(len(vector)), key=vector.__getitem__, reverse=reverse)
@@ -195,8 +193,8 @@ def typecast(val: str) -> str | Number | bool:
 
 def parse_argv(argv: list[str]) -> tuple[list, dict]:
     """Takes a list of arguments (typically a slice of sys.argv), which may be a
-    combination of bare agruments or kwargs-style constructions (e.g. "key=value")
-    and returns a tuple of `args` and `kwargs`.  For both `args` and `kwargs`, we
+    combination of bare agruments or kwargs-style constructions (e.g. "key=value") and
+    returns a tuple of ``args`` and ``kwargs``.  For both ``args`` and ``kwargs``, we
     attempt to cast the value to the proper type (e.g. int, float, bool, or None).
     """
     args = []

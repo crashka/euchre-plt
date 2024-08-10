@@ -99,7 +99,6 @@ class Match(object):
         Note that the ``Game`` constructor supports specifying the index of the dealer, in
         case we wanted to continue the deal sequence between games (i.e. we would pass in
         the previous ``game.dealer``)
-
         """
         while max(self.score) < self.match_games:
             game = Game(self.teams)

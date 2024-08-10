@@ -4,6 +4,7 @@
 import sys
 from enum import Enum
 from typing import TextIO
+from collections.abc import Iterator
 
 from .utils import parse_argv
 from .core import DEBUG, LogicError, ImplementationError
@@ -96,6 +97,19 @@ class Deal(GameCtxMixin):
                          self.tricks_won, self.points, self.player_state[pos])
 
     @property
+    def total_tricks(self) -> int:
+        """Return total number of tricks for the deal
+        """
+        assert HAND_CARDS == (len(self.deck) - len(self.buries) - 1) // NUM_PLAYERS
+        return HAND_CARDS
+
+    @property
+    def player_cards(self) -> int:
+        """Number of cards to be dealt to players (i.e. excludes buries and turn card)
+        """
+        return NUM_PLAYERS * HAND_CARDS
+
+    @property
     def deal_phase(self) -> DealPhase:
         """
         """
@@ -118,12 +132,11 @@ class Deal(GameCtxMixin):
             assert isinstance(self.caller_pos, int)
             return DealPhase.CONTRACT
 
-        total_tricks = (len(self.deck) - len(self.buries)) // NUM_PLAYERS
-        if len(self.tricks) < total_tricks:
+        if len(self.tricks) < self.total_tricks:
             assert not self.points
             return DealPhase.PLAYING
 
-        assert len(self.tricks) == total_tricks
+        assert len(self.tricks) == self.total_tricks
         if not self.points:
             return DealPhase.COMPLETE
         return DealPhase.SCORED
@@ -211,16 +224,14 @@ class Deal(GameCtxMixin):
         various gathering/shuffling schemes, to see the implications of real-world "card
         handling".
         """
-        deal_cards = NUM_PLAYERS * HAND_CARDS
-
         for i in range(NUM_PLAYERS):
-            hand = Hand(self.deck[i:deal_cards:NUM_PLAYERS])
+            hand = Hand(self.deck[i:self.player_cards:NUM_PLAYERS])
             self.cards_dealt.append(hand)
             self.hands.append(hand.copy())
-        self.turn_card = self.deck[deal_cards]
-        self.buries = self.deck[deal_cards+1:]
-        assert set([c for h in self.hands for c in h] + [self.turn_card] + self.buries) == \
-            set(self.deck)
+        self.turn_card = self.deck[self.player_cards]
+        self.buries = self.deck[self.player_cards+1:]
+        in_play = [c for h in self.hands for c in h] + [self.turn_card] + self.buries
+        assert set(in_play) == set(self.deck)
 
     def do_bidding(self) -> Bid:
         """Returns contract bid, or PASS_BID if the deal is passed
@@ -304,11 +315,10 @@ class Deal(GameCtxMixin):
         """Return points resulting from this deal (list indexed by position)
         """
         assert self.deal_phase == DealPhase.CONTRACT
-        total_tricks = (len(self.deck) - len(self.buries)) // NUM_PLAYERS
         lead_pos = 0
 
         self.prep_for_play()
-        for _ in range(total_tricks):
+        for trick_num in range(self.total_tricks):
             trick = Trick(self)
             self.tricks.append(trick)
             for i in range(NUM_PLAYERS):

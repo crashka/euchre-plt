@@ -85,7 +85,7 @@ def get_strategies(get_all: bool = False) -> list[str]:
         return _strategies
 
     cfg.load(CONFIG_FILE, CONFIG_DIR, reload=True)
-    all_strategies = cfg.config('strategies')
+    all_strategies = cfg.config('strategies', safe=True)
     if get_all:
         return [k for k, v in all_strategies.items() if v.get('base_class')]
     _strategies = [k for k, v in all_strategies.items()
@@ -119,6 +119,7 @@ class Context(NamedTuple):
     """
     strategy:     str
     player_pos:   int
+    checked:      list[str]
     anly:         HandAnalysisSmart
     strgy:        Strategy
     coeff:        list[Number]
@@ -210,6 +211,7 @@ def index():
     context = {
         'strategy':   strategy,
         'player_pos': 0 if strategy else -1,
+        'checked':    [" checked", '', '', ''],
         'anly':       anly,
         'strgy':      strgy,
         'coeff':      coeff,
@@ -355,10 +357,13 @@ def compute(form: dict, **kwargs) -> str:
 
     bidding = get_bidding(strgy, pos, hand, turn)
     base_bidding = get_bidding(base_strgy, pos, hand, turn)
+    checked = [''] * 4
+    checked[pos] = " checked"
 
     context = {
         'strategy':     form['strategy'],
         'player_pos':   pos,
+        'checked':      checked,
         'anly':         anly,
         'strgy':        strgy,
         'coeff':        coeff,
