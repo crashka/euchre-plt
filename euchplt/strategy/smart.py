@@ -48,6 +48,9 @@ class _PlayCard:
         if 'play_plan' not in persist:
             persist['play_plan'] = set()
         self.play_plan = persist['play_plan']
+        if 'play_log' not in persist:
+            persist['play_log'] = {}
+        self.play_log = persist['play_log']
 
         self.analysis        = PlayAnalysis(self.deal)
         self.trump_cards     = self.analysis.trump_cards()
@@ -61,7 +64,7 @@ class _PlayCard:
         """All other lead tactics degenerate into this for final card (haha)
         """
         if len(self.deal.hand) == 1:
-            log.debug("Lead last card")
+            self.play_log['reason'] = "Lead last card"
             return self.deal.hand.cards[0]
 
     def next_call_lead(self) -> Card | None:
@@ -84,18 +87,18 @@ class _PlayCard:
         """
         if self.deal.is_next_call and self.trump_cards:
             if not self.analysis.bowers():
-                log.debug("No bower, lead small trump")
+                self.play_log['reason'] = "No bower, lead small trump"
                 self.play_plan.add(PlayPlan.PRESERVE_TRUMP)
                 return self.trump_cards[-1]
             elif len(self.trump_cards) > 1:
                 if self.trump_cards[0].rank == right and self.trump_cards[1].rank == ace:
-                    log.debug("Lead ace from right-ace")
+                    self.play_log['reason'] = "Lead ace from right-ace"
                     self.play_plan.add(PlayPlan.DRAW_TRUMP)
                     return self.trump_cards[1]
                 if self.trump_cards[0].level < ace.level:
                     suit_cards = self.analysis.green_suit_cards()
                     if suit_cards[0]:
-                        log.debug("Lead low from longest green suit")
+                        self.play_log['reason'] = "Lead low from longest green suit"
                         self.play_plan.add(PlayPlan.DRAW_TRUMP)
                         return suit_cards[0][-1]
 
@@ -106,15 +109,15 @@ class _PlayCard:
         if self.deal.is_caller and self.analysis.trumps_missing():
             if PlayPlan.DRAW_TRUMP in self.play_plan:
                 if len(self.trump_cards) > 2:
-                    log.debug("Continue drawing trump")
+                    self.play_log['reason'] = "Continue drawing trump"
                     return self.trump_cards[0]
                 elif len(self.trump_cards) >= 2:
-                    log.debug("Last round of drawing trump")
+                    self.play_log['reason'] = "Last round of drawing trump"
                     self.play_plan.remove(PlayPlan.DRAW_TRUMP)
                     return self.trump_cards[0]
             elif len(self.trump_cards) >= 3:
                 self.play_plan.add(PlayPlan.DRAW_TRUMP)
-                log.debug("Draw trump (or flush out bower)")
+                self.play_log['reason'] = "Draw trump (or flush out bower)"
                 return self.trump_cards[0]
 
     def lead_off_ace(self) -> Card | None:
@@ -124,10 +127,10 @@ class _PlayCard:
             # TODO: choose more wisely if more than one, or possibly preserve ace to
             # avoid being trumped!!!
             if len(off_aces) == 1:
-                log.debug("Lead off-ace")
+                self.play_log['reason'] = "Lead off-ace"
                 return off_aces[0]
             else:
-                log.debug("Lead off-ace (random choice)")
+                self.play_log['reason'] = "Lead off-ace (random choice)"
                 return random.choice(off_aces)
 
     def lead_to_partner_call(self) -> Card | None:
@@ -136,19 +139,19 @@ class _PlayCard:
         if self.deal.is_partner_caller:
             if self.trump_cards and not self.analysis.trumps_played():
                 if self.analysis.bowers():
-                    log.debug("Lead bower to partner's call")
+                    self.play_log['reason'] = "Lead bower to partner's call"
                     return self.trump_cards[0]
                 elif len(self.trump_cards) > 1:
-                    log.debug("Lead low trump to partner's call")
+                    self.play_log['reason'] = "Lead low trump to partner's call"
                     return self.trump_cards[-1]
                 elif self.singleton_cards:
                     # REVISIT: not sure we should do this, but if so, add some logic
                     # for choosing if more than one singleton!!!
                     if len(self.singleton_cards) == 1:
-                        log.debug("Lead singleton to void suit")
+                        self.play_log['reason'] = "Lead singleton to void suit"
                         return self.singleton_cards[0]
                     else:
-                        log.debug("Lead singleton to void suit (random choice)")
+                        self.play_log['reason'] = "Lead singleton to void suit (random choice)"
                         return random.choice(self.singleton_cards)
 
     def lead_to_create_void(self) -> Card | None:
@@ -158,17 +161,17 @@ class _PlayCard:
             # REVISIT: perhaps only makes sense in earlier rounds (2 and 3), and otherwise
             # add some logic for choosing if more than one singleton!!!
             if len(self.singleton_cards) == 1:
-                log.debug("Lead singleton to void suit")
+                self.play_log['reason'] = "Lead singleton to void suit"
                 return self.singleton_cards[0]
             else:
-                log.debug("Lead singleton to void suit (random choice)")
+                self.play_log['reason'] = "Lead singleton to void suit (random choice)"
                 return random.choice(self.singleton_cards)
 
     def lead_suit_winner(self) -> Card | None:
         """Try to lead winner (non-trump)
         """
         if my_winners := self.analysis.my_winners():
-            log.debug("Try and lead suit winner")
+            self.play_log['reason'] = "Try and lead suit winner"
             # REVISIT: is this the right logic (perhaps makes no sense if preceded by
             # off-ace rule)???  Should also examine remaining cards in suit!!!
             return my_winners[0] if self.deal.trick_num <= 3 else my_winners[-1]
@@ -179,7 +182,7 @@ class _PlayCard:
         if self.trump_cards and len(self.trump_cards) < len(self.deal.hand):
             # NOTE: will pick suit by random if multiple cards at min level
             by_level = self.analysis.cards_by_level(offset_trump=True)
-            log.debug("Lead lowest non-trump")
+            self.play_log['reason'] = "Lead lowest non-trump"
             return by_level[-1]
 
     def lead_low_from_long_suit(self) -> Card | None:
@@ -191,7 +194,7 @@ class _PlayCard:
         # cards already sorted (desc) within each suit
         suit_cards.sort(key=lambda s: len(s), reverse=True)
         # TODO: a little more logic in choosing suit (perhaps avoid trump, if possible)!!!
-        log.debug("Lead low from longest suit")
+        self.play_log['reason'] = "Lead low from longest suit"
         return suit_cards[0][0]
 
     def lead_random_card(self) -> Card | None:
@@ -200,7 +203,7 @@ class _PlayCard:
 
         Note: always returns value, can be last in a ruleset
         """
-        log.debug("Lead random card")
+        self.play_log['reason'] = "Lead random card"
         return random.choice(self.valid_plays)
 
     #####################
@@ -211,7 +214,7 @@ class _PlayCard:
         """All other play tactics degenerate into this for final card (haha)
         """
         if len(self.deal.hand) == 1:
-            log.debug("Play last card")
+            self.play_log['reason'] = "Play last card"
             return self.deal.hand.cards[0]
 
     def follow_suit_low(self) -> Card | None:
@@ -220,7 +223,7 @@ class _PlayCard:
         lead_card = self.deal.cur_trick.lead_card
         if lead_card and (follow_cards := self.analysis.follow_cards(lead_card)):
             # REVISIT: are there cases where we want to try and take the lead???
-            log.debug("Follow suit low")
+            self.play_log['reason'] = "Follow suit low"
             return follow_cards[-1]
 
     def throw_off_to_create_void(self) -> Card | None:
@@ -229,13 +232,13 @@ class _PlayCard:
         """
         if self.trump_cards and self.singleton_cards:
             if len(self.singleton_cards) == 1:
-                log.debug("Throw off singleton to void suit")
+                self.play_log['reason'] = "Throw off singleton to void suit"
                 return self.singleton_cards[0]
             else:
                 # REVISIT: perhaps only makes sense in earlier rounds (2 and 3), and also
                 # reconsider selection if multiple (currently lowest valued)!!!
                 self.singleton_cards.sort(key=lambda c: c.efflevel(self.trick), reverse=True)
-                log.debug("Throw off singleton to void suit (lowest)")
+                self.play_log['reason'] = "Throw off singleton to void suit (lowest)"
                 return self.singleton_cards[-1]
 
     def throw_off_low(self) -> Card | None:
@@ -244,7 +247,7 @@ class _PlayCard:
         if len(self.trump_cards) < len(self.deal.hand):
             # NOTE: this will pick random suit if multiple cards at min level
             by_level = self.analysis.cards_by_level(offset_trump=True)
-            log.debug("Throw-off lowest non-trump")
+            self.play_log['reason'] = "Throw-off lowest non-trump"
             return by_level[-1]
 
     def play_low_trump(self) -> Card | None:
@@ -252,7 +255,7 @@ class _PlayCard:
         """
         if self.trump_cards and len(self.trump_cards) == len(self.deal.hand):
             # REVISIT: are there cases where we want to play a higher trump???
-            log.debug("Play lowest trump")
+            self.play_log['reason'] = "Play lowest trump"
             return self.trump_cards[-1]
 
     def follow_suit_high(self) -> Card | None:
@@ -261,7 +264,7 @@ class _PlayCard:
         lead_card = self.deal.cur_trick.lead_card
         if lead_card and (follow_cards := self.analysis.follow_cards(lead_card)):
             if self.deal.lead_trumped:
-                log.debug("Follow suit low (trumped)")
+                self.play_log['reason'] = "Follow suit low (trumped)"
                 return follow_cards[-1]
             if follow_cards[0].beats(self.trick.winning_card, self.trick):
                 # REVISIT: are there cases where we don't want to try and take the trick,
@@ -269,13 +272,13 @@ class _PlayCard:
                 if self.deal.play_seq == 3:
                     for card in follow_cards[::-1]:
                         if card.beats(self.trick.winning_card, self.trick):
-                            log.debug("Follow suit, take winner")
+                            self.play_log['reason'] = "Follow suit, take winner"
                             return card
                 else:
-                    log.debug("Follow suit high")
+                    self.play_log['reason'] = "Follow suit high"
                     return follow_cards[0]
 
-            log.debug("Follow suit low (can't beat)")
+            self.play_log['reason'] = "Follow suit low (can't beat)"
             return follow_cards[-1]
 
     def trump_low(self) -> Card | None:
@@ -289,10 +292,10 @@ class _PlayCard:
                     if self.deal.play_seq == 3:
                         for card in self.trump_cards:
                             if card.beats(self.trick.winning_card, self.trick):
-                                log.debug("Overtrump, take winner")
+                                self.play_log['reason'] = "Overtrump, take winner"
                                 return card
                     else:
-                        log.debug("Overtrump high")
+                        self.play_log['reason'] = "Overtrump high"
                         return self.trump_cards[0]
             else:
                 # hold onto highest remaining trump (sure winner later), otherwise try and
@@ -300,12 +303,12 @@ class _PlayCard:
                 # REVISIT: are there cases where we want to play a higher trump, or other
                 # reasons to throw off (esp. if pos == 1 and partner yet to play)???
                 if len(self.trump_cards) > 1:
-                    log.debug("Play lowest trump, to lead trick")
+                    self.play_log['reason'] = "Play lowest trump, to lead trick"
                     return self.trump_cards[-1]
                 high_trump = self.analysis.suit_winners()[self.trick.trump_suit]
                 assert high_trump  # must exist, since we have one
                 if not self.trump_cards[0].same_as(high_trump, self.trick):
-                    log.debug("Play last trump, to lead trick")
+                    self.play_log['reason'] = "Play last trump, to lead trick"
                     return self.trump_cards[0]
 
     def play_random_card(self) -> Card | None:
@@ -314,7 +317,7 @@ class _PlayCard:
 
         Note: always returns value, can be last in a ruleset
         """
-        log.debug("Play random card")
+        self.play_log['reason'] = "Play random card"
         return random.choice(self.valid_plays)
 
 #################
@@ -662,6 +665,9 @@ class StrategySmart(Strategy):
         for rule in ruleset:
             result = rule(player)  # `rule` will be a `_PlayCard` method callable
             if result:
+                play_log = deal.player_state['play_log']
+                play_log['rule'] = rule
+                log.debug(play_log.get('reason'))
                 break
         if not result:
             raise LogicError("Ruleset did not produce valid result ({ruleset})")

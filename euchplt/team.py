@@ -37,6 +37,8 @@ class Team:
             self.name = name
             self.team_strategy = strategy
             player_names = [f"{self.name} - {p}" for p in DFLT_PLAYER_IDS]
+            # FIX: should use a single shared strategy for the team players, since there
+            # is no differentiated state or param overrides!!!
             self.players = [Player(player_names[0], Strategy.new(self.team_strategy)),
                             Player(player_names[1], Strategy.new(self.team_strategy))]
         else:
