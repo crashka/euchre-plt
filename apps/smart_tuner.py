@@ -49,7 +49,7 @@ from euchplt.card import ALL_RANKS, Suit, Card, CARDS, Deck, get_card, get_deck
 from euchplt.euchre import Hand, Bid, PASS_BID, DealState
 from euchplt.player import Player
 from euchplt.deal import NUM_PLAYERS, Deal
-from euchplt.strategy import Strategy
+from euchplt.strategy import Strategy, StrategySmart
 from euchplt.analysis import HandAnalysisSmart
 
 #########
@@ -165,6 +165,8 @@ NULL_HAND  = Hand([NULL_CARD] * 5)
 PASSES     = [PASS_BID] * 8
 NONES      = [None] * 10
 
+DUMMY_RULESETS = {name: [None] * 7 for name in StrategySmart.RULESETS}
+
 FLOAT_PREC = 2
 
 ranks = len(ALL_RANKS)
@@ -221,18 +223,21 @@ def index():
     """Get the analysis and strategy parameters for the specified strategy (or an empty
     form if ``strategy`` is not specified in the request)
     """
-    deck  = None
-    hand  = None
-    turn  = None
-    anly  = None
-    strgy = None
-    coeff = [''] * 5  # shortcut (okay, hack) to simplify the template
+    deck     = None
+    hand     = None
+    turn     = None
+    anly     = None
+    strgy    = None
+    rulesets = DUMMY_RULESETS
+    coeff    = [''] * 5  # shortcut (okay, hack) to simplify the template
 
     strategy = request.args.get('strategy')
     if strategy:
         deck = get_deck()
         hand, turn = get_hand(deck)
         strgy, anly, coeff = get_strgy_comps(strategy, hand)
+        strat = Strategy.new(strategy)
+        rulesets = strat.ruleset
     phase = int(request.args.get('phase') or 0)
     phase_chk = ['', '']
     phase_chk[phase] = " checked"
@@ -249,7 +254,7 @@ def index():
         'turn':       turn,
         'bids':       None,
         'base_bids':  None,
-        'rulesets':   {},
+        'rulesets':   rulesets,
         'deck':       deck,
         'deal':       None,
         'persist':    None

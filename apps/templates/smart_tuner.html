@@ -129,7 +129,8 @@
      list-style-type: none;
      width: 15rem;
    }
-   .ruleset li {
+   .ruleset li,
+   .ruleset span {
      margin-top: 0.2rem;
      background-color: #F0F0F0;
      width: 13rem;
@@ -184,7 +185,11 @@
           <b>{{name}}</b>
           <ul>
             {% for rule in rules %}
+            {% if rule %}
             <li title="{{rule.__doc__}}">{{rule.__name__}}</li>
+            {% else %}
+            <span style="display: inline-block;">&nbsp;</span>
+            {% endif %}
             {% endfor %}
           </ul>
         </div>
@@ -410,6 +415,7 @@
         </tr>
       </table>
     </div>
+    {% if strategy %}
     <div class="section">
       <span class="section_lbl">Deal Info</span>
       <div class="subsect">
@@ -579,7 +585,8 @@
       {% endfor %}
     </table>
   </div>
-  {% endif %}
+  {% endif %}  {# if bidding #}
+  {% endif %}  {# if strategy #}
   <div class="refs">
     Reference links:
     <ul>
