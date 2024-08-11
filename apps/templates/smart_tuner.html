@@ -13,11 +13,23 @@
      font-size: larger;
      font-weight: bold;
    }
-   .subsect_pos {
+   .subsect {
      margin-top: 0.2rem;
    }
    .sel_strategy {
      width: 10rem;
+   }
+   .bid_play {
+     margin-left: 1.0rem;
+   }
+   .bid_play label {
+     margin-left: 0.5rem;
+   }
+   .bidding {
+     display: {{"block;" if phase_chk[0] else "none;"}}
+   }
+   .playing {
+     display: {{"block;" if phase_chk[1] else "none;"}}
    }
    .tbl_params {
      margin-top: 0.3rem;
@@ -108,6 +120,20 @@
      width: 2.0rem;
      display: none;
    }
+   .ruleset {
+     float: left;
+   }
+   .ruleset ul {
+     margin-top: 0.1rem;
+     padding: 0;
+     list-style-type: none;
+     width: 15rem;
+   }
+   .ruleset li {
+     margin-top: 0.2rem;
+     background-color: #F0F0F0;
+     width: 13rem;
+   }
    button[value="evaluate"],
    button[value="new_hand"] {
      font-weight: bolder;
@@ -131,8 +157,8 @@
 
 <body>
   <form method="post">
-    <div class="section">
-      <span>Pick strategy:</span>
+    <div class="section header">
+      Pick strategy:
       <select name="strategy" class="sel_strategy">
         {% if strategy %}
         {% for strat in strategies %}
@@ -145,8 +171,27 @@
         {% endfor %}
         {% endif %}
       </select>
+      <span class="bid_play">
+        <label>Bidding:<input type="radio" name="phase" value="0"{{phase_chk[0]}}></td></label>
+        <label>Playing:<input type="radio" name="phase" value="1"{{phase_chk[1]}}></td></label>
+      </span>
     </div>
-    <div class="section">
+    <div class="section playing">
+      <span class="section_lbl">Playing Rulesets</span>
+      {% for name, rules in rulesets.items() %}
+      <div class="subsect">
+        <div class="ruleset">
+          <b>{{name}}</b>
+          <ul>
+            {% for rule in rules %}
+            <li title="{{rule.__doc__}}">{{rule.__name__}}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="section bidding">
       <span class="section_lbl">Hand Analysis Params</span>
       <table class="tbl_params">
         <colgroup>
@@ -271,7 +316,7 @@
         </tr>
       </table>
     </div>
-    <div class="section">
+    <div class="section bidding">
       <span class="section_lbl">Strategy Params</span>
       <table class="tbl_params">
         <colgroup>
@@ -367,22 +412,22 @@
     </div>
     <div class="section">
       <span class="section_lbl">Deal Info</span>
-      <div class="subsect_pos">
+      <div class="subsect">
         <span class="pos_lbl">Position:</span>
         <table class="pos_layout">
           <tr>
             <td></td>
-            <td><input type="radio" name="player_pos" value="1"{{checked[1]}}></td>
+            <td><input type="radio" name="player_pos" value="1"{{pos_chk[1]}}></td>
             <td></td>
           </tr>
           <tr>
-            <td><input type="radio" name="player_pos" value="0"{{checked[0]}}></td>
+            <td><input type="radio" name="player_pos" value="0"{{pos_chk[0]}}></td>
             <td></td>
-            <td><input type="radio" name="player_pos" value="2"{{checked[2]}}></td>
+            <td><input type="radio" name="player_pos" value="2"{{pos_chk[2]}}></td>
           </tr>
           <tr>
             <td></td>
-            <td><input type="radio" name="player_pos" value="3"{{checked[3]}}></td>
+            <td><input type="radio" name="player_pos" value="3"{{pos_chk[3]}}></td>
             <td></td>
           </tr>
           <tr>
@@ -396,6 +441,7 @@
             <td class="td_lbl">Hand:</td>
             <td>
               {% if hand %}
+              {% if phase_chk[0] %}
               <span class="spn_hand">
                 {% for mycard in hand %}
                 <span class="container">
@@ -409,6 +455,13 @@
                 </span>
                 {% endfor %}
               </span>
+              {% else %}
+              <span class="spn_hand">
+                {% for mycard in hand %}
+                <span class="spn_card">{{mycard.disp}}</span>
+                {% endfor %}
+              </span>
+              {% endif %}
               {% endif %}
             </td>
           </tr>
@@ -416,6 +469,7 @@
             <td class="td_lbl">Turn card:</td>
             <td>
               {% if turn %}
+              {% if phase_chk[0] %}
               <span class="container">
                 <input type="text" name="turn_card" class="inp_card" value="{{turn.idx}}">
                 <span class="spn_card" title="Click to change...">{{turn.disp}}</span>
@@ -425,11 +479,19 @@
                   {% endfor %}
                 </select>
               </span>
+              {% else %}
+              <span class="spn_card">{{turn.disp}}</span>
+              {% endif %}
               {% endif %}
             </td>
           </tr>
         </table>
       </div>
+      {% if deck %}
+      {% for card in deck %}
+      <input type="text" name="deck_{{loop.index0}}" class="inp_card" value="{{card.idx}}">
+      {% endfor %}
+      {% endif %}
     </div>
     <div class="section">
       <button class="submit" value="revert_params" title="{{help_txt['bt_0']}}">Revert Params</button>
@@ -439,7 +501,7 @@
     </div>
   </form>
   {% if bidding %}
-  <div class="section">
+  <div class="section bidding">
     <span class="section_lbl">Bidding Analysis</span>
     <table class="tbl_results">
       <colgroup>
@@ -495,20 +557,22 @@
         <td class="td_num">{{bid.margin}}</td>
         <td class="td_txt">
           {% if bid.bid.suit.idx < 0 %}
-          <span class="spn_pass">pass</span> <span class="spn_suit">{{bid.eval_suit.disp}}</span>
+          <span class="spn_pass">pass</span>
+          <span class="spn_suit">{{bid.eval_suit.disp}}</span>
           {% else %}
           <span class="spn_bid">{{"alone" if bid.bid.alone else "call"}}</span>
-          <span> </span><span class="spn_suit">{{bid.bid.suit.disp}}</span>
+          <span class="spn_suit">{{bid.bid.suit.disp}}</span>
           {% endif %}
         </td>
         <td class="td_num" title="{{base_bid.details}}">{{base_bid.strength}}</td>
         <td class="td_num">{{base_bid.margin}}</td>
         <td class="td_txt">
           {% if base_bid.bid.suit.idx < 0 %}
-          <span class="spn_pass">pass</span> <span class="spn_suit">{{base_bid.eval_suit.disp}}</span>
+          <span class="spn_pass">pass</span>
+          <span class="spn_suit">{{base_bid.eval_suit.disp}}</span>
           {% else %}
           <span class="spn_bid">{{"alone" if base_bid.bid.alone else "call"}}</span>
-          <span> </span><span class="spn_suit">{{base_bid.bid.suit.disp}}</span>
+          <span class="spn_suit">{{base_bid.bid.suit.disp}}</span>
           {% endif %}
         </td>
       </tr>
@@ -543,11 +607,14 @@
        name: "submit_func"
      });
 
-     // strategy section
-     $(".sel_strategy").on('change', function() {
-       var value = $(this).val();
+     // header section
+     $(".header").on('change', function() {
+       var strat = $(".sel_strategy").val();
+       var phase = $(".bid_play input:checked").val();
+       var stratStr = "?strategy=" + (strat ? encodeURIComponent(strat) : '');
+       var phaseStr = "&phase=" + encodeURIComponent(phase);
        var curpage = window.location.origin + window.location.pathname;
-       window.location.href = curpage + "?strategy=" + encodeURIComponent(value);
+       window.location.href = curpage + stratStr + phaseStr;
      });
 
      // deal info section

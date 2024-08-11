@@ -36,7 +36,8 @@ To Do list:
 """
 
 from typing import NamedTuple
-from collections.abc import Hashable, Sequence
+from collections.abc import Hashable, Sequence, Callable
+from enum import Enum
 from numbers import Number
 import os.path
 
@@ -44,9 +45,10 @@ from flask import Flask, request, render_template, abort
 
 from .to_yaml import to_yaml
 from euchplt.core import cfg
-from euchplt.card import ALL_RANKS, Suit, Card, CARDS, get_card, get_deck
+from euchplt.card import ALL_RANKS, Suit, Card, CARDS, Deck, get_card, get_deck
 from euchplt.euchre import Hand, Bid, PASS_BID, DealState
-from euchplt.deal import NUM_PLAYERS
+from euchplt.player import Player
+from euchplt.deal import NUM_PLAYERS, Deal
 from euchplt.strategy import Strategy
 from euchplt.analysis import HandAnalysisSmart
 
@@ -71,6 +73,21 @@ STRATEGY_PATH  = 'euchplt.strategy'
 STRATEGY_CLASS = 'StrategySmart'
 new_strgy_fmt  = "%s (modified)"
 _strategies    = None  # see NOTE in `get_strategies()`
+
+class DealPhase(Enum):
+    """Note that the order of the values here should match the indexes in the `bid_play`
+    element in the template
+    """
+    BIDDING = "Bidding"
+    PLAYING = "Playing"
+
+    @classmethod
+    def is_bidding(cls, phase: int) -> bool:
+        return list(cls)[phase] is cls.BIDDING
+
+    @classmethod
+    def is_playing(cls, phase: int) -> bool:
+        return list(cls)[phase] is cls.PLAYING
 
 def get_strategies(get_all: bool = False) -> list[str]:
     """Get list of relevant strategies (i.e. based on ``StrategySmart``)--includes both
@@ -118,8 +135,10 @@ class Context(NamedTuple):
     Note: we may not use this directly, but at least it serves as a reference
     """
     strategy:     str
+    phase_chk:    list[str]
     player_pos:   int
-    checked:      list[str]
+    pos_chk:      list[str]
+    # bidding context
     anly:         HandAnalysisSmart
     strgy:        Strategy
     coeff:        list[Number]
@@ -127,6 +146,11 @@ class Context(NamedTuple):
     turn:         Card
     bidding:      list[BidInfo]
     base_bidding: list[BidInfo]
+    # playing context
+    rulesets:     dict[str, list[Callable]]
+    deck:         Deck
+    deal:         DealState
+    persist:      list[dict]
     # const members added by `render_app()`
     title:        str
     strategies:   list[str]
@@ -197,28 +221,38 @@ def index():
     """Get the analysis and strategy parameters for the specified strategy (or an empty
     form if ``strategy`` is not specified in the request)
     """
+    deck  = None
+    hand  = None
+    turn  = None
     anly  = None
     strgy = None
     coeff = [''] * 5  # shortcut (okay, hack) to simplify the template
-    hand  = None
-    turn  = None
 
     strategy = request.args.get('strategy')
     if strategy:
-        hand, turn = get_hand()
+        deck = get_deck()
+        hand, turn = get_hand(deck)
         strgy, anly, coeff = get_strgy_comps(strategy, hand)
+    phase = int(request.args.get('phase') or 0)
+    phase_chk = ['', '']
+    phase_chk[phase] = " checked"
 
     context = {
         'strategy':   strategy,
+        'phase_chk':  phase_chk,
         'player_pos': 0 if strategy else -1,
-        'checked':    [" checked", '', '', ''],
+        'pos_chk':    [" checked", '', '', ''],
         'anly':       anly,
         'strgy':      strgy,
         'coeff':      coeff,
         'hand':       hand,
         'turn':       turn,
         'bids':       None,
-        'base_bids':  None
+        'base_bids':  None,
+        'rulesets':   {},
+        'deck':       deck,
+        'deal':       None,
+        'persist':    None
     }
     return render_app(context)
 
@@ -252,11 +286,41 @@ def evaluate(form: dict) -> str:
     return compute(form)
 
 def new_hand(form: dict) -> str:
-    """Generate new hand and turn card, then recompute bidding using current analysis and
+    """Generate new deck (including hand and turn card), then recompute using current
     strategy parameters
     """
-    hand, turn = get_hand()
-    return compute(form, hand=hand, turn=turn)
+    deck = get_deck()
+    hand, turn = get_hand(deck)
+    return compute(form, deck=deck, hand=hand, turn=turn)
+
+def compute(form: dict, **kwargs) -> str:
+    """Dispatch to the compute method for the specified phase
+    """
+    if not (strategy := form.get('strategy')):
+        abort(400, "Strategy not selected")
+    elif strategy not in get_strategies():
+        abort(400, f"Invalid strategy ({strategy}) specified")
+    kwargs['strategy'] = strategy
+
+    phase = int(form.get('phase') or 0)
+    phase_chk = ['', '']
+    phase_chk[phase] = " checked"
+    kwargs['phase_chk'] = phase_chk
+
+    if not (player_pos := form.get('player_pos')):  # note that bool('0') == True
+        abort(400, "Player position not selected")
+    player_pos = int(player_pos)
+    kwargs['player_pos'] = player_pos
+    pos_chk = [''] * 4
+    pos_chk[player_pos] = " checked"
+    kwargs['pos_chk'] = pos_chk
+
+    if DealPhase.is_bidding(phase):
+        return compute_bidding(form, **kwargs)
+    elif DealPhase.is_playing(phase):
+        return compute_playing(form, **kwargs)
+    else:
+        abort(404, f"Invalid phase '{phase}'")
 
 @app.post("/export")
 def save_strategy():
@@ -314,28 +378,31 @@ def render_export(strat_name: str, config_data: dict) -> str:
     }
     return render_template(EXP_TEMPLATE, **context)
 
-def compute(form: dict, **kwargs) -> str:
+####################
+# Bidding Routines #
+####################
+
+def compute_bidding(form: dict, **kwargs) -> str:
     """Compute the hand strength and determine bidding for the current strategy and deal
     context (i.e. hand and turn card)
 
     Will continue using the hand and turn card from ``form`` if not specified in
     ``kwargs``
     """
+    strategy   = kwargs['strategy']
+    phase_chk  = kwargs['phase_chk']
+    player_pos = kwargs['player_pos']
+    pos_chk    = kwargs['pos_chk']
+
+    # REVISIT: we pass the previous deck through to the template, even though hand and
+    # turn card may be unrelated by now (due to position and/or manual card changes)--
+    # perhaps better just to ignore deck in bidding analysis!!!
+    deck:   Deck = kwargs.get('deck')
     hand:   Hand = kwargs.get('hand')
     turn:   Card = kwargs.get('turn')
     revert: bool = bool(kwargs.get('revert', False))
     export: bool = bool(kwargs.get('export', False))
     assert not (revert and export)
-
-    # set and validate `strategy`
-    if not (strategy := form.get('strategy')):
-        abort(400, "Strategy not selected")
-    elif strategy not in get_strategies():
-        abort(400, f"Invalid strategy ({strategy}) specified")
-
-    if not (player_pos := form.get('player_pos')):  # note that bool('0') == True
-        abort(400, "Player position not selected")
-    pos = int(player_pos)
 
     if not hand:
         cards = [get_card(form[f'hand_{n}']) for n in range(5)]
@@ -355,22 +422,25 @@ def compute(form: dict, **kwargs) -> str:
         strat_name = new_strgy_fmt % (strategy)
         return render_export(strat_name, strgy_config)
 
-    bidding = get_bidding(strgy, pos, hand, turn)
-    base_bidding = get_bidding(base_strgy, pos, hand, turn)
-    checked = [''] * 4
-    checked[pos] = " checked"
+    bidding = get_bidding(strgy, player_pos, hand, turn)
+    base_bidding = get_bidding(base_strgy, player_pos, hand, turn)
 
     context = {
-        'strategy':     form['strategy'],
-        'player_pos':   pos,
-        'checked':      checked,
+        'strategy':     strategy,
+        'phase_chk':    phase_chk,
+        'player_pos':   player_pos,
+        'pos_chk':      pos_chk,
         'anly':         anly,
         'strgy':        strgy,
         'coeff':        coeff,
         'hand':         hand,
         'turn':         turn,
         'bidding':      bidding,
-        'base_bidding': base_bidding
+        'base_bidding': base_bidding,
+        'rulesets':     {},
+        'deck':         deck,
+        'deal':         None,
+        'persist':      None
     }
     return render_app(context)
 
@@ -422,13 +492,13 @@ def get_strgy_config(form: dict) -> dict:
 
     return strgy_config
 
-def get_hand() -> tuple[Hand, Card]:
+def get_hand(deck: Deck = None, pos: int = 0) -> tuple[Hand, Card]:
     """Return a new randomly generated hand (sorted for display) and turn card
     """
-    deck = get_deck()
-    cards = deck[:5]
-    turn = deck[20]
-    hand = Hand(sorted(cards, key=disp_key))
+    deck  = deck or get_deck()
+    cards = deck[pos:20:NUM_PLAYERS]
+    turn  = deck[20]
+    hand  = Hand(sorted(cards, key=disp_key))
     return hand, turn
 
 def get_bidding(strgy: Strategy, pos: int, hand: Hand, turn: Card) -> list[BidInfo]:
@@ -516,6 +586,63 @@ def get_details(persist: dict) -> str:
                      "reference)")
 
     return '\n'.join(lines)
+
+####################
+# Playing Routines #
+####################
+
+def compute_playing(form: dict, **kwargs) -> str:
+    """
+    """
+    strategy   = kwargs['strategy']
+    phase_chk  = kwargs['phase_chk']
+    player_pos = kwargs['player_pos']
+    pos_chk    = kwargs['pos_chk']
+
+    deck:   Deck = kwargs.get('deck')
+    revert: bool = bool(kwargs.get('revert', False))
+    export: bool = bool(kwargs.get('export', False))
+    assert not (revert and export)
+
+    if not deck:
+        deck = [get_card(form[f'deck_{n}']) for n in range(24)]
+
+    # I think we can use a single shared strategy here, since there is no state or
+    # individual parameter overrides
+    strat = Strategy.new(strategy)
+
+    players = [Player(f"Player {i}", strat) for i in range(4)]
+    while True:
+        deal = Deal(players, deck)
+        deal.deal_cards()
+        deal.do_bidding()
+        if deal.is_passed():
+            continue
+        deal.play_cards()
+        break
+
+    cards = deal.cards_dealt[player_pos].copy_cards()
+    hand = Hand(sorted(cards, key=disp_key))
+
+    context = {
+        'strategy':     strategy,
+        'phase_chk':    phase_chk,
+        'player_pos':   player_pos,
+        'pos_chk':      pos_chk,
+        'anly':         None,
+        'strgy':        None,
+        'coeff':        [''] * 5,
+        'hand':         hand,
+        'turn':         deal.turn_card,
+        'bids':         None,
+        'base_bids':    None,
+        'rulesets':     strat.ruleset,
+        'deck':         deck,
+        'deal':         deal.deal_state(0),
+        'persist':      deal.player_state
+    }
+    return render_app(context)
+
 
 #########################
 # Content / Metacontent #
