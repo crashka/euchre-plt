@@ -30,8 +30,6 @@ To Do list:
 
   - Configure rulesets for play strategy
   - Highlight params/coeffs that have been changed from the base config
-  - Show more of the underlying computation for hand strength (e.g. individual component
-    scores before coefficient weighting)
   - Convert to single-page app using ajax to update fields/info
 """
 
@@ -46,9 +44,9 @@ from flask import Flask, request, render_template, abort
 from .to_yaml import to_yaml
 from euchplt.core import cfg
 from euchplt.card import ALL_RANKS, Suit, Card, CARDS, Deck, get_card, get_deck
-from euchplt.euchre import Hand, Bid, PASS_BID, DealState
+from euchplt.euchre import Hand, Bid, NULL_BID, PASS_BID, DealState
 from euchplt.player import Player
-from euchplt.deal import NUM_PLAYERS, Deal
+from euchplt.deal import NUM_PLAYERS, DEALER_POS, Deal
 from euchplt.strategy import Strategy, StrategySmart
 from euchplt.analysis import HandAnalysisSmart
 
@@ -144,6 +142,7 @@ class Context(NamedTuple):
     coeff:        list[Number]
     hand:         Hand
     turn:         Card
+    turn_lbl:     str
     bidding:      list[BidInfo]
     base_bidding: list[BidInfo]
     # playing context
@@ -151,6 +150,8 @@ class Context(NamedTuple):
     deck:         Deck
     deal:         DealState
     persist:      list[dict]
+    bid_seq:      list[tuple[str, str]]
+    discard:      Card
     # const members added by `render_app()`
     title:        str
     strategies:   list[str]
@@ -243,21 +244,24 @@ def index():
     phase_chk[phase] = " checked"
 
     context = {
-        'strategy':   strategy,
-        'phase_chk':  phase_chk,
-        'player_pos': 0 if strategy else -1,
-        'pos_chk':    [" checked", '', '', ''],
-        'anly':       anly,
-        'strgy':      strgy,
-        'coeff':      coeff,
-        'hand':       hand,
-        'turn':       turn,
-        'bids':       None,
-        'base_bids':  None,
-        'rulesets':   rulesets,
-        'deck':       deck,
-        'deal':       None,
-        'persist':    None
+        'strategy':     strategy,
+        'phase_chk':    phase_chk,
+        'player_pos':   0 if strategy else -1,
+        'pos_chk':      [" checked", '', '', ''],
+        'anly':         anly,
+        'strgy':        strgy,
+        'coeff':        coeff,
+        'hand':         hand,
+        'turn':         turn,
+        'turn_lbl':     "Turn card",
+        'bidding':      None,
+        'base_bidding': None,
+        'rulesets':     rulesets,
+        'deck':         deck,
+        'deal':         None,
+        'persist':      None,
+        'bid_seq':      None,
+        'discard':      None
     }
     return render_app(context)
 
@@ -440,12 +444,15 @@ def compute_bidding(form: dict, **kwargs) -> str:
         'coeff':        coeff,
         'hand':         hand,
         'turn':         turn,
+        'turn_lbl':     "Turn card",
         'bidding':      bidding,
         'base_bidding': base_bidding,
         'rulesets':     {},
         'deck':         deck,
         'deal':         None,
-        'persist':      None
+        'persist':      None,
+        'bid_seq':      None,
+        'discard':      None
     }
     return render_app(context)
 
@@ -616,17 +623,36 @@ def compute_playing(form: dict, **kwargs) -> str:
     # individual parameter overrides
     strat = Strategy.new(strategy)
 
-    players = [Player(f"Player {i}", strat) for i in range(4)]
+    cards = None
+    player_names = ["West", "North", "East", "South"]
+    players = [Player(player_names[i], strat) for i in range(4)]
     while True:
         deal = Deal(players, deck)
         deal.deal_cards()
         deal.do_bidding()
         if deal.is_passed():
             continue
+        cards = deal.hands[player_pos].copy_cards()
         deal.play_cards()
         break
 
-    cards = deal.cards_dealt[player_pos].copy_cards()
+    bid_seq = []
+    for pos, bid in enumerate(deal.bids):
+        you = " (you)" if (pos % 4) == player_pos else ""
+        alone = " alone" if bid.alone else ""
+        if bid is NULL_BID or (bid.is_defend() and not alone):
+            continue
+        player = deal.players[pos % NUM_PLAYERS].name + you
+        bid_seq.append((player, bid, you))
+
+    if not deal.discard:
+        turn_lbl = "Turned down"
+    elif deal.caller_pos != 3:
+        turn_lbl = "Ordered up"
+    else:
+        turn_lbl = "Picked up"
+
+    assert cards
     hand = Hand(sorted(cards, key=disp_key))
 
     context = {
@@ -639,12 +665,15 @@ def compute_playing(form: dict, **kwargs) -> str:
         'coeff':        [''] * 5,
         'hand':         hand,
         'turn':         deal.turn_card,
-        'bids':         None,
-        'base_bids':    None,
+        'turn_lbl':     turn_lbl,
+        'bidding':      None,
+        'base_bidding': None,
         'rulesets':     strat.ruleset,
         'deck':         deck,
-        'deal':         deal.deal_state(0),
-        'persist':      deal.player_state
+        'deal':         deal.deal_state(player_pos),
+        'persist':      deal.player_state,
+        'bid_seq':      bid_seq,
+        'discard':      deal.discard
     }
     return render_app(context)
 
