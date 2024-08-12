@@ -35,6 +35,7 @@ class _PlayCard:
     valid_plays:     list[Card]
 
     play_plan:       set[PlayPlan]
+    play_log:        dict
     analysis:        PlayAnalysis
     trump_cards:     list[Card]
     singleton_cards: list[Card]
@@ -48,9 +49,12 @@ class _PlayCard:
         if 'play_plan' not in persist:
             persist['play_plan'] = set()
         self.play_plan = persist['play_plan']
+
+        self.play_log = {}
         if 'play_log' not in persist:
-            persist['play_log'] = {}
-        self.play_log = persist['play_log']
+            persist['play_log'] = []
+        persist['play_log'].append(self.play_log)
+        assert len(persist['play_log']) == deal.trick_num
 
         self.analysis        = PlayAnalysis(self.deal)
         self.trump_cards     = self.analysis.trump_cards()
@@ -653,19 +657,19 @@ class StrategySmart(Strategy):
         """
         # pick the appropriate ruleset based on deal context
         if deal.play_seq == 0:
-            ruleset = (self.ruleset['init_lead'] if deal.trick_num == 1
-                       else self.ruleset['subseq_lead'])
+            rs_name = 'init_lead' if deal.trick_num == 1 else 'subseq_lead'
         else:
-            ruleset = (self.ruleset['part_winning'] if deal.partner_winning
-                       else self.ruleset['opp_winning'])
-        assert ruleset
+            rs_name = 'part_winning' if deal.partner_winning else 'opp_winning'
+        ruleset = self.ruleset.get(rs_name)
+        assert ruleset, f"ruleset \"{rs_name}\" does not exist"
 
         player = _PlayCard(deal, trick, valid_plays)
         result = None
         for rule in ruleset:
             result = rule(player)  # `rule` will be a `_PlayCard` method callable
             if result:
-                play_log = deal.player_state['play_log']
+                play_log = deal.player_state['play_log'][-1]
+                play_log['ruleset'] = rs_name
                 play_log['rule'] = rule
                 log.debug(play_log.get('reason'))
                 break

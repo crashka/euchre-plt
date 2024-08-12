@@ -158,6 +158,20 @@
    .bids_pos {
      width: 5.5rem;
    }
+   .sel_trick {
+     display: block;
+   }
+   .sel_trick label {
+     margin-left: 0.7rem;
+   }
+   .tricks div {
+     display: none;
+   }
+   {% for idx in range(5) %}
+   #trick_{{idx}} {
+     display: {{"block;" if trick_chk[idx] else "none;"}}
+   }
+   {% endfor %}
    button[value="evaluate"],
    button[value="new_hand"] {
      font-weight: bolder;
@@ -196,8 +210,8 @@
         {% endif %}
       </select>
       <span class="bid_play">
-        <label>Bidding:<input type="radio" name="phase" value="0"{{phase_chk[0]}}></td></label>
-        <label>Playing:<input type="radio" name="phase" value="1"{{phase_chk[1]}}></td></label>
+        <label>Bidding:<input type="radio" name="phase" value="0"{{phase_chk[0]}}></label>
+        <label>Playing:<input type="radio" name="phase" value="1"{{phase_chk[1]}}></label>
       </span>
     </div>
     <div class="section playing">
@@ -466,6 +480,10 @@
           </tr>
         </table>
         <table class="deal_info">
+          <colgroup>
+            <col style="width: 8rem;">
+            <col style="width: 15rem;">
+          </colgroup>
           <tr>
             <td class="td_lbl">Hand:</td>
             <td>
@@ -530,6 +548,7 @@
             <colgroup>
               <col class="bids_pos">
               <col>
+              <col>
             </colgroup>
             {% for bid in bid_seq %}
             <tr>
@@ -544,6 +563,7 @@
                 <span class="spn_suit">{{bid[1].suit.disp}}</span>
                 {% endif %}
               </td>
+              <td>{{you}}</td>
             </tr>
             {% endfor %}
           </table>
@@ -562,6 +582,48 @@
       <button class="submit" value="evaluate" title="{{help_txt['bt_2']}}">Evaluate Hand</button>
       <button class="submit" value="new_hand" title="{{help_txt['bt_3']}}">Get New Hand</button>
     </div>
+    {% if play_seq %}
+    <div class="section playing">
+      <span class="section_lbl">Playing Analysis</span>
+      <div class ="subsect tricks">
+        <span class="sel_trick">
+          Trick:
+          {% for idx in range(5) %}
+          {% set checked = trick_chk[idx] %}
+          <label>{{idx + 1}}<input type="radio" name="trick" value="{{idx}}"{{checked}}></label>
+          {% endfor %}
+        </span>
+        {% for trick_seq in play_seq %}
+        <div class="subsect" id="trick_{{loop.index0}}">
+          <span style="display: block;">
+            {% set my_hand = seq_hands[loop.index0] %}
+            Your hand ({{player.name}}):
+            {% for mycard in my_hand %}
+            <span class="spn_card">{{mycard.disp}}</span>
+            {% endfor %}
+          </span>
+          <span style="display: block;">
+            Lead card ({{trick_seq[0][0]}}):
+            <span class="spn_card">{{trick_seq[0][1]}}</span>
+          </span>
+          <table class="subsect">
+            {% for card_play in trick_seq %}
+            <tr>
+              <td>{{card_play[0]}}</td>
+              <td>{{card_play[2]}}</td>
+              <td>
+                <span class="spn_card">{{card_play[1]}}</span>
+              </td>
+              <td>{{card_play[3]}}</td>
+              <td>{{card_play[4]}}</td>
+            </tr>
+            {% endfor %}
+          </table>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}  {# play_seq #}
   </form>
   {% if bidding %}
   <div class="section bidding">
@@ -711,6 +773,14 @@
        var popup_pos = "'width=880, height=610, top=220, left=300'"
        var exp_popup = "window.open(null, 'export_popup', " + popup_pos + ");"
        $("form").attr({target: 'export_popup', onsubmit: exp_popup});
+     });
+
+     // playing section
+     $(".sel_trick input").on('change', function() {
+       var val = $(this).val();
+       var trick_selector = "#trick_" + val;
+       $(".tricks div").css('display', 'none');
+       $(trick_selector).css('display', 'block');
      });
    });
   </script>

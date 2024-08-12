@@ -150,7 +150,10 @@ class Context(NamedTuple):
     deck:         Deck
     deal:         DealState
     persist:      list[dict]
-    bid_seq:      list[tuple[str, str]]
+    bid_seq:      list[tuple[str, ...]]
+    play_seq:     list[tuple[str, ...]]
+    seq_hands:    list[Deck]
+    trick_chk:    list[str]
     discard:      Card
     # const members added by `render_app()`
     title:        str
@@ -159,14 +162,16 @@ class Context(NamedTuple):
     help_txt:     dict[str, str]
     ref_links:    dict[str, str]
 
-# some random convenience shortcuts
+# some random convenience shortcuts (and hacks)
 StrgyComps = tuple[Strategy, HandAnalysisSmart, list[Number]]
-NULL_CARD  = Card(-1, None, None, '', '', -1, -1)  # hacky
+NULL_COEFF = [''] * 5  # to simplify the template
+NULL_CARD  = Card(-1, None, None, '', '', -1, -1)  # this is a hack!
 NULL_HAND  = Hand([NULL_CARD] * 5)
 PASSES     = [PASS_BID] * 8
 NONES      = [None] * 10
 
-DUMMY_RULESETS = {name: [None] * 7 for name in StrategySmart.RULESETS}
+MAX_RULESET = 7
+DUMMY_RULESETS = {name: [None] * MAX_RULESET for name in StrategySmart.RULESETS}
 
 FLOAT_PREC = 2
 
@@ -183,7 +188,7 @@ def disp_key(card: Card) -> int:
     """Return sort key to use for displaying hands (alternate suit colors)
     """
     # Note: it's kind of wrong to use ``rank.idx`` here, but our cheeky way of justifying
-    # is using ``len(ALL_RANKS)`` as the offset multiplier (rather than just hardwiring
+    # is to use ``len(ALL_RANKS)`` as the offset multiplier (rather than just hardwiring
     # 10, say, which is what most normal people would do)
     return card.rank.idx + disp_suit_offset[card.suit.idx]
 
@@ -229,8 +234,8 @@ def index():
     turn     = None
     anly     = None
     strgy    = None
+    coeff    = NULL_COEFF
     rulesets = DUMMY_RULESETS
-    coeff    = [''] * 5  # shortcut (okay, hack) to simplify the template
 
     strategy = request.args.get('strategy')
     if strategy:
@@ -247,7 +252,7 @@ def index():
         'strategy':     strategy,
         'phase_chk':    phase_chk,
         'player_pos':   0 if strategy else -1,
-        'pos_chk':      [" checked", '', '', ''],
+        'pos_chk':      [" checked"] + [''] * 3,
         'anly':         anly,
         'strgy':        strgy,
         'coeff':        coeff,
@@ -261,6 +266,9 @@ def index():
         'deal':         None,
         'persist':      None,
         'bid_seq':      None,
+        'play_seq':     None,
+        'seq_hands':    None,
+        'trick_chk':    [" checked"] + [''] * 4,
         'discard':      None
     }
     return render_app(context)
@@ -323,6 +331,11 @@ def compute(form: dict, **kwargs) -> str:
     pos_chk = [''] * 4
     pos_chk[player_pos] = " checked"
     kwargs['pos_chk'] = pos_chk
+
+    trick = int(form.get('trick') or 0)
+    trick_chk = [''] * 5
+    trick_chk[trick] = " checked"
+    kwargs['trick_chk'] = trick_chk
 
     if DealPhase.is_bidding(phase):
         return compute_bidding(form, **kwargs)
@@ -402,6 +415,7 @@ def compute_bidding(form: dict, **kwargs) -> str:
     phase_chk  = kwargs['phase_chk']
     player_pos = kwargs['player_pos']
     pos_chk    = kwargs['pos_chk']
+    trick_chk  = kwargs['trick_chk']
 
     # REVISIT: we pass the previous deck through to the template, even though hand and
     # turn card may be unrelated by now (due to position and/or manual card changes)--
@@ -452,6 +466,9 @@ def compute_bidding(form: dict, **kwargs) -> str:
         'deal':         None,
         'persist':      None,
         'bid_seq':      None,
+        'play_seq':     None,
+        'seq_hands':    None,
+        'trick_chk':    trick_chk,
         'discard':      None
     }
     return render_app(context)
@@ -610,6 +627,7 @@ def compute_playing(form: dict, **kwargs) -> str:
     phase_chk  = kwargs['phase_chk']
     player_pos = kwargs['player_pos']
     pos_chk    = kwargs['pos_chk']
+    trick_chk  = kwargs['trick_chk']
 
     deck:   Deck = kwargs.get('deck')
     revert: bool = bool(kwargs.get('revert', False))
@@ -632,9 +650,12 @@ def compute_playing(form: dict, **kwargs) -> str:
         deal.do_bidding()
         if deal.is_passed():
             continue
-        cards = deal.hands[player_pos].copy_cards()
+        mycards = deal.hands[player_pos].copy_cards()
         deal.play_cards()
         break
+
+    assert mycards
+    hand = Hand(sorted(mycards, key=disp_key))
 
     bid_seq = []
     for pos, bid in enumerate(deal.bids):
@@ -642,8 +663,26 @@ def compute_playing(form: dict, **kwargs) -> str:
         alone = " alone" if bid.alone else ""
         if bid is NULL_BID or (bid.is_defend() and not alone):
             continue
-        player = deal.players[pos % NUM_PLAYERS].name + you
+        player = deal.players[pos % NUM_PLAYERS].name
         bid_seq.append((player, bid, you))
+
+    play_seq = []
+    seq_hands = []
+    for idx, trick in enumerate(deal.tricks):
+        trick_seq = []
+        cards = deal.played_by_pos[player_pos].copy_cards()[idx:]
+        cards.sort(key=lambda c: c.sortkey)
+        seq_hands.append(Hand(cards))
+        for play in trick.plays:
+            pos = play[0]
+            you = " (you)" if pos == player_pos else ""
+            win = " (win)" if trick.winning_pos == pos else ""
+            player = deal.players[pos].name
+            play_log = deal.player_state[pos]['play_log'][idx]
+            rule = f"{play_log['ruleset']}: {play_log['rule'].__name__}"
+            analysis = f"{play_log['reason']} [{rule}]"
+            trick_seq.append((player, play[1], you, win, analysis))
+        play_seq.append(trick_seq)
 
     if not deal.discard:
         turn_lbl = "Turned down"
@@ -652,9 +691,6 @@ def compute_playing(form: dict, **kwargs) -> str:
     else:
         turn_lbl = "Picked up"
 
-    assert cards
-    hand = Hand(sorted(cards, key=disp_key))
-
     context = {
         'strategy':     strategy,
         'phase_chk':    phase_chk,
@@ -662,7 +698,7 @@ def compute_playing(form: dict, **kwargs) -> str:
         'pos_chk':      pos_chk,
         'anly':         None,
         'strgy':        None,
-        'coeff':        [''] * 5,
+        'coeff':        NULL_COEFF,
         'hand':         hand,
         'turn':         deal.turn_card,
         'turn_lbl':     turn_lbl,
@@ -670,9 +706,13 @@ def compute_playing(form: dict, **kwargs) -> str:
         'base_bidding': None,
         'rulesets':     strat.ruleset,
         'deck':         deck,
+        'player':       deal.players[player_pos],
         'deal':         deal.deal_state(player_pos),
         'persist':      deal.player_state,
         'bid_seq':      bid_seq,
+        'play_seq':     play_seq,
+        'seq_hands':    seq_hands,
+        'trick_chk':    trick_chk,
         'discard':      deal.discard
     }
     return render_app(context)
