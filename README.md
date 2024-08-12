@@ -125,6 +125,9 @@ Functions/usage:
 Command line arguments often override the values defined in the config file (which, in
 turn, often override default values hardwired into the code, e.g. `DFLT_MATCH_GAMES = 2`).
 
+**UPDATE**: starting work on a new [tournament_runner](apps#tournament-runner) app as a
+nicer alternative to the command line interface.
+
 ### Tournament Definitions
 
 Here is the definition for the `"demo"` tournament in the

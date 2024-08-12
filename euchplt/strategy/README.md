@@ -83,7 +83,8 @@ Example parameter values for bidding:
 
 Brief description of bid parameters:
 
-- `hand_analysis` - override base config parameters for `HandAnalysisSmart`
+- `hand_analysis` - override base config parameters for
+  [`HandAnalysisSmart`](../analysis#handanalysissmart)
 - `turn_card_value` - value for turn card, indexed by rank (9-R, e.g. A = 30, above)
 - `turn_card_coeff` - multiplier for `turn_card_value`, indexed by seat position
   (product to be added to hand strength)
@@ -98,6 +99,8 @@ FUTURE: there is an opportunity to build a framework for optimizing the various
 parameters, either in an absolute sense, or possibly relative to different opponent
 profiles.  In the mean time, see `tune_strategy_smart()` as a tool to aid in manual
 tuning.
+
+UPDATE: see new [`smart_tuner`](../../apps#smart-tuner) tool.
 
 #### Playing
 
