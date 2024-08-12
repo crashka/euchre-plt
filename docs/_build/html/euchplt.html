@@ -113,6 +113,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#euchplt.deal.Deal"><code class="docutils literal notranslate"><span class="pre">Deal</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.deal.Deal.__init__"><code class="docutils literal notranslate"><span class="pre">Deal.__init__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.deal.Deal.deal_state"><code class="docutils literal notranslate"><span class="pre">Deal.deal_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.deal.Deal.total_tricks"><code class="docutils literal notranslate"><span class="pre">Deal.total_tricks</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.deal.Deal.player_cards"><code class="docutils literal notranslate"><span class="pre">Deal.player_cards</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.deal.Deal.deal_phase"><code class="docutils literal notranslate"><span class="pre">Deal.deal_phase</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.deal.Deal.is_passed"><code class="docutils literal notranslate"><span class="pre">Deal.is_passed()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.deal.Deal.valid_plays"><code class="docutils literal notranslate"><span class="pre">Deal.valid_plays()</span></code></a></li>
@@ -177,17 +179,22 @@
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.tabulate_tournament"><code class="docutils literal notranslate"><span class="pre">Tournament.tabulate_tournament()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.score_key"><code class="docutils literal notranslate"><span class="pre">Tournament.score_key()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.set_winner"><code class="docutils literal notranslate"><span class="pre">Tournament.set_winner()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.set_lb_base"><code class="docutils literal notranslate"><span class="pre">Tournament.set_lb_base()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.lb_key"><code class="docutils literal notranslate"><span class="pre">Tournament.lb_key()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.get_leaderboard"><code class="docutils literal notranslate"><span class="pre">Tournament.get_leaderboard()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.play_match"><code class="docutils literal notranslate"><span class="pre">Tournament.play_match()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.play"><code class="docutils literal notranslate"><span class="pre">Tournament.play()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.set_lb_base"><code class="docutils literal notranslate"><span class="pre">Tournament.set_lb_base()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.set_lb_prev"><code class="docutils literal notranslate"><span class="pre">Tournament.set_lb_prev()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.lb_key"><code class="docutils literal notranslate"><span class="pre">Tournament.lb_key()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.get_leaderboard"><code class="docutils literal notranslate"><span class="pre">Tournament.get_leaderboard()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.print"><code class="docutils literal notranslate"><span class="pre">Tournament.print()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.print_score"><code class="docutils literal notranslate"><span class="pre">Tournament.print_score()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.print_stats"><code class="docutils literal notranslate"><span class="pre">Tournament.print_stats()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.print_lb"><code class="docutils literal notranslate"><span class="pre">Tournament.print_lb()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.stats_header"><code class="docutils literal notranslate"><span class="pre">Tournament.stats_header()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.iter_stats"><code class="docutils literal notranslate"><span class="pre">Tournament.iter_stats()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.comp_stats_header"><code class="docutils literal notranslate"><span class="pre">Tournament.comp_stats_header()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.iter_comp_stats"><code class="docutils literal notranslate"><span class="pre">Tournament.iter_comp_stats()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.team_stats_header"><code class="docutils literal notranslate"><span class="pre">Tournament.team_stats_header()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.tournament.Tournament.iter_team_stats"><code class="docutils literal notranslate"><span class="pre">Tournament.iter_team_stats()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#euchplt.tournament.HeadToHead"><code class="docutils literal notranslate"><span class="pre">HeadToHead</span></code></a></li>
@@ -446,6 +453,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#euchplt.utils.rankdata"><code class="docutils literal notranslate"><span class="pre">rankdata()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#euchplt.utils.typecast"><code class="docutils literal notranslate"><span class="pre">typecast()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#euchplt.utils.parse_argv"><code class="docutils literal notranslate"><span class="pre">parse_argv()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#euchplt.utils.prettyprint"><code class="docutils literal notranslate"><span class="pre">prettyprint()</span></code></a></li>
 </ul>
@@ -492,18 +500,18 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="euchplt.player.Player">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.player.</span></span><span class="sig-name descname"><span class="pre">Player</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.strategy.Strategy" title="euchplt.strategy.base.Strategy"><span class="pre">Strategy</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.player.Player" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.player.</span></span><span class="sig-name descname"><span class="pre">Player</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.strategy.Strategy" title="euchplt.strategy.base.Strategy"><span class="pre">Strategy</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.player.Player" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>A player maybe be defined by an entry in the config file (identified by
-<cite>name</cite>); or if an instantiated <cite>strategy</cite> object, we will create an ad hoc
-player (in which case <cite>name</cite> is just a label with no additional meaning or
-association)</p>
-<p>For now, we just delegate calls to the Strategy class.  LATER: we probably
-need to rethink the design of this class (perhaps if/when we add human and/or
-remote players)!!!</p>
+<p>A player maybe be defined by an entry in the config file (identified by <code class="docutils literal notranslate"><span class="pre">name</span></code>)
+or by a specified strategy (either an instantiated <code class="docutils literal notranslate"><span class="pre">Strategy</span></code> object or a configured
+strategy name)–in the latter case (strategy specification), the player name needs to
+unique across instantiations (though we are not currently enforcing at this level).</p>
+<p>For now, we just delegate calls to the <code class="docutils literal notranslate"><span class="pre">Strategy</span></code> class.  LATER: we probably need to
+rethink the design of this class (perhaps if/when we add human and/or remote
+players)!!!</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.player.Player.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.strategy.Strategy" title="euchplt.strategy.base.Strategy"><span class="pre">Strategy</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.player.Player.__init__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.strategy.Strategy" title="euchplt.strategy.base.Strategy"><span class="pre">Strategy</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.player.Player.__init__" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -544,13 +552,13 @@ bowers are used as part of the analysis)</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="euchplt.player.PlayerHuman">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.player.</span></span><span class="sig-name descname"><span class="pre">PlayerHuman</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.strategy.Strategy" title="euchplt.strategy.base.Strategy"><span class="pre">Strategy</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.player.PlayerHuman" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.player.</span></span><span class="sig-name descname"><span class="pre">PlayerHuman</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.strategy.Strategy" title="euchplt.strategy.base.Strategy"><span class="pre">Strategy</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.player.PlayerHuman" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#euchplt.player.Player" title="euchplt.player.Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="euchplt.player.PlayerRemote">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.player.</span></span><span class="sig-name descname"><span class="pre">PlayerRemote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.strategy.Strategy" title="euchplt.strategy.base.Strategy"><span class="pre">Strategy</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.player.PlayerRemote" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.player.</span></span><span class="sig-name descname"><span class="pre">PlayerRemote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.strategy.Strategy" title="euchplt.strategy.base.Strategy"><span class="pre">Strategy</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.player.PlayerRemote" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#euchplt.player.Player" title="euchplt.player.Player"><code class="xref py py-class docutils literal notranslate"><span class="pre">Player</span></code></a></p>
 </dd></dl>
 
@@ -559,14 +567,14 @@ bowers are used as part of the analysis)</p>
 <span id="euchplt-team-team"></span><h2><a class="reference internal" href="#module-euchplt.team" title="euchplt.team"><code class="xref py py-mod docutils literal notranslate"><span class="pre">euchplt.team</span></code></a> – Team<a class="headerlink" href="#module-euchplt.team" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="euchplt.team.Team">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.team.</span></span><span class="sig-name descname"><span class="pre">Team</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">team_def</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.player.Player" title="euchplt.player.Player"><span class="pre">Player</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.team.Team" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.team.</span></span><span class="sig-name descname"><span class="pre">Team</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">players</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.player.Player" title="euchplt.player.Player"><span class="pre">Player</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.team.Team" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>A team can be defined by an entry in the config file; or by an iterable (with
-two entries) of instantiated <cite>Player</cite> objects, in which case a team name will be
-generated from the player names</p>
+<p>A team can be defined by an entry in the config file; or by an iterable (with two
+entries) of instantiated <code class="docutils literal notranslate"><span class="pre">Player</span></code> objects, in which case a team name will be
+generated from the player names (if not specified)</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.team.Team.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">team_def</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.player.Player" title="euchplt.player.Player"><span class="pre">Player</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.team.Team.__init__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">players</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.player.Player" title="euchplt.player.Player"><span class="pre">Player</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.team.Team.__init__" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -799,6 +807,18 @@ specified position, but we can optimize LATER!!!</p>
 </dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="euchplt.deal.Deal.total_tricks">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">total_tricks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#euchplt.deal.Deal.total_tricks" title="Link to this definition"></a></dt>
+<dd><p>Return total number of tricks for the deal</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="euchplt.deal.Deal.player_cards">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">player_cards</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#euchplt.deal.Deal.player_cards" title="Link to this definition"></a></dt>
+<dd><p>Number of cards to be dealt to players (i.e. excludes buries and turn card)</p>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="euchplt.deal.Deal.deal_phase">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">deal_phase</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#euchplt.deal.DealPhase" title="euchplt.deal.DealPhase"><span class="pre">DealPhase</span></a></em><a class="headerlink" href="#euchplt.deal.Deal.deal_phase" title="Link to this definition"></a></dt>
 <dd></dd></dl>
@@ -888,6 +908,10 @@ for individual tricks</p>
 <dt class="sig sig-object py" id="euchplt.game.Game">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.game.</span></span><span class="sig-name descname"><span class="pre">Game</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">teams</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.team.Team" title="euchplt.team.Team"><span class="pre">Team</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.game.Game" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Note that <code class="docutils literal notranslate"><span class="pre">game_points</span></code> (number of points needed to win the game) can be
+specified in the constructor, but I actually think the default value of <code class="docutils literal notranslate"><span class="pre">10</span></code> is a
+sacred number (in its relationship to the scoring mechanism) that we never want to
+override</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.game.Game.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">teams</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.team.Team" title="euchplt.team.Team"><span class="pre">Team</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.game.Game.__init__" title="Link to this definition"></a></dt>
@@ -911,7 +935,8 @@ for individual tricks</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.game.Game.play">
 <span class="sig-name descname"><span class="pre">play</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.game.Game.play" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Play sequence of deals until <code class="docutils literal notranslate"><span class="pre">self.game_points</span></code> is reached by one team</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.game.Game.print">
@@ -969,7 +994,13 @@ for individual deals, as well as printing game stats</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.match.Match.play">
 <span class="sig-name descname"><span class="pre">play</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.match.Match.play" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Play a sequence of games until <code class="docutils literal notranslate"><span class="pre">self.match_games</span></code> is reached by one team; we
+are currently re-flipping for dealer for each game (is this the right thing to
+do???)</p>
+<p>Note that the <code class="docutils literal notranslate"><span class="pre">Game</span></code> constructor supports specifying the index of the dealer, in
+case we wanted to continue the deal sequence between games (i.e. we would pass in
+the previous <code class="docutils literal notranslate"><span class="pre">game.dealer</span></code>)</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.match.Match.print">
@@ -1133,9 +1164,30 @@ are determined in a way other than match wins</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="euchplt.tournament.Tournament.play_match">
+<span class="sig-name descname"><span class="pre">play_match</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matchup</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.tournament.Tournament.play_match" title="Link to this definition"></a></dt>
+<dd><p>Uniform/common method for conducting a match within the tournament</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.tournament.Tournament.play">
+<span class="sig-name descname"><span class="pre">play</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.tournament.Tournament.play" title="Link to this definition"></a></dt>
+<dd><p>Abstract method to be implemented by all subclasses, who should
+then invoke <cite>play_match()</cite> to conduct each of the matchups created
+for the tournament type</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="euchplt.tournament.Tournament.set_lb_base">
 <span class="sig-name descname"><span class="pre">set_lb_base</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lb_current</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.tournament.LBStat" title="euchplt.tournament.LBStat"><span class="pre">LBStat</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Number</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.tournament.Tournament.set_lb_base" title="Link to this definition"></a></dt>
-<dd><p>Set baseline for leaderboard, for tracking movement between updates</p>
+<dd><p>Set baseline for leaderboard, for tracking movement between resets
+(e.g. elimination events, for RoundRobin)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.tournament.Tournament.set_lb_prev">
+<span class="sig-name descname"><span class="pre">set_lb_prev</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lb_current</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.tournament.LBStat" title="euchplt.tournament.LBStat"><span class="pre">LBStat</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Number</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.tournament.Tournament.set_lb_prev" title="Link to this definition"></a></dt>
+<dd><p>Set pass-level baseline for leaderboard, for tracking movement between updates</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1153,35 +1205,21 @@ of <cite>LBStat</cite> members.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="euchplt.tournament.Tournament.play_match">
-<span class="sig-name descname"><span class="pre">play_match</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matchup</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.tournament.Tournament.play_match" title="Link to this definition"></a></dt>
-<dd><p>Uniform/common method for conducting a match within the tournament</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="euchplt.tournament.Tournament.play">
-<span class="sig-name descname"><span class="pre">play</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.tournament.Tournament.play" title="Link to this definition"></a></dt>
-<dd><p>Abstract method to be implemented by all subclasses, who should
-then invoke <cite>play_match()</cite> to conduct each of the matchups created
-for the tournament type</p>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="euchplt.tournament.Tournament.print">
 <span class="sig-name descname"><span class="pre">print</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file:</span> <span class="pre">~typing.TextIO</span> <span class="pre">=</span> <span class="pre">&lt;_io.TextIOWrapper</span> <span class="pre">name='&lt;stdout&gt;'</span> <span class="pre">mode='w'</span> <span class="pre">encoding='utf-8'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.tournament.Tournament.print" title="Link to this definition"></a></dt>
-<dd><p>This method can be overridden by subclasses to add additional information,
-but parent function should be invoked at the top</p>
+<dd><p>This method can be overridden by subclasses to add additional information, but
+this parent function should be invoked (either at the top or the bottom)</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.tournament.Tournament.print_score">
-<span class="sig-name descname"><span class="pre">print_score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file:</span> <span class="pre">~typing.TextIO</span> <span class="pre">=</span> <span class="pre">&lt;_io.TextIOWrapper</span> <span class="pre">name='&lt;stdout&gt;'</span> <span class="pre">mode='w'</span> <span class="pre">encoding='utf-8'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vs_opp:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.tournament.Tournament.print_score" title="Link to this definition"></a></dt>
-<dd><p>Include record against all other teams, if <cite>vs_opp</cite> is specified</p>
+<span class="sig-name descname"><span class="pre">print_score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file:</span> <span class="pre">~typing.TextIO</span> <span class="pre">=</span> <span class="pre">&lt;_io.TextIOWrapper</span> <span class="pre">name='&lt;stdout&gt;'</span> <span class="pre">mode='w'</span> <span class="pre">encoding='utf-8'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opp_details:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.tournament.Tournament.print_score" title="Link to this definition"></a></dt>
+<dd><p>Include record against all other teams, if <code class="docutils literal notranslate"><span class="pre">opp_details</span></code> is specified</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.tournament.Tournament.print_stats">
-<span class="sig-name descname"><span class="pre">print_stats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file:</span> <span class="pre">~typing.TextIO</span> <span class="pre">=</span> <span class="pre">&lt;_io.TextIOWrapper</span> <span class="pre">name='&lt;stdout&gt;'</span> <span class="pre">mode='w'</span> <span class="pre">encoding='utf-8'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by_pos:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.tournament.Tournament.print_stats" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">print_stats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file:</span> <span class="pre">~typing.TextIO</span> <span class="pre">=</span> <span class="pre">&lt;_io.TextIOWrapper</span> <span class="pre">name='&lt;stdout&gt;'</span> <span class="pre">mode='w'</span> <span class="pre">encoding='utf-8'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos_details:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.tournament.Tournament.print_stats" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -1193,13 +1231,43 @@ but parent function should be invoked at the top</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.tournament.Tournament.stats_header">
 <span class="sig-name descname"><span class="pre">stats_header</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.tournament.Tournament.stats_header" title="Link to this definition"></a></dt>
-<dd><p>Header fields must correspond to the keys for <cite>iter_stats()</cite> yield</p>
+<dd><p>Header fields used as the keys for the <code class="docutils literal notranslate"><span class="pre">iter_stats()</span></code> generator; the field
+name for stat name is <code class="docutils literal notranslate"><span class="pre">'Statistic'</span></code></p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.tournament.Tournament.iter_stats">
-<span class="sig-name descname"><span class="pre">iter_stats</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Number</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.tournament.Tournament.iter_stats" title="Link to this definition"></a></dt>
-<dd><p>Keys for stats output correspond to the field names returned by <cite>stats_header()</cite></p>
+<span class="sig-name descname"><span class="pre">iter_stats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos_details</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Number</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.tournament.Tournament.iter_stats" title="Link to this definition"></a></dt>
+<dd><p>Generator for base stats, yields a dict of stat values indexed by team name;
+the key for stat name is <code class="docutils literal notranslate"><span class="pre">'Base</span> <span class="pre">Stat'</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.tournament.Tournament.comp_stats_header">
+<span class="sig-name descname"><span class="pre">comp_stats_header</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.tournament.Tournament.comp_stats_header" title="Link to this definition"></a></dt>
+<dd><p>Header fields used as the keys for the <code class="docutils literal notranslate"><span class="pre">iter_comp_stats()</span></code> generator; the
+field name for stat name is <code class="docutils literal notranslate"><span class="pre">'Computed</span> <span class="pre">Stat'</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.tournament.Tournament.iter_comp_stats">
+<span class="sig-name descname"><span class="pre">iter_comp_stats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos_details</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Number</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.tournament.Tournament.iter_comp_stats" title="Link to this definition"></a></dt>
+<dd><p>Generator for computed stats, yields a dict of stat values indexed by team
+name; the key for stat name is <code class="docutils literal notranslate"><span class="pre">'Statistic'</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.tournament.Tournament.team_stats_header">
+<span class="sig-name descname"><span class="pre">team_stats_header</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos_details</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.tournament.Tournament.team_stats_header" title="Link to this definition"></a></dt>
+<dd><p>Header fields used as the keys for the <cite>iter_team_stats()</cite> generator; the field
+name for team name is <code class="docutils literal notranslate"><span class="pre">'Team'</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.tournament.Tournament.iter_team_stats">
+<span class="sig-name descname"><span class="pre">iter_team_stats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos_details</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Number</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.tournament.Tournament.iter_team_stats" title="Link to this definition"></a></dt>
+<dd><p>Generator for iterating over teams and returning a dict of stats, by name; the
+key for team name is <code class="docutils literal notranslate"><span class="pre">'Team'</span></code></p>
 </dd></dl>
 
 </dd></dl>
@@ -1969,7 +2037,8 @@ replaced by BOWER cards (rank of <code class="docutils literal notranslate"><spa
 <dd><p>Return the overall hand strength score given a trump suit context, based on
 parameters and multiplier coefficients specified for the instance (base config
 plus constructor overrides).  If <code class="docutils literal notranslate"><span class="pre">comp_vals</span></code> is specified (as a dict), the
-contribution from the individual components will be written to it.</p>
+contribution from the individual components will be written to it as a
+StrengthTuple (see above), indexed by score name.</p>
 </dd></dl>
 
 </dd></dl>
@@ -2212,12 +2281,13 @@ visible externally.  But this is better than polluting the <code class="docutils
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.strategy.StrategySmart.get_turn_strength">
-<span class="sig-name descname"><span class="pre">get_turn_strength</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bid_pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategySmart.get_turn_strength" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_turn_strength</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bid_pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.strategy.StrategySmart.get_turn_strength" title="Link to this definition"></a></dt>
 <dd><p>Get the strength contribution (or penalty!) for the turn card (scaled to the
 overall hand strength), given the current deal context.  Value is positive or
 negative depending on whether partner or opponent (respectively) is the dealer.
 Note that this call is only valid for first round bidding from a non-dealer
 position.</p>
+<p>Return value is a tuple of (strength, raw value, and coefficient).</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2730,13 +2800,13 @@ within the data structure (failed assert on validation error)</p>
     <span class="n">my_param</span><span class="p">:</span> <span class="n">value</span>
 <span class="n">alt_profile</span><span class="p">:</span>
   <span class="n">my_section</span><span class="p">:</span>
-    <span class="n">my_param</span><span class="p">:</span> <span class="n">alt_value</span>  <span class="c1"># overwrites value from `default` profile</span>
+    <span class="n">my_param</span><span class="p">:</span> <span class="n">alt_value</span>  <span class="c1"># overwrites value from ``default`` profile</span>
 </pre></div>
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.utils.Config.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">files</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.utils.Config.__init__" title="Link to this definition"></a></dt>
-<dd><p>Note that <cite>files</cite> can be specified as an iterable, or a comma-separated
+<dd><p>Note that <code class="docutils literal notranslate"><span class="pre">files</span></code> can be specified as an iterable, or a comma-separated
 list of file names (no spaces)</p>
 </dd></dl>
 
@@ -2747,16 +2817,17 @@ list of file names (no spaces)</p>
 level (i.e. direct children within a section).  Deeper merging within these
 top-level parameters is not supported.  Note that additional config files
 can be loaded at any time.  A config file that has already been loaded will
-be politely skipped, with a <cite>False</cite> return value being the only rebuke.</p>
+be politely skipped, with a <code class="docutils literal notranslate"><span class="pre">False</span></code> return value being the only rebuke.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.utils.Config.config">
-<span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">profile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#euchplt.utils.Config.config" title="Link to this definition"></a></dt>
-<dd><p>Get parameters for configuration section (empty dict is returned if
-section is not found).  If <cite>profile</cite> is specified, the parameter values
-for that profile override values from the ‘default’ profile (which must
-exist).</p>
+<span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">profile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">safe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#euchplt.utils.Config.config" title="Link to this definition"></a></dt>
+<dd><p>Get parameters for configuration section (empty dict is returned if section is
+not found).  If <code class="docutils literal notranslate"><span class="pre">profile</span></code> is specified, the parameter values for that profile
+override values from the <cite>‘default’</cite> profile (which must exist).  If the <code class="docutils literal notranslate"><span class="pre">safe</span></code>
+flag is specified, a deep copy is returned so the caller will not inadvertently
+change the cached config.</p>
 </dd></dl>
 
 </dd></dl>
@@ -2786,20 +2857,27 @@ channel, or store in database</p>
 <dd><p>Standalone implementation of scipy.stats.rankdata, adapted from
 <a class="reference external" href="https://stackoverflow.com/a/3071441">https://stackoverflow.com/a/3071441</a>, with the following added:</p>
 <ul class="simple">
-<li><p><cite>method</cite> arg, with support for ‘average’ (default) and ‘min’</p></li>
-<li><p><cite>reverse</cite> flag, with <cite>True</cite> (default) signifying descending sort order
-(i.e. the highest value in <cite>a</cite> has a rank of 1, as opposed to <cite>len(a)</cite>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">method</span></code> arg, with support for ‘average’ (default) and ‘min’</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reverse</span></code> flag, with <code class="docutils literal notranslate"><span class="pre">True</span></code> (default) signifying descending sort order
+(i.e. the highest value in <code class="docutils literal notranslate"><span class="pre">a</span></code> has a rank of 1, as opposed to <cite>len(a)</cite>)</p></li>
 </ul>
-<p>Note that return rankings with be type <cite>float</cite> for method=’average’
-and <cite>int</cite> for method=’min’.</p>
+<p>Note that return rankings with be type <code class="docutils literal notranslate"><span class="pre">float</span></code> for <code class="docutils literal notranslate"><span class="pre">method='average'</span></code>
+and <code class="docutils literal notranslate"><span class="pre">int</span></code> for <code class="docutils literal notranslate"><span class="pre">method='min'</span></code>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="euchplt.utils.typecast">
+<span class="sig-prename descclassname"><span class="pre">euchplt.utils.</span></span><span class="sig-name descname"><span class="pre">typecast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Number</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bool</span></span></span><a class="headerlink" href="#euchplt.utils.typecast" title="Link to this definition"></a></dt>
+<dd><p>Simple logic for casting a string value to the appropriate type; usable for
+parameters coming from a program command line or HTML form</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="euchplt.utils.parse_argv">
 <span class="sig-prename descclassname"><span class="pre">euchplt.utils.</span></span><span class="sig-name descname"><span class="pre">parse_argv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">argv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.utils.parse_argv" title="Link to this definition"></a></dt>
 <dd><p>Takes a list of arguments (typically a slice of sys.argv), which may be a
-combination of bare agruments or kwargs-style constructions (e.g. “key=value”)
-and returns a tuple of <cite>args</cite> and <cite>kwargs</cite>.  For both <cite>args</cite> and <cite>kwargs</cite>, we
+combination of bare agruments or kwargs-style constructions (e.g. “key=value”) and
+returns a tuple of <code class="docutils literal notranslate"><span class="pre">args</span></code> and <code class="docutils literal notranslate"><span class="pre">kwargs</span></code>.  For both <code class="docutils literal notranslate"><span class="pre">args</span></code> and <code class="docutils literal notranslate"><span class="pre">kwargs</span></code>, we
 attempt to cast the value to the proper type (e.g. int, float, bool, or None).</p>
 </dd></dl>
 
