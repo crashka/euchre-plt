@@ -576,12 +576,92 @@
       {% endfor %}
       {% endif %}
     </div>
-    <div class="section">
+    <div class="section buttons">
       <button class="submit" value="revert_params" title="{{help_txt['bt_0']}}">Revert Params</button>
       <button class="submit" value="export_params" title="{{help_txt['bt_1']}}">Export Params</button>
       <button class="submit" value="evaluate" title="{{help_txt['bt_2']}}">Evaluate Hand</button>
       <button class="submit" value="new_hand" title="{{help_txt['bt_3']}}">Get New Hand</button>
     </div>
+    {% if bidding %}
+    <div class="section bidding">
+      <span class="section_lbl">Bidding Analysis</span>
+      <table class="tbl_results">
+        <colgroup>
+          <col class="col_num">
+          <col class="col_num">
+          <col class="col_txt">
+          <col class="col_txt_long">
+          <col class="col_num">
+          <col class="col_num">
+          <col class="col_txt">
+          <col class="col_num">
+          <col class="col_num">
+          <col class="col_txt">
+        </colgroup>
+        <tr>
+          <th colspan="2"></th>
+          <th colspan="2"></th>
+          <th colspan="3">Current Params</th>
+          <th colspan="3">Baseline Params</th>
+        </tr>
+        <tr>
+          <th title="{{help_txt['bd_0']}}">Round</th>
+          <th title="{{help_txt['bd_1']}}">(bid_pos)</th>
+          <th title="{{help_txt['bd_2']}}">Discard</th>
+          <th title="{{help_txt['bd_3']}}">New Hand</th>
+          <th title="{{help_txt['bd_4']}}">Strength</th>
+          <th title="{{help_txt['bd_5']}}">Margin</th>
+          <th title="{{help_txt['bd_6']}}">Bid</th>
+          <th title="{{help_txt['bd_4']}}">Strength</th>
+          <th title="{{help_txt['bd_5']}}">Margin</th>
+          <th title="{{help_txt['bd_6']}}">Bid</th>
+        </tr>
+        {% for bid in bidding %}
+        {% set base_bid = base_bidding[loop.index0] %}
+        <tr>
+          <td class="td_num">{{bid.round + 1}}</td>
+          <td class="td_num">{{bid.bid_pos}}</td>
+          <td class="td_txt">
+            {% if bid.discard %}
+            <span class="spn_card">{{bid.discard.disp}}</span>
+            {% endif %}
+          </td>
+          <td class="td_hand">
+            <span class="spn_hand">
+              {% if bid.new_hand %}
+              {% for idx in range(5) %}
+              <span class="spn_card">{{bid.new_hand[idx].disp}}</span>
+              {% endfor %}
+              {% endif %}
+            </span>
+          </td>
+          <td class="td_num" title="{{bid.details}}">{{bid.strength}}</td>
+          <td class="td_num">{{bid.margin}}</td>
+          <td class="td_txt">
+            {% if bid.bid.suit.idx < 0 %}
+            <span class="spn_pass">pass</span>
+            <span class="spn_suit">{{bid.eval_suit.disp}}</span>
+            {% else %}
+            <span class="spn_bid">{{"alone" if bid.bid.alone else "call"}}</span>
+            <span class="spn_suit">{{bid.bid.suit.disp}}</span>
+            {% endif %}
+          </td>
+          <td class="td_num" title="{{base_bid.details}}">{{base_bid.strength}}</td>
+          <td class="td_num">{{base_bid.margin}}</td>
+          <td class="td_txt">
+            {% if base_bid.bid.suit.idx < 0 %}
+            <span class="spn_pass">pass</span>
+            <span class="spn_suit">{{base_bid.eval_suit.disp}}</span>
+            {% else %}
+            <span class="spn_bid">{{"alone" if base_bid.bid.alone else "call"}}</span>
+            <span class="spn_suit">{{base_bid.bid.suit.disp}}</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+    {% endif %}  {# bidding #}
     {% if play_seq %}
     <div class="section playing">
       <span class="section_lbl">Playing Analysis</span>
@@ -624,88 +704,8 @@
       </div>
     </div>
     {% endif %}  {# play_seq #}
+    {% endif %}  {# strategy #}
   </form>
-  {% if bidding %}
-  <div class="section bidding">
-    <span class="section_lbl">Bidding Analysis</span>
-    <table class="tbl_results">
-      <colgroup>
-        <col class="col_num">
-        <col class="col_num">
-        <col class="col_txt">
-        <col class="col_txt_long">
-        <col class="col_num">
-        <col class="col_num">
-        <col class="col_txt">
-        <col class="col_num">
-        <col class="col_num">
-        <col class="col_txt">
-      </colgroup>
-      <tr>
-        <th colspan="2"></th>
-        <th colspan="2"></th>
-        <th colspan="3">Current Params</th>
-        <th colspan="3">Baseline Params</th>
-      </tr>
-      <tr>
-        <th title="{{help_txt['bd_0']}}">Round</th>
-        <th title="{{help_txt['bd_1']}}">(bid_pos)</th>
-        <th title="{{help_txt['bd_2']}}">Discard</th>
-        <th title="{{help_txt['bd_3']}}">New Hand</th>
-        <th title="{{help_txt['bd_4']}}">Strength</th>
-        <th title="{{help_txt['bd_5']}}">Margin</th>
-        <th title="{{help_txt['bd_6']}}">Bid</th>
-        <th title="{{help_txt['bd_4']}}">Strength</th>
-        <th title="{{help_txt['bd_5']}}">Margin</th>
-        <th title="{{help_txt['bd_6']}}">Bid</th>
-      </tr>
-      {% for bid in bidding %}
-      {% set base_bid = base_bidding[loop.index0] %}
-      <tr>
-        <td class="td_num">{{bid.round + 1}}</td>
-        <td class="td_num">{{bid.bid_pos}}</td>
-        <td class="td_txt">
-          {% if bid.discard %}
-          <span class="spn_card">{{bid.discard.disp}}</span>
-          {% endif %}
-        </td>
-        <td class="td_hand">
-          <span class="spn_hand">
-            {% if bid.new_hand %}
-            {% for idx in range(5) %}
-            <span class="spn_card">{{bid.new_hand[idx].disp}}</span>
-            {% endfor %}
-            {% endif %}
-          </span>
-        </td>
-        <td class="td_num" title="{{bid.details}}">{{bid.strength}}</td>
-        <td class="td_num">{{bid.margin}}</td>
-        <td class="td_txt">
-          {% if bid.bid.suit.idx < 0 %}
-          <span class="spn_pass">pass</span>
-          <span class="spn_suit">{{bid.eval_suit.disp}}</span>
-          {% else %}
-          <span class="spn_bid">{{"alone" if bid.bid.alone else "call"}}</span>
-          <span class="spn_suit">{{bid.bid.suit.disp}}</span>
-          {% endif %}
-        </td>
-        <td class="td_num" title="{{base_bid.details}}">{{base_bid.strength}}</td>
-        <td class="td_num">{{base_bid.margin}}</td>
-        <td class="td_txt">
-          {% if base_bid.bid.suit.idx < 0 %}
-          <span class="spn_pass">pass</span>
-          <span class="spn_suit">{{base_bid.eval_suit.disp}}</span>
-          {% else %}
-          <span class="spn_bid">{{"alone" if base_bid.bid.alone else "call"}}</span>
-          <span class="spn_suit">{{base_bid.bid.suit.disp}}</span>
-          {% endif %}
-        </td>
-      </tr>
-      {% endfor %}
-    </table>
-  </div>
-  {% endif %}  {# bidding #}
-  {% endif %}  {# strategy #}
   <div class="refs">
     Reference links:
     <ul>
