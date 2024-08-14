@@ -141,6 +141,7 @@ class Context(NamedTuple):
     strgy:        Strategy
     coeff:        list[Number]
     hand:         Hand
+    orig_hand:    Hand
     turn:         Card
     turn_lbl:     str
     bidding:      list[BidInfo]
@@ -257,8 +258,9 @@ def index():
         'strgy':        strgy,
         'coeff':        coeff,
         'hand':         hand,
+        'orig_hand':    None,
         'turn':         turn,
-        'turn_lbl':     "Turn card",
+        'turn_lbl':     '',
         'bidding':      None,
         'base_bidding': None,
         'rulesets':     rulesets,
@@ -457,8 +459,9 @@ def compute_bidding(form: dict, **kwargs) -> str:
         'strgy':        strgy,
         'coeff':        coeff,
         'hand':         hand,
+        'orig_hand':    None,
         'turn':         turn,
-        'turn_lbl':     "Turn card",
+        'turn_lbl':     '',
         'bidding':      bidding,
         'base_bidding': base_bidding,
         'rulesets':     {},
@@ -651,11 +654,13 @@ def compute_playing(form: dict, **kwargs) -> str:
         if deal.is_passed():
             continue
         mycards = deal.hands[player_pos].copy_cards()
+        cards_dealt = deal.cards_dealt[player_pos].copy_cards()
         deal.play_cards()
         break
 
     assert mycards
     hand = Hand(sorted(mycards, key=disp_key))
+    orig_hand = Hand(sorted(cards_dealt, key=disp_key))
 
     bid_seq = []
     for pos, bid in enumerate(deal.bids):
@@ -684,12 +689,15 @@ def compute_playing(form: dict, **kwargs) -> str:
             trick_seq.append((player, play[1], you, win, analysis))
         play_seq.append(trick_seq)
 
+    south = "South (you)" if player_pos == 3 else "South"
     if not deal.discard:
-        turn_lbl = "Turned down"
+        turn_lbl = "turned down by " + south
     elif deal.caller_pos != 3:
-        turn_lbl = "Ordered up"
+        caller = deal.players[deal.caller_pos]
+        part_opp = " (partner)" if deal.caller_pos == 1 else " (opp)"
+        turn_lbl = "ordered up by " + caller.name + part_opp
     else:
-        turn_lbl = "Picked up"
+        turn_lbl = "picked up by " + south
 
     context = {
         'strategy':     strategy,
@@ -700,6 +708,7 @@ def compute_playing(form: dict, **kwargs) -> str:
         'strgy':        None,
         'coeff':        NULL_COEFF,
         'hand':         hand,
+        'orig_hand':    orig_hand,
         'turn':         deal.turn_card,
         'turn_lbl':     turn_lbl,
         'bidding':      None,

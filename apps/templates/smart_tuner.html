@@ -82,8 +82,8 @@
      font-size: smaller;
    }
    .deal_info {
-     margin-top: {{"0.3rem;" if show_discard else "1.0rem;"}}
-     width: 22rem;
+     margin-top: {{"1.0rem;" if show_discard else "2.0rem;"}}
+     width: 23rem;
      float: left;
    }
    input[type="number"] {
@@ -460,28 +460,43 @@
         <table class="pos_layout">
           <tr>
             <td></td>
-            <td><input type="radio" name="player_pos" value="1"{{pos_chk[1]}}></td>
+            <td></td>
+            <td>North</td>
+            <td></td>
             <td></td>
           </tr>
           <tr>
+            <td></td>
+            <td></td>
+            <td><input type="radio" name="player_pos" value="1"{{pos_chk[1]}}></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>West</td>
             <td><input type="radio" name="player_pos" value="0"{{pos_chk[0]}}></td>
             <td></td>
             <td><input type="radio" name="player_pos" value="2"{{pos_chk[2]}}></td>
+            <td>East</td>
           </tr>
           <tr>
+            <td></td>
             <td></td>
             <td><input type="radio" name="player_pos" value="3"{{pos_chk[3]}}></td>
             <td></td>
+            <td></td>
           </tr>
           <tr>
             <td></td>
-            <td>(dealer)</td>
+            <td></td>
+            <td>South<br/>(dealer)</td>
+            <td></td>
             <td></td>
           </tr>
         </table>
         <table class="deal_info">
           <colgroup>
-            <col style="width: 8rem;">
+            <col style="width: 7rem;">
             <col style="width: 15rem;">
           </colgroup>
           <tr>
@@ -504,16 +519,22 @@
               </span>
               {% else %}
               <span class="spn_hand">
+                {% if show_discard %}
+                {% for mycard in orig_hand %}
+                <span class="spn_card">{{mycard.disp}}</span>
+                {% endfor %}
+                {% else %}
                 {% for mycard in hand %}
                 <span class="spn_card">{{mycard.disp}}</span>
                 {% endfor %}
+                {% endif %}
               </span>
               {% endif %}
               {% endif %}
             </td>
           </tr>
           <tr>
-            <td class="td_lbl">{{turn_lbl}}:</td>
+            <td class="td_lbl">Turn card:</td>
             <td>
               {% if turn %}
               {% if phase_chk[0] %}
@@ -527,16 +548,26 @@
                 </select>
               </span>
               {% else %}  {# phase_chk[0] #}
-              <span class="spn_card">{{turn.disp}}</span>
+              <span class="spn_card">{{turn.disp}}</span> {{turn_lbl}}
               {% endif %}  {# phase_chk[0] #}
               {% endif %}  {# turn #}
             </td>
           </tr>
           {% if show_discard %}
           <tr>
-            <td class="td_lbl">Discarded:</td>
+            <td class="td_lbl">Discard:</td>
             <td>
               <span class="spn_card">{{discard.disp}}</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="td_lbl">New hand:</td>
+            <td>
+              <span class="spn_hand">
+                {% for mycard in hand %}
+                <span class="spn_card">{{mycard.disp}}</span>
+                {% endfor %}
+              </span>
             </td>
           </tr>
           {% endif %}
@@ -548,11 +579,10 @@
             <colgroup>
               <col class="bids_pos">
               <col>
-              <col>
             </colgroup>
             {% for bid in bid_seq %}
             <tr>
-              <td>{{bid[0]}}:</td>
+              <td>{{bid[0]}}{{bid[2]}}:</td>
               <td>
                 {% if bid[1].suit.idx == -1 %}
                 <span class="spn_pass">pass</span>
@@ -563,7 +593,6 @@
                 <span class="spn_suit">{{bid[1].suit.disp}}</span>
                 {% endif %}
               </td>
-              <td>{{you}}</td>
             </tr>
             {% endfor %}
           </table>
