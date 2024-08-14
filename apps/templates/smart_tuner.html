@@ -82,7 +82,7 @@
      font-size: smaller;
    }
    .deal_info {
-     margin-top: {{"1.0rem;" if show_discard else "2.0rem;"}}
+     margin-top: {{"0.8rem;" if show_discard else "2.0rem;"}}
      width: 23rem;
      float: left;
    }
@@ -499,11 +499,11 @@
             <col style="width: 7rem;">
             <col style="width: 15rem;">
           </colgroup>
+          {% if phase_chk[0] %}
           <tr>
             <td class="td_lbl">Hand:</td>
             <td>
               {% if hand %}
-              {% if phase_chk[0] %}
               <span class="spn_hand">
                 {% for mycard in hand %}
                 <span class="container">
@@ -517,27 +517,13 @@
                 </span>
                 {% endfor %}
               </span>
-              {% else %}
-              <span class="spn_hand">
-                {% if show_discard %}
-                {% for mycard in orig_hand %}
-                <span class="spn_card">{{mycard.disp}}</span>
-                {% endfor %}
-                {% else %}
-                {% for mycard in hand %}
-                <span class="spn_card">{{mycard.disp}}</span>
-                {% endfor %}
-                {% endif %}
-              </span>
-              {% endif %}
-              {% endif %}
+              {% endif %}  {# hand #}
             </td>
           </tr>
           <tr>
             <td class="td_lbl">Turn card:</td>
             <td>
               {% if turn %}
-              {% if phase_chk[0] %}
               <span class="container">
                 <input type="text" name="turn_card" class="inp_card" value="{{turn.idx}}">
                 <span class="spn_card" title="Click to change...">{{turn.disp}}</span>
@@ -547,12 +533,42 @@
                   {% endfor %}
                 </select>
               </span>
-              {% else %}  {# phase_chk[0] #}
-              <span class="spn_card">{{turn.disp}}</span> {{turn_lbl}}
-              {% endif %}  {# phase_chk[0] #}
               {% endif %}  {# turn #}
             </td>
           </tr>
+          {% else %}  {# phase_chk[0] #}
+          <tr>
+            {% if show_discard %}
+            <td class="td_lbl">Orig hand:</td>
+            <td>
+              <span class="spn_hand">
+                {% for mycard in orig_hand %}
+                <span class="spn_card">{{mycard.disp}}</span>
+                {% endfor %}
+              </span>
+            </td>
+            {% else %}
+            <td class="td_lbl">Hand:</td>
+            <td>
+              {% if hand %}
+              <span class="spn_hand">
+                {% for mycard in hand %}
+                <span class="spn_card">{{mycard.disp}}</span>
+                {% endfor %}
+              </span>
+              {% endif %}  {# hand #}
+            </td>
+            {% endif %}  {# show_discard #}
+          </tr>
+          <tr>
+            <td class="td_lbl">Turn card:</td>
+            <td>
+              {% if turn %}
+              <span class="spn_card">{{turn.disp}}</span> {{turn_lbl}}
+              {% endif %}  {# turn #}
+            </td>
+          </tr>
+          {% endif %}  {# phase_chk[0] #}
           {% if show_discard %}
           <tr>
             <td class="td_lbl">Discard:</td>
@@ -570,7 +586,7 @@
               </span>
             </td>
           </tr>
-          {% endif %}
+          {% endif %}  {# show_discard #}
         </table>
         {% if bid_seq %}
         <div class="bids playing">
@@ -578,6 +594,7 @@
           <table>
             <colgroup>
               <col class="bids_pos">
+              <col style="width: 6.0rem;">
               <col>
             </colgroup>
             {% for bid in bid_seq %}
@@ -591,6 +608,11 @@
                 {% else %}
                 <span class="spn_bid">{{"alone" if bid[1].alone else "call"}}</span>
                 <span class="spn_suit">{{bid[1].suit.disp}}</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if (bid[1].suit.idx >= 0 or bid[1].suit.idx == -3) and bid[2] %}
+                (strength: {{bid[3]}})
                 {% endif %}
               </td>
             </tr>

@@ -521,10 +521,14 @@ class StrategySmart(Strategy):
                 # generally shouldn't get here, but just in case...
                 return NULL_BID
             analysis = HandAnalysisSmart(deal.hand, **self.hand_analysis)
-            strength = analysis.hand_strength(deal.contract.suit)
-            if strength > self.def_alone_thresh[bid_pos]:
+            strength = analysis.hand_strength(deal.contract.suit, sub_strgths)
+            thresh_margin = strength - self.def_alone_thresh[bid_pos]
+            if thresh_margin >= 0.0:
                 alone = True
                 log.debug(f"Defending on hand strength of {strength:.2f}")
+            persist['strength'] = strength
+            persist['thresh_margin'] = thresh_margin
+            persist['sub_strgths'] = sub_strgths
             return Bid(defend_suit, alone)
 
         # only regular call bidding from here on down (see early exit above)

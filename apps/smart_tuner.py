@@ -669,7 +669,11 @@ def compute_playing(form: dict, **kwargs) -> str:
         if bid is NULL_BID or (bid.is_defend() and not alone):
             continue
         player = deal.players[pos % NUM_PLAYERS].name
-        bid_seq.append((player, bid, you))
+        # ATTN: `strength` is only correct for the most recent bid by a position, since
+        # the "persist" values in `bid()` are overwritten with each call--definitely need
+        # to fix (ala `play_seq`)!!!
+        strength = deal.player_state[pos % NUM_PLAYERS].get('strength')
+        bid_seq.append((player, bid, you, round(strength, FLOAT_PREC)))
 
     play_seq = []
     seq_hands = []
@@ -689,15 +693,20 @@ def compute_playing(form: dict, **kwargs) -> str:
             trick_seq.append((player, play[1], you, win, analysis))
         play_seq.append(trick_seq)
 
-    south = "South (you)" if player_pos == 3 else "South"
+    dealer = deal.players[DEALER_POS].name
+    dealer += (" (you)" if player_pos == 3 else
+               " (partner)" if player_pos == 1 else
+               " (opp)")
+    caller = deal.players[deal.caller_pos].name
+    caller += (" (you)" if deal.caller_pos == player_pos else
+               " (partner)" if deal.caller_pos ^ 0x02 == player_pos else
+               " (opp)")
     if not deal.discard:
-        turn_lbl = "turned down by " + south
+        turn_lbl = "turned down by " + dealer
     elif deal.caller_pos != 3:
-        caller = deal.players[deal.caller_pos]
-        part_opp = " (partner)" if deal.caller_pos == 1 else " (opp)"
-        turn_lbl = "ordered up by " + caller.name + part_opp
+        turn_lbl = "ordered up by " + caller
     else:
-        turn_lbl = "picked up by " + south
+        turn_lbl = "picked up by " + dealer
 
     context = {
         'strategy':     strategy,
