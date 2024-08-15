@@ -153,6 +153,7 @@ class Context(NamedTuple):
     persist:      list[dict]
     bid_seq:      list[tuple[str, ...]]
     play_seq:     list[tuple[str, ...]]
+    pos_play:     list
     seq_hands:    list[Deck]
     trick_chk:    list[str]
     discard:      Card
@@ -269,6 +270,7 @@ def index():
         'persist':      None,
         'bid_seq':      None,
         'play_seq':     None,
+        'pos_play':     None,
         'seq_hands':    None,
         'trick_chk':    [" checked"] + [''] * 4,
         'discard':      None
@@ -470,6 +472,7 @@ def compute_bidding(form: dict, **kwargs) -> str:
         'persist':      None,
         'bid_seq':      None,
         'play_seq':     None,
+        'pos_play':     None,
         'seq_hands':    None,
         'trick_chk':    trick_chk,
         'discard':      None
@@ -676,22 +679,28 @@ def compute_playing(form: dict, **kwargs) -> str:
         bid_seq.append((player, bid, you, round(strength, FLOAT_PREC)))
 
     play_seq = []
+    pos_play = []
     seq_hands = []
     for idx, trick in enumerate(deal.tricks):
         trick_seq = []
+        trick_plays = [(p.name, '\u2013', None, None, None) for p in deal.players]
         cards = deal.played_by_pos[player_pos].copy_cards()[idx:]
         cards.sort(key=lambda c: c.sortkey)
         seq_hands.append(Hand(cards))
         for play in trick.plays:
             pos = play[0]
+            card = play[1]
             you = " (you)" if pos == player_pos else ""
             win = " (win)" if trick.winning_pos == pos else ""
             player = deal.players[pos].name
             play_log = deal.player_state[pos]['play_log'][idx]
             rule = f"{play_log['ruleset']}: {play_log['rule'].__name__}"
             analysis = f"{play_log['reason']} [{rule}]"
-            trick_seq.append((player, play[1], you, win, analysis))
+            trick_info = (player, card, you, win, analysis)
+            trick_seq.append(trick_info)
+            trick_plays[pos] = trick_info
         play_seq.append(trick_seq)
+        pos_play.append(trick_plays)
 
     dealer = deal.players[DEALER_POS].name
     dealer += (" (you)" if player_pos == 3 else
@@ -729,6 +738,7 @@ def compute_playing(form: dict, **kwargs) -> str:
         'persist':      deal.player_state,
         'bid_seq':      bid_seq,
         'play_seq':     play_seq,
+        'pos_play':     pos_play,
         'seq_hands':    seq_hands,
         'trick_chk':    trick_chk,
         'discard':      deal.discard
