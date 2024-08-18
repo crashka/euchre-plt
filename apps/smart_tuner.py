@@ -149,6 +149,7 @@ class Context(NamedTuple):
     # playing context
     rulesets:     dict[str, list[Callable]]
     deck:         Deck
+    players:      list[Player]
     deal:         DealState
     persist:      list[dict]
     bid_seq:      list[tuple[str, ...]]
@@ -167,7 +168,7 @@ class Context(NamedTuple):
 # some random convenience shortcuts (and hacks)
 StrgyComps = tuple[Strategy, HandAnalysisSmart, list[Number]]
 NULL_COEFF = [''] * 5  # to simplify the template
-NULL_CARD  = Card(-1, None, None, '', '', -1, -1)  # this is a hack!
+NULL_CARD  = Card(-1, None, None, '', '\u2013', -1, -1)  # this is a hack!
 NULL_HAND  = Hand([NULL_CARD] * 5)
 PASSES     = [PASS_BID] * 8
 NONES      = [None] * 10
@@ -184,6 +185,8 @@ def card_disp(card: Card) -> str:
     """Add a space between rank and suit in the string representation for the card so we
     can use CSS ``word-spacing`` in the template (alternate version of ``__str__``)
     """
+    if card.idx < 0:
+        return card.tag
     return "%s %s" % (card.rank.tag, card.suit.tag)
 
 def disp_key(card: Card) -> int:
@@ -266,6 +269,7 @@ def index():
         'base_bidding': None,
         'rulesets':     rulesets,
         'deck':         deck,
+        'players':      None,
         'deal':         None,
         'persist':      None,
         'bid_seq':      None,
@@ -468,6 +472,7 @@ def compute_bidding(form: dict, **kwargs) -> str:
         'base_bidding': base_bidding,
         'rulesets':     {},
         'deck':         deck,
+        'players':      None,
         'deal':         None,
         'persist':      None,
         'bid_seq':      None,
@@ -678,15 +683,19 @@ def compute_playing(form: dict, **kwargs) -> str:
         strength = deal.player_state[pos % NUM_PLAYERS].get('strength')
         bid_seq.append((player, bid, you, round(strength, FLOAT_PREC)))
 
-    play_seq = []
-    pos_play = []
+    play_seq  = []
+    pos_play  = []
     seq_hands = []
+    score_seq = []
+    cur_score = [0, 0]
     for idx, trick in enumerate(deal.tricks):
         trick_seq = []
-        trick_plays = [(p.name, '\u2013', None, None, None) for p in deal.players]
+        trick_plays = [(p.name, NULL_CARD, None, None, None) for p in deal.players]
         cards = deal.played_by_pos[player_pos].copy_cards()[idx:]
         cards.sort(key=lambda c: c.sortkey)
         seq_hands.append(Hand(cards))
+        score_seq.append(tuple(cur_score))
+        cur_score[trick.winning_pos % 2] += 1
         for play in trick.plays:
             pos = play[0]
             card = play[1]
@@ -695,8 +704,8 @@ def compute_playing(form: dict, **kwargs) -> str:
             player = deal.players[pos].name
             play_log = deal.player_state[pos]['play_log'][idx]
             rule = f"{play_log['ruleset']}: {play_log['rule'].__name__}"
-            analysis = f"{play_log['reason']} [{rule}]"
-            trick_info = (player, card, you, win, analysis)
+            reason = play_log['reason']
+            trick_info = (player, card, you, win, rule, reason)
             trick_seq.append(trick_info)
             trick_plays[pos] = trick_info
         play_seq.append(trick_seq)
@@ -733,9 +742,10 @@ def compute_playing(form: dict, **kwargs) -> str:
         'base_bidding': None,
         'rulesets':     strat.ruleset,
         'deck':         deck,
-        'player':       deal.players[player_pos],
+        'players':      deal.players,
         'deal':         deal.deal_state(player_pos),
         'persist':      deal.player_state,
+        'score_seq':    score_seq,
         'bid_seq':      bid_seq,
         'play_seq':     play_seq,
         'pos_play':     pos_play,

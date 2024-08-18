@@ -728,8 +728,10 @@
         </span>
         {% for trick_seq in play_seq %}
         {% set play = pos_play[loop.index0] %}
+        {% set my_play = play[player_pos] %}
+        {% set trick = deal.tricks[loop.index0] %}
         <div class="subsect" id="trick_{{loop.index0}}">
-          <table class="pos_layout">
+          <table class="pos_layout" style="float: left; width: 11.5rem;">
             <tr>
               <td></td>
               <td></td>
@@ -740,21 +742,21 @@
             <tr>
               <td></td>
               <td></td>
-              <td><span class="spn_card">{{play[1][1]}}</span></td>
+              <td><span class="spn_card">{{play[1][1].disp}}</span></td>
               <td></td>
               <td></td>
             </tr>
             <tr>
-              <td class="pos">West</td>
-              <td><span class="spn_card">{{play[0][1]}}</span></td>
+              <td class="pos" style="text-align: right;">West</td>
+              <td><span class="spn_card">{{play[0][1].disp}}</span></td>
               <td></td>
-              <td><span class="spn_card">{{play[2][1]}}</span></td>
+              <td><span class="spn_card">{{play[2][1].disp}}</span></td>
               <td class="pos">East</td>
             </tr>
             <tr>
               <td></td>
               <td></td>
-              <td><span class="spn_card">{{play[3][1]}}</span></td>
+              <td><span class="spn_card">{{play[3][1].disp}}</span></td>
               <td></td>
               <td></td>
             </tr>
@@ -766,17 +768,84 @@
               <td></td>
             </tr>
           </table>
-          <span style="display: block;">
-            {% set my_hand = seq_hands[loop.index0] %}
-            Your hand ({{player.name}}):
-            {% for mycard in my_hand %}
-            <span class="spn_card">{{mycard.disp}}</span>
-            {% endfor %}
-          </span>
-          <span style="display: block;">
-            Lead card ({{trick_seq[0][0]}}):
-            <span class="spn_card">{{trick_seq[0][1]}}</span>
-          </span>
+          <table style="float: left; width: 20rem;">
+            <colgroup>
+              <col style="width: 8rem;">
+              <col style="width: 12rem;">
+            </colgroup>
+            <tr>
+              {% set you = " (you)" if deal.caller_pos == player_pos else "" %}
+              <td class="td_lbl">Caller:</td>
+              <td>{{players[deal.caller_pos]}}{{you}}</td>
+            </tr>
+            <tr>
+              <td class="td_lbl">Bid:</td>
+              <td>{{deal.contract}}</td>
+            </tr>
+            {% if deal.def_pos %}
+            <tr>
+              <td class="td_lbl">Defender:</td>
+              <td>{{players[deal.def_pos]}} alone</td>
+            </tr>
+            {% endif %}
+            <tr>
+              <td class="td_lbl">Score:</td>
+              {% set cur_score = score_seq[loop.index0] %}
+              <td>{{cur_score[0]}} - {{cur_score[1]}}</td>
+            </tr>
+            <tr>
+              <td class="td_lbl">Your cards:</td>
+              <td>
+                {% for mycard in seq_hands[loop.index0] %}
+                <span class="spn_card">{{mycard.disp}}</span>
+                {% endfor %}
+              </td>
+            </tr>
+          </table>
+          <table style="float: left; width: 30rem;">
+            <colgroup>
+              <col style="width: 10rem;">
+              <col style="width: 23rem;">
+            </colgroup>
+            {% if trick_seq[0][2] %}
+            <tr>
+              <td class="td_lbl">Your lead:</td>
+              <td>
+                <span class="spn_card">{{my_play[1].disp}}</span>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td class="td_lbl">Lead card ({{trick_seq[0][0]}}):</td>
+              <td>
+                <span class="spn_card">{{trick_seq[0][1].disp}}</span>
+              </td>
+            </tr>
+            <tr>
+              <td class="td_lbl">Your play:</td>
+              <td>
+                <span class="spn_card">{{my_play[1].disp}}</span>
+              </td>
+            </tr>
+            {% endif %}
+            <tr>
+              <td class="td_lbl">Your reason:</td>
+              <td>{{my_play[5]}}</td>
+            </tr>
+            <tr>
+              <td class="td_lbl"></td>
+              <td>[{{my_play[4]}}]</td>
+            </tr>
+            <tr>
+              {% set win_card = trick.winning_card %}
+              {% set win_pos = trick.winning_pos %}
+              {% set winner = "you" if win_pos == player_pos else players[win_pos] %}
+              <td class="td_lbl">Winner ({{winner}}):</td>
+              <td>
+                <span class="spn_card">{{win_card.disp}}</span>
+              </td>
+            </tr>
+          </table>
         </div>
         {% endfor %}
       </div>
