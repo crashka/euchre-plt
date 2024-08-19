@@ -156,7 +156,6 @@ class Context(NamedTuple):
     persist:      list[dict]
     score_seq:    list[tuple[int, int]]
     bid_seq:      list[tuple[str, ...]]
-    pos_play:     list
     seq_hands:    list[Deck]
     trick_chk:    list[str]
     discard:      Card
@@ -283,7 +282,6 @@ def index():
         'persist':      None,
         'score_seq':    None,
         'bid_seq':      None,
-        'pos_play':     None,
         'seq_hands':    None,
         'trick_chk':    [" checked"] + [''] * 4,
         'discard':      None
@@ -488,7 +486,6 @@ def compute_bidding(form: dict, **kwargs) -> str:
         'persist':      None,
         'score_seq':    None,
         'bid_seq':      None,
-        'pos_play':     None,
         'seq_hands':    None,
         'trick_chk':    trick_chk,
         'discard':      None
@@ -694,7 +691,6 @@ def compute_playing(form: dict, **kwargs) -> str:
         strength = deal.player_state[pos % NUM_PLAYERS].get('strength')
         bid_seq.append((player, you, bid, round(strength, FLOAT_PREC)))
 
-    pos_play  = []
     seq_hands = []
     score_seq = []
     cur_score = [0, 0]
@@ -705,18 +701,6 @@ def compute_playing(form: dict, **kwargs) -> str:
         seq_hands.append(Hand(cards))
         score_seq.append(tuple(cur_score))
         cur_score[trick.winning_pos % 2] += 1
-        for play in trick.plays:
-            pos = play[0]
-            card = play[1]
-            you = " (you)" if pos == player_pos else ""
-            win = " (win)" if trick.winning_pos == pos else ""
-            player = deal.players[pos].name
-            play_log = deal.player_state[pos]['play_log'][idx]
-            rule = f"{play_log['ruleset']}: {play_log['rule'].__name__}"
-            reason = play_log['reason']
-            trick_info = (player, card, you, win, rule, reason)
-            trick_plays[pos] = trick_info
-        pos_play.append(trick_plays)
 
     dealer = deal.players[DEALER_POS].name
     caller = deal.players[deal.caller_pos].name
@@ -755,7 +739,6 @@ def compute_playing(form: dict, **kwargs) -> str:
         'persist':      deal.player_state,
         'score_seq':    score_seq,
         'bid_seq':      bid_seq,
-        'pos_play':     pos_play,
         'seq_hands':    seq_hands,
         'trick_chk':    trick_chk,
         'discard':      deal.discard

@@ -175,10 +175,6 @@
      text-decoration: underline;
      margin-right: 0.4rem;
    }
-   .trick_lbl {
-     display: block;
-     margin-right: 0.4rem;
-   }
    .bids table {
      float: left;
      border-collapse: collapse;
@@ -776,8 +772,7 @@
           {% endfor %}
         </span>
         {% for trick in deal.tricks %}
-        {% set play = pos_play[loop.index0] %}
-        {% set my_play = play[player_pos] %}
+        {% set trick_idx = loop.index0 %}
         {% set lead_play = trick.plays[0] %}
         {% set lead_pos = lead_play[0] %}
         {% set lead_card = lead_play[1] %}
@@ -809,7 +804,7 @@
                 <td>{{players[deal.def_pos]}} alone</td>
               </tr>
               {% endif %}
-              <tr>
+              <tr title="(EW - NS)">
                 <td class="td_lbl">Score:</td>
                 {% set cur_score = score_seq[loop.index0] %}
                 <td>{{cur_score[0]}} - {{cur_score[1]}}</td>
@@ -836,9 +831,9 @@
                   </span>
                 </td>
               </tr>
-              {% for tplay in trick.plays %}
-              {% set pos = tplay[0] %}
-              {% set card = tplay[1] %}
+              {% for play in trick.plays %}
+              {% set pos = play[0] %}
+              {% set card = play[1] %}
               {% set you = " you" if pos == player_pos else "" %}
               {% set lead = " lead" if loop.index0 == 0 else "" %}
               {% set win = " win" if pos == trick.winning_pos else "" %}
@@ -858,8 +853,11 @@
               </tr>
               {% if you %}
               <tr>
+                {% set play_log = persist[player_pos]['play_log'][trick_idx] %}
+                {% set rule = play_log['ruleset'] + ': ' + play_log['rule'].__name__ %}
+                {% set reason = play_log['reason'] %}
                 <td class="td_lbl"><span class="annot">Reason:</span></td>
-                <td title="rule - {{my_play[4]}}"><span class="annot">{{my_play[5]}}</span></td>
+                <td title="rule - {{rule}}"><span class="annot">{{reason}}</span></td>
               </tr>
               {% endif %}
               {% endfor %}
@@ -880,8 +878,9 @@
                 <td></td>
                 {% set you = " you" if player_pos == 1 else "" %}
                 {% set lead = " lead" if lead_pos == 1 else "" %}
-                {% set win = " win" if play[1][3] else "" %}
-                <td><span class="spn_card{{you}}{{lead}}{{win}}">{{play[1][1].disp}}</span></td>
+                {% set win = " win" if trick.winning_pos == 1 else "" %}
+                {% set card = trick.cards[1].disp if trick.cards[1] else '\u2013' %}
+                <td><span class="spn_card{{you}}{{lead}}{{win}}">{{card}}</span></td>
                 <td></td>
                 <td></td>
               </tr>
@@ -889,13 +888,15 @@
                 <td class="pos" style="text-align: right;">West</td>
                 {% set you = " you" if player_pos == 0 else "" %}
                 {% set lead = " lead" if lead_pos == 0 else "" %}
-                {% set win = " win" if play[0][3] else "" %}
-                <td><span class="spn_card{{you}}{{lead}}{{win}}">{{play[0][1].disp}}</span></td>
+                {% set win = " win" if trick.winning_pos == 0 else "" %}
+                {% set card = trick.cards[0].disp if trick.cards[0] else '\u2013' %}
+                <td><span class="spn_card{{you}}{{lead}}{{win}}">{{card}}</span></td>
                 <td></td>
                 {% set you = " you" if player_pos == 2 else "" %}
                 {% set lead = " lead" if lead_pos == 2 else "" %}
-                {% set win = " win" if play[2][3] else "" %}
-                <td><span class="spn_card{{you}}{{lead}}{{win}}">{{play[2][1].disp}}</span></td>
+                {% set win = " win" if trick.winning_pos == 2 else "" %}
+                {% set card = trick.cards[2].disp if trick.cards[2] else '\u2013' %}
+                <td><span class="spn_card{{you}}{{lead}}{{win}}">{{card}}</span></td>
                 <td class="pos">East</td>
               </tr>
               <tr>
@@ -903,8 +904,9 @@
                 <td></td>
                 {% set you = " you" if player_pos == 3 else "" %}
                 {% set lead = " lead" if lead_pos == 3 else "" %}
-                {% set win = " win" if play[3][3] else "" %}
-                <td><span class="spn_card{{you}}{{lead}}{{win}}">{{play[3][1].disp}}</span></td>
+                {% set win = " win" if trick.winning_pos == 3 else "" %}
+                {% set card = trick.cards[3].disp if trick.cards[3] else '\u2013' %}
+                <td><span class="spn_card{{you}}{{lead}}{{win}}">{{card}}</span></td>
                 <td></td>
                 <td></td>
               </tr>
