@@ -15,7 +15,7 @@
      font-weight: bold;
    }
    .subsect {
-     margin-top: 0.2rem;
+     margin-top: 0.3rem;
      overflow: hidden;
    }
    .sel_strategy {
@@ -32,6 +32,10 @@
    }
    .playing {
      display: {{"block;" if phase_chk[1] else "none;"}}
+   }
+   .tbl_div {
+     float: left;
+     margin: 0 2.0rem;
    }
    .tbl_params {
      margin-top: 0.3rem;
@@ -61,6 +65,7 @@
    }
    .td_lbl {
      text-align: right;
+     vertical-align: top;
    }
    .td_num,
    .td_dec,
@@ -84,8 +89,6 @@
      font-size: smaller;
    }
    .deal_info {
-     margin-top: {{"0.8rem;" if show_discard else "2.0rem;"}}
-     width: 23rem;
      float: left;
    }
    input[type="number"] {
@@ -100,11 +103,30 @@
      position: relative;
    }
    .spn_hand {
+   }
+   .spn_hand .spn_card {
      margin-right: 0.5rem;
    }
    .spn_card {
-     margin-left: 0.5rem;
      word-spacing: -0.15rem;
+   }
+   .red {
+     color: red;
+   }
+   .lead {
+     border: solid purple 1px;
+     padding: 0 0.1rem;
+   }
+   .win {
+     border: solid red 1px;
+     padding: 0 0.1rem;
+   }
+   .you {
+     background-color: lightcyan;
+     padding: 0 0.1rem;
+   }
+   .annot {
+     color: grey;
    }
    .spn_suit {
      margin-left: 0.2rem;
@@ -149,16 +171,17 @@
      float: left;
    }
    .bids_lbl {
-     display: inline-block;
-     float: left;
-     width: 4rem;
+     display: block;
+     text-decoration: underline;
+     margin-right: 0.4rem;
+   }
+   .trick_lbl {
+     display: block;
+     margin-right: 0.4rem;
    }
    .bids table {
      float: left;
      border-collapse: collapse;
-   }
-   .bids_pos {
-     width: 5.5rem;
    }
    .sel_trick {
      display: block;
@@ -166,13 +189,18 @@
    .sel_trick label {
      margin-left: 0.7rem;
    }
-   .tricks div {
+   .trick {
+     margin-top: 0.4rem;
+   }
+   .tricks .trick {
      display: none;
    }
    {% for idx in range(5) %}
+   {% if trick_chk[idx] %}
    #trick_{{idx}} {
-     display: {{"block;" if trick_chk[idx] else "none;"}}
+     display: block;
    }
+   {% endif %}
    {% endfor %}
    button[value="evaluate"],
    button[value="new_hand"] {
@@ -458,170 +486,191 @@
     <div class="section">
       <span class="section_lbl">Deal Info</span>
       <div class="subsect">
-        <span class="pos_lbl">Position:</span>
-        <table class="pos_layout">
-          <tr>
-            <td></td>
-            <td></td>
-            <td class="pos">North</td>
-            <td></td>
-            <td></td>
-          </tr>
-          <tr>
-            <td></td>
-            <td></td>
-            <td><input type="radio" name="player_pos" value="1"{{pos_chk[1]}}></td>
-            <td></td>
-            <td></td>
-          </tr>
-          <tr>
-            <td class="pos">West</td>
-            <td><input type="radio" name="player_pos" value="0"{{pos_chk[0]}}></td>
-            <td></td>
-            <td><input type="radio" name="player_pos" value="2"{{pos_chk[2]}}></td>
-            <td class="pos">East</td>
-          </tr>
-          <tr>
-            <td></td>
-            <td></td>
-            <td><input type="radio" name="player_pos" value="3"{{pos_chk[3]}}></td>
-            <td></td>
-            <td></td>
-          </tr>
-          <tr>
-            <td></td>
-            <td></td>
-            <td class="pos">South<br/>(dealer)</td>
-            <td></td>
-            <td></td>
-          </tr>
-        </table>
-        <table class="deal_info">
-          <colgroup>
-            <col style="width: 7rem;">
-            <col style="width: 15rem;">
-          </colgroup>
-          {% if phase_chk[0] %}
-          <tr>
-            <td class="td_lbl">Hand:</td>
-            <td>
-              {% if hand %}
-              <span class="spn_hand">
-                {% for mycard in hand %}
+        <div class="tbl_div">
+          <span class="bids_lbl">Position</span>
+          <table class="pos_layout">
+            <tr>
+              <td></td>
+              <td></td>
+              <td class="pos">North</td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td><input type="radio" name="player_pos" value="1"{{pos_chk[1]}}></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="pos">West</td>
+              <td><input type="radio" name="player_pos" value="0"{{pos_chk[0]}}></td>
+              <td></td>
+              <td><input type="radio" name="player_pos" value="2"{{pos_chk[2]}}></td>
+              <td class="pos">East</td>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td><input type="radio" name="player_pos" value="3"{{pos_chk[3]}}></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td class="pos">South<br/>(dealer)</td>
+              <td></td>
+              <td></td>
+            </tr>
+          </table>
+        </div>
+        <div class="tbl_div">
+          <span class="bids_lbl">Deal</span>
+          <table class="deal_info">
+            {% if phase_chk[0] %}
+            <tr>
+              <td class="td_lbl">Hand:</td>
+              <td>
+                {% if hand %}
+                <span class="spn_hand">
+                  {% for mycard in hand %}
+                  <span class="container">
+                    <input type="text" name="hand_{{loop.index0}}" class="inp_card" value="{{mycard.idx}}">
+                    <span class="spn_card" title="Click to change...">{{mycard.disp}}</span>
+                    <select name="hand_{{loop.index0}}" class="sel_card" title="Click to choose...">
+                      {% for card in cards %}
+                      <option value="{{card.idx}}"{{" selected" if card.idx == mycard.idx else ""}}>{{card.disp}}</option>
+                      {% endfor %}
+                    </select>
+                  </span>
+                  {% endfor %}
+                </span>
+                {% endif %}  {# hand #}
+              </td>
+            </tr>
+            <tr>
+              <td class="td_lbl">Turn card:</td>
+              <td>
+                {% if turn %}
                 <span class="container">
-                  <input type="text" name="hand_{{loop.index0}}" class="inp_card" value="{{mycard.idx}}">
-                  <span class="spn_card" title="Click to change...">{{mycard.disp}}</span>
-                  <select name="hand_{{loop.index0}}" class="sel_card" title="Click to choose...">
+                  <input type="text" name="turn_card" class="inp_card" value="{{turn.idx}}">
+                  <span class="spn_card" title="Click to change...">{{turn.disp}}</span>
+                  <select name="turn_card" class="sel_card" title="Click to choose...">
                     {% for card in cards %}
-                    <option value="{{card.idx}}"{{" selected" if card.idx == mycard.idx else ""}}>{{card.disp}}</option>
+                    <option value="{{card.idx}}"{{" selected" if card.idx == turn.idx else ""}}>{{card.disp}}</option>
                     {% endfor %}
                   </select>
                 </span>
-                {% endfor %}
-              </span>
-              {% endif %}  {# hand #}
-            </td>
-          </tr>
-          <tr>
-            <td class="td_lbl">Turn card:</td>
-            <td>
-              {% if turn %}
-              <span class="container">
-                <input type="text" name="turn_card" class="inp_card" value="{{turn.idx}}">
-                <span class="spn_card" title="Click to change...">{{turn.disp}}</span>
-                <select name="turn_card" class="sel_card" title="Click to choose...">
-                  {% for card in cards %}
-                  <option value="{{card.idx}}"{{" selected" if card.idx == turn.idx else ""}}>{{card.disp}}</option>
-                  {% endfor %}
-                </select>
-              </span>
-              {% endif %}  {# turn #}
-            </td>
-          </tr>
-          {% else %}  {# phase_chk[0] #}
-          <tr>
-            {% if show_discard %}
-            <td class="td_lbl">Orig hand:</td>
-            <td>
-              <span class="spn_hand">
-                {% for mycard in orig_hand %}
-                <span class="spn_card">{{mycard.disp}}</span>
-                {% endfor %}
-              </span>
-            </td>
-            {% else %}
-            <td class="td_lbl">Hand:</td>
-            <td>
-              {% if hand %}
-              <span class="spn_hand">
-                {% for mycard in hand %}
-                <span class="spn_card">{{mycard.disp}}</span>
-                {% endfor %}
-              </span>
-              {% endif %}  {# hand #}
-            </td>
-            {% endif %}  {# show_discard #}
-          </tr>
-          <tr>
-            <td class="td_lbl">Turn card:</td>
-            <td>
-              {% if turn %}
-              <span class="spn_card">{{turn.disp}}</span> {{turn_lbl}}
-              {% endif %}  {# turn #}
-            </td>
-          </tr>
-          {% endif %}  {# phase_chk[0] #}
-          {% if show_discard %}
-          <tr>
-            <td class="td_lbl">Discard:</td>
-            <td>
-              <span class="spn_card">{{discard.disp}}</span>
-            </td>
-          </tr>
-          <tr>
-            <td class="td_lbl">New hand:</td>
-            <td>
-              <span class="spn_hand">
-                {% for mycard in hand %}
-                <span class="spn_card">{{mycard.disp}}</span>
-                {% endfor %}
-              </span>
-            </td>
-          </tr>
-          {% endif %}  {# show_discard #}
-        </table>
-        {% if bid_seq %}
-        <div class="bids playing">
-          <span class="bids_lbl">Bidding:</span>
-          <table>
-            <colgroup>
-              <col class="bids_pos">
-              <col style="width: 6.0rem;">
-              <col>
-            </colgroup>
-            {% for bid in bid_seq %}
-            <tr>
-              <td>{{bid[0]}}{{bid[2]}}:</td>
-              <td>
-                {% if bid[1].suit.idx == -1 %}
-                <span class="spn_pass">pass</span>
-                {% elif bid[1].suit.idx == -3 %}
-                <span class="spn_bid">defend alone</span>
-                {% else %}
-                <span class="spn_bid">{{"alone" if bid[1].alone else "call"}}</span>
-                <span class="spn_suit">{{bid[1].suit.disp}}</span>
-                {% endif %}
-              </td>
-              <td>
-                {% if (bid[1].suit.idx >= 0 or bid[1].suit.idx == -3) and bid[2] %}
-                (strength: {{bid[3]}})
-                {% endif %}
+                {% endif %}  {# turn #}
               </td>
             </tr>
-            {% endfor %}
+            {% else %}  {# phase_chk[0] #}
+            <colgroup>
+              <col style="width: 4.5rem;">
+              <col style="width: 14rem;">
+            </colgroup>
+            <tr>
+              <td class="td_lbl">Position:</td>
+              <td>
+                {{players[player_pos].name}} (bid {{player_pos + 1}})
+              </td>
+            </tr>
+            <tr>
+              {% if show_discard %}
+              <td class="td_lbl">Orig hand:</td>
+              <td>
+                <span class="spn_hand">
+                  {% for mycard in orig_hand %}
+                  <span class="spn_card">{{mycard.disp}}</span>
+                  {% endfor %}
+                </span>
+              </td>
+              {% else %}
+              <td class="td_lbl">Hand:</td>
+              <td>
+                {% if hand %}
+                <span class="spn_hand">
+                  {% for mycard in hand %}
+                  <span class="spn_card">{{mycard.disp}}</span>
+                  {% endfor %}
+                </span>
+                {% endif %}  {# hand #}
+              </td>
+              {% endif %}  {# show_discard #}
+            </tr>
+            <tr>
+              <td class="td_lbl">Turn card:</td>
+              <td>
+                {% if turn %}
+                <span class="spn_card">{{turn.disp}}</span>
+                {{turn_lbl}} <span class="annot">({{rel[turn_act]}})</span>
+                {% endif %}  {# turn #}
+              </td>
+            </tr>
+            {% endif %}  {# phase_chk[0] #}
+            {% if show_discard %}
+            <tr>
+              <td class="td_lbl">Discard:</td>
+              <td>
+                <span class="spn_card">{{discard.disp}}</span>
+              </td>
+            </tr>
+            <tr>
+              <td class="td_lbl">New hand:</td>
+              <td>
+                <span class="spn_hand">
+                  {% for mycard in hand %}
+                  <span class="spn_card">{{mycard.disp}}</span>
+                  {% endfor %}
+                </span>
+              </td>
+            </tr>
+            {% endif %}  {# show_discard #}
           </table>
         </div>
-        {% endif %}
+        {% if bid_seq %}
+        <div class="tbl_div">
+          <div class="bids playing">
+            <span class="bids_lbl">Bidding</span>
+            <table>
+              <colgroup>
+                <col style="width: 5.5rem;">
+                <col style="width: 6.0rem;">
+                <col>
+              </colgroup>
+              {% for bid in bid_seq %}
+              {% set bid_pos = loop.index0 %}
+              {% set pos = bid_pos % 4 %}
+              {% set player = bid[0] %}
+              {% set you = bid[1] %}
+              {% set suit = bid[2].suit %}
+              {% set alone = bid[2].alone %}
+              {% set strength = bid[3] %}
+              <tr>
+                <td>{{player.name}}{{you}}:</td>
+                <td>
+                  {% if suit.idx == -1 %}
+                  <span class="spn_pass">pass</span>
+                  {% elif suit.idx == -3 %}
+                  <span class="spn_bid">defend alone</span>
+                  {% else %}
+                  <span class="spn_bid">{{"alone" if alone else "call"}}</span>
+                  <span class="spn_suit">{{suit.disp}}</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if (suit.idx >= 0 or suit.idx == -3) and pos == player_pos %}
+                  (strength: {{strength}})
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </table>
+          </div>
+        </div>
+        {% endif %}  {# bid_seq #}
       </div>
       {% if deck %}
       {% for card in deck %}
@@ -715,7 +764,7 @@
       </table>
     </div>
     {% endif %}  {# bidding #}
-    {% if play_seq %}
+    {% if deal %}
     <div class="section playing">
       <span class="section_lbl">Playing Analysis</span>
       <div class ="subsect tricks">
@@ -726,131 +775,153 @@
           <label>{{idx + 1}}<input type="radio" name="trick" value="{{idx}}"{{checked}}></label>
           {% endfor %}
         </span>
-        {% for trick_seq in play_seq %}
+        {% for trick in deal.tricks %}
         {% set play = pos_play[loop.index0] %}
         {% set my_play = play[player_pos] %}
-        {% set trick = deal.tricks[loop.index0] %}
-        <div class="subsect" id="trick_{{loop.index0}}">
-          <table class="pos_layout" style="float: left; width: 11.5rem;">
-            <tr>
-              <td></td>
-              <td></td>
-              <td class="pos">North</td>
-              <td></td>
-              <td></td>
-            </tr>
-            <tr>
-              <td></td>
-              <td></td>
-              <td><span class="spn_card">{{play[1][1].disp}}</span></td>
-              <td></td>
-              <td></td>
-            </tr>
-            <tr>
-              <td class="pos" style="text-align: right;">West</td>
-              <td><span class="spn_card">{{play[0][1].disp}}</span></td>
-              <td></td>
-              <td><span class="spn_card">{{play[2][1].disp}}</span></td>
-              <td class="pos">East</td>
-            </tr>
-            <tr>
-              <td></td>
-              <td></td>
-              <td><span class="spn_card">{{play[3][1].disp}}</span></td>
-              <td></td>
-              <td></td>
-            </tr>
-            <tr>
-              <td></td>
-              <td></td>
-              <td class="pos">South<br/>(dealer)</td>
-              <td></td>
-              <td></td>
-            </tr>
-          </table>
-          <table style="float: left; width: 20rem;">
-            <colgroup>
-              <col style="width: 8rem;">
-              <col style="width: 12rem;">
-            </colgroup>
-            <tr>
-              {% set you = " (you)" if deal.caller_pos == player_pos else "" %}
-              <td class="td_lbl">Caller:</td>
-              <td>{{players[deal.caller_pos]}}{{you}}</td>
-            </tr>
-            <tr>
-              <td class="td_lbl">Bid:</td>
-              <td>{{deal.contract}}</td>
-            </tr>
-            {% if deal.def_pos %}
-            <tr>
-              <td class="td_lbl">Defender:</td>
-              <td>{{players[deal.def_pos]}} alone</td>
-            </tr>
-            {% endif %}
-            <tr>
-              <td class="td_lbl">Score:</td>
-              {% set cur_score = score_seq[loop.index0] %}
-              <td>{{cur_score[0]}} - {{cur_score[1]}}</td>
-            </tr>
-            <tr>
-              <td class="td_lbl">Your cards:</td>
-              <td>
-                {% for mycard in seq_hands[loop.index0] %}
-                <span class="spn_card">{{mycard.disp}}</span>
-                {% endfor %}
-              </td>
-            </tr>
-          </table>
-          <table style="float: left; width: 30rem;">
-            <colgroup>
-              <col style="width: 10rem;">
-              <col style="width: 23rem;">
-            </colgroup>
-            {% if trick_seq[0][2] %}
-            <tr>
-              <td class="td_lbl">Your lead:</td>
-              <td>
-                <span class="spn_card">{{my_play[1].disp}}</span>
-              </td>
-            </tr>
-            {% else %}
-            <tr>
-              <td class="td_lbl">Lead card ({{trick_seq[0][0]}}):</td>
-              <td>
-                <span class="spn_card">{{trick_seq[0][1].disp}}</span>
-              </td>
-            </tr>
-            <tr>
-              <td class="td_lbl">Your play:</td>
-              <td>
-                <span class="spn_card">{{my_play[1].disp}}</span>
-              </td>
-            </tr>
-            {% endif %}
-            <tr>
-              <td class="td_lbl">Your reason:</td>
-              <td>{{my_play[5]}}</td>
-            </tr>
-            <tr>
-              <td class="td_lbl"></td>
-              <td>[{{my_play[4]}}]</td>
-            </tr>
-            <tr>
-              {% set win_card = trick.winning_card %}
-              {% set win_pos = trick.winning_pos %}
-              {% set winner = "you" if win_pos == player_pos else players[win_pos] %}
-              <td class="td_lbl">Winner ({{winner}}):</td>
-              <td>
-                <span class="spn_card">{{win_card.disp}}</span>
-              </td>
-            </tr>
-          </table>
+        {% set lead_play = trick.plays[0] %}
+        {% set lead_pos = lead_play[0] %}
+        {% set lead_card = lead_play[1] %}
+        <div class="trick" id="trick_{{loop.index0}}">
+          <div class="tbl_div">
+            <span class="bids_lbl">Contract</span>
+            <table style="float: left;">
+              <colgroup>
+                <col style="width: 3rem;">
+                <col style="width: 7rem;">
+              </colgroup>
+              <tr>
+                <td class="td_lbl">Caller:</td>
+                <td>
+                  {{players[deal.caller_pos]}}
+                  <span class="annot">({{rel[deal.caller_pos]}})</span>
+                </td>
+              </tr>
+              <tr>
+                <td class="td_lbl">Bid:</td>
+                <td>
+                  <span class="spn_bid">{{"alone" if deal.contract.alone else "call"}}</span>
+                  <span class="spn_suit">{{deal.contract.suit.disp}}</span>
+                </td>
+              </tr>
+              {% if deal.def_pos %}
+              <tr>
+                <td class="td_lbl">Defender:</td>
+                <td>{{players[deal.def_pos]}} alone</td>
+              </tr>
+              {% endif %}
+              <tr>
+                <td class="td_lbl">Score:</td>
+                {% set cur_score = score_seq[loop.index0] %}
+                <td>{{cur_score[0]}} - {{cur_score[1]}}</td>
+              </tr>
+            </table>
+          </div>
+          <div class="tbl_div">
+            <span class="bids_lbl">
+              Trick #{{loop.index}} - {{players[lead_pos].name}}'s lead
+              <span class="annot">({{rel[lead_pos]}})</span>
+            </span>
+            <table style="float: left;">
+              <colgroup>
+                <col style="width: 8rem;">
+                <col style="width: 14rem;">
+              </colgroup>
+              <tr>
+                <td class="td_lbl">Your cards:</td>
+                <td>
+                  <span class="spn_hand">
+                    {% for mycard in seq_hands[loop.index0] %}
+                    <span class="spn_card">{{mycard.disp}}</span>
+                    {% endfor %}
+                  </span>
+                </td>
+              </tr>
+              {% for tplay in trick.plays %}
+              {% set pos = tplay[0] %}
+              {% set card = tplay[1] %}
+              {% set you = " you" if pos == player_pos else "" %}
+              {% set lead = " lead" if loop.index0 == 0 else "" %}
+              {% set win = " win" if pos == trick.winning_pos else "" %}
+              <tr>
+                {% if lead %}
+                {% set leadstr = " (your lead)" if you else " (lead)" %}
+                <td class="td_lbl">{{players[pos]}}<span class="annot">{{leadstr}}</span>:</td>
+                {% else %}
+                {% set youstr = " (you)" if you else "" %}
+                <td class="td_lbl">{{players[pos]}}<span class="annot">{{youstr}}</span>:</td>
+                {% endif %}
+                <td>
+                  {% set winstr = " - winner" if win else "" %}
+                  <span class="spn_card{{you}}{{lead}}{{win}}">{{card.disp}}</span>
+                  <span class="annot">{{winstr}}</span>
+                </td>
+              </tr>
+              {% if you %}
+              <tr>
+                <td class="td_lbl"><span class="annot">Reason:</span></td>
+                <td title="rule - {{my_play[4]}}"><span class="annot">{{my_play[5]}}</span></td>
+              </tr>
+              {% endif %}
+              {% endfor %}
+            </table>
+          </div>
+          <div class="tbl_div">
+            <span class="bids_lbl">Play</span>
+            <table class="pos_layout" style="width: 11.5rem;">
+              <tr>
+                <td></td>
+                <td></td>
+                <td class="pos">North</td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                {% set you = " you" if player_pos == 1 else "" %}
+                {% set lead = " lead" if lead_pos == 1 else "" %}
+                {% set win = " win" if play[1][3] else "" %}
+                <td><span class="spn_card{{you}}{{lead}}{{win}}">{{play[1][1].disp}}</span></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td class="pos" style="text-align: right;">West</td>
+                {% set you = " you" if player_pos == 0 else "" %}
+                {% set lead = " lead" if lead_pos == 0 else "" %}
+                {% set win = " win" if play[0][3] else "" %}
+                <td><span class="spn_card{{you}}{{lead}}{{win}}">{{play[0][1].disp}}</span></td>
+                <td></td>
+                {% set you = " you" if player_pos == 2 else "" %}
+                {% set lead = " lead" if lead_pos == 2 else "" %}
+                {% set win = " win" if play[2][3] else "" %}
+                <td><span class="spn_card{{you}}{{lead}}{{win}}">{{play[2][1].disp}}</span></td>
+                <td class="pos">East</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                {% set you = " you" if player_pos == 3 else "" %}
+                {% set lead = " lead" if lead_pos == 3 else "" %}
+                {% set win = " win" if play[3][3] else "" %}
+                <td><span class="spn_card{{you}}{{lead}}{{win}}">{{play[3][1].disp}}</span></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td class="pos">South<br/>(dealer)</td>
+                <td></td>
+                <td></td>
+              </tr>
+            </table>
+          </div>
         </div>
         {% endfor %}
       </div>
     </div>
-    {% endif %}  {# play_seq #}
+    {% endif %}  {# deal #}
     {% endif %}  {# strategy #}
   </form>
   <div class="refs">
@@ -926,7 +997,7 @@
      $(".sel_trick input").on('change', function() {
        var val = $(this).val();
        var trick_selector = "#trick_" + val;
-       $(".tricks div").css('display', 'none');
+       $(".tricks .trick").css('display', 'none');
        $(trick_selector).css('display', 'block');
      });
    });

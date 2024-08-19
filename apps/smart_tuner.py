@@ -144,16 +144,18 @@ class Context(NamedTuple):
     orig_hand:    Hand
     turn:         Card
     turn_lbl:     str
+    turn_act:     int
     bidding:      list[BidInfo]
     base_bidding: list[BidInfo]
     # playing context
     rulesets:     dict[str, list[Callable]]
     deck:         Deck
     players:      list[Player]
+    rel:          list[str]
     deal:         DealState
     persist:      list[dict]
+    score_seq:    list[tuple[int, int]]
     bid_seq:      list[tuple[str, ...]]
-    play_seq:     list[tuple[str, ...]]
     pos_play:     list
     seq_hands:    list[Deck]
     trick_chk:    list[str]
@@ -205,6 +207,11 @@ setattr(Bid, 'disp', property(Bid.__str__))
 
 CARDS_BY_SUIT = sorted(CARDS, key=disp_key)
 RANKS = [r.tag for r in ALL_RANKS]
+
+def rotate(seq: Sequence, n: int) -> Sequence:
+    """Rotate input squence to the right by specified number of places
+    """
+    return seq[-n:] + seq[:-n]
 
 def all_distinct(seq: Sequence[Hashable]) -> bool:
     """Return `True` if all elements of input sequence are distinct (implemented by adding
@@ -265,15 +272,17 @@ def index():
         'orig_hand':    None,
         'turn':         turn,
         'turn_lbl':     '',
+        'turn_act':     None,
         'bidding':      None,
         'base_bidding': None,
         'rulesets':     rulesets,
         'deck':         deck,
         'players':      None,
+        'rel':          None,
         'deal':         None,
         'persist':      None,
+        'score_seq':    None,
         'bid_seq':      None,
-        'play_seq':     None,
         'pos_play':     None,
         'seq_hands':    None,
         'trick_chk':    [" checked"] + [''] * 4,
@@ -468,15 +477,17 @@ def compute_bidding(form: dict, **kwargs) -> str:
         'orig_hand':    None,
         'turn':         turn,
         'turn_lbl':     '',
+        'turn_act':     None,
         'bidding':      bidding,
         'base_bidding': base_bidding,
         'rulesets':     {},
         'deck':         deck,
         'players':      None,
+        'rel':          None,
         'deal':         None,
         'persist':      None,
+        'score_seq':    None,
         'bid_seq':      None,
-        'play_seq':     None,
         'pos_play':     None,
         'seq_hands':    None,
         'trick_chk':    trick_chk,
@@ -671,25 +682,23 @@ def compute_playing(form: dict, **kwargs) -> str:
     orig_hand = Hand(sorted(cards_dealt, key=disp_key))
 
     bid_seq = []
-    for pos, bid in enumerate(deal.bids):
-        you = " (you)" if (pos % 4) == player_pos else ""
-        alone = " alone" if bid.alone else ""
-        if bid is NULL_BID or (bid.is_defend() and not alone):
+    for bid_pos, bid in enumerate(deal.bids):
+        pos = bid_pos % NUM_PLAYERS
+        you = " (you)" if pos == player_pos else ""
+        if bid is NULL_BID or (bid.is_defend() and not bid.alone):
             continue
-        player = deal.players[pos % NUM_PLAYERS].name
+        player = deal.players[pos]
         # ATTN: `strength` is only correct for the most recent bid by a position, since
         # the "persist" values in `bid()` are overwritten with each call--definitely need
-        # to fix (ala `play_seq`)!!!
+        # to fix (ala `play_log`)!!!
         strength = deal.player_state[pos % NUM_PLAYERS].get('strength')
-        bid_seq.append((player, bid, you, round(strength, FLOAT_PREC)))
+        bid_seq.append((player, you, bid, round(strength, FLOAT_PREC)))
 
-    play_seq  = []
     pos_play  = []
     seq_hands = []
     score_seq = []
     cur_score = [0, 0]
     for idx, trick in enumerate(deal.tricks):
-        trick_seq = []
         trick_plays = [(p.name, NULL_CARD, None, None, None) for p in deal.players]
         cards = deal.played_by_pos[player_pos].copy_cards()[idx:]
         cards.sort(key=lambda c: c.sortkey)
@@ -706,25 +715,22 @@ def compute_playing(form: dict, **kwargs) -> str:
             rule = f"{play_log['ruleset']}: {play_log['rule'].__name__}"
             reason = play_log['reason']
             trick_info = (player, card, you, win, rule, reason)
-            trick_seq.append(trick_info)
             trick_plays[pos] = trick_info
-        play_seq.append(trick_seq)
         pos_play.append(trick_plays)
 
     dealer = deal.players[DEALER_POS].name
-    dealer += (" (you)" if player_pos == 3 else
-               " (partner)" if player_pos == 1 else
-               " (opp)")
     caller = deal.players[deal.caller_pos].name
-    caller += (" (you)" if deal.caller_pos == player_pos else
-               " (partner)" if deal.caller_pos ^ 0x02 == player_pos else
-               " (opp)")
     if not deal.discard:
         turn_lbl = "turned down by " + dealer
+        turn_act = DEALER_POS
     elif deal.caller_pos != 3:
         turn_lbl = "ordered up by " + caller
+        turn_act = deal.caller_pos
     else:
         turn_lbl = "picked up by " + dealer
+        turn_act = DEALER_POS
+
+    rel_base = ['you', 'opp', 'partner', 'opp']
 
     context = {
         'strategy':     strategy,
@@ -738,16 +744,17 @@ def compute_playing(form: dict, **kwargs) -> str:
         'orig_hand':    orig_hand,
         'turn':         deal.turn_card,
         'turn_lbl':     turn_lbl,
+        'turn_act':     turn_act,
         'bidding':      None,
         'base_bidding': None,
         'rulesets':     strat.ruleset,
         'deck':         deck,
         'players':      deal.players,
+        'rel':          rotate(rel_base, player_pos),
         'deal':         deal.deal_state(player_pos),
         'persist':      deal.player_state,
         'score_seq':    score_seq,
         'bid_seq':      bid_seq,
-        'play_seq':     play_seq,
         'pos_play':     pos_play,
         'seq_hands':    seq_hands,
         'trick_chk':    trick_chk,
