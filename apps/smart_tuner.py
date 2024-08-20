@@ -173,9 +173,6 @@ NULL_HAND  = Hand([NULL_CARD] * 5)
 PASSES     = [PASS_BID] * 8
 NONES      = [None] * 10
 
-MAX_RULESET = 7
-DUMMY_RULESETS = {name: [None] * MAX_RULESET for name in StrategySmart.RULESETS}
-
 FLOAT_PREC = 2
 
 ranks = len(ALL_RANKS)
@@ -241,13 +238,12 @@ def index():
     """Get the analysis and strategy parameters for the specified strategy (or an empty
     form if ``strategy`` is not specified in the request)
     """
-    deck     = None
-    hand     = None
-    turn     = None
-    anly     = None
-    strgy    = None
-    coeff    = NULL_COEFF
-    rulesets = DUMMY_RULESETS
+    deck  = None
+    hand  = None
+    turn  = None
+    anly  = None
+    strgy = None
+    coeff = NULL_COEFF
 
     strategy = request.args.get('strategy')
     if strategy:

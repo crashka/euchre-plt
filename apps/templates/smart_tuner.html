@@ -241,26 +241,7 @@
         <label>Playing:<input type="radio" name="phase" value="1"{{phase_chk[1]}}></label>
       </span>
     </div>
-    <div class="section playing">
-      <span class="section_lbl">Playing Rulesets</span>
-      <div class="subsect">
-        {% for name, rules in strgy.ruleset.items() %}
-        <div class="ruleset">
-          <b>{{name}}</b>
-          <input type="hidden" name="{{name}}" value="">
-          <ul>
-            {% for rule in rules %}
-            {% if rule %}
-            <li tabindex="0" title="{{rule.__doc__}}">{{rule.__name__}}</li>
-            {% else %}
-            <span style="display: inline-block;">&nbsp;</span>
-            {% endif %}
-            {% endfor %}
-          </ul>
-        </div>
-        {% endfor %}
-      </div>
-    </div>
+    {% if strategy %}
     <div class="section bidding">
       <span class="section_lbl">Hand Analysis Params</span>
       <table class="tbl_params">
@@ -282,29 +263,17 @@
         </tr>
         <tr>
           <td class="td_lbl">Trump values:</td>
-          {% if anly %}
           {% for val in anly.trump_values %}
           <td class="td_num"><input name="tv_{{loop.index0}}" type="number" value="{{val}}"></td>
           {% endfor %}
-          {% else %}
-          {% for idx in range(8) %}
-          <td class="td_num"><input name="tv_{{idx}}" type="number"></td>
-          {% endfor %}
-          {% endif %}
           <td class="td_spc"></td>
           <td class="td_num"><input name="coeff_0" type="number" value="{{coeff[0]}}"></td>
         </tr>
         <tr>
           <td class="td_lbl">Suit values:</td>
-          {% if anly %}
           {% for val in anly.suit_values %}
           <td class="td_num"><input name="sv_{{loop.index0}}" type="number" value="{{val}}"></td>
           {% endfor %}
-          {% else %}
-          {% for idx in range(6) %}
-          <td class="td_num"><input name="sv_{{idx}}" type="number"></td>
-          {% endfor %}
-          {% endif %}
           <td class="td_spc"></td>
           <td class="td_spc"></td>
           <td class="td_spc"></td>
@@ -334,15 +303,9 @@
         </tr>
         <tr>
           <td class="td_lbl">Num trump scores:</td>
-          {% if anly %}
           {% for val in anly.num_trump_scores %}
           <td class="td_dec"><input name="nts_{{loop.index0}}" type="number" value="{{val}}"></td>
           {% endfor %}
-          {% else %}
-          {% for idx in range(6) %}
-          <td class="td_dec"><input name="nts_{{idx}}" type="number"></td>
-          {% endfor %}
-          {% endif %}
           <td class="td_spc"></td>
           <td class="td_spc"></td>
           <td class="td_spc"></td>
@@ -350,15 +313,9 @@
         </tr>
         <tr>
           <td class="td_lbl">Num off-aces scores:</td>
-          {% if anly %}
           {% for val in anly.off_aces_scores %}
           <td class="td_dec"><input name="nas_{{loop.index0}}" type="number" value="{{val}}"></td>
           {% endfor %}
-          {% else %}
-          {% for idx in range(4) %}
-          <td class="td_dec"><input name="nas_{{idx}}" type="number"></td>
-          {% endfor %}
-          {% endif %}
           <td class="td_spc"></td>
           <td class="td_spc"></td>
           <td class="td_spc"></td>
@@ -368,15 +325,9 @@
         </tr>
         <tr>
           <td class="td_lbl">Num voids scores:</td>
-          {% if anly %}
           {% for val in anly.voids_scores %}
           <td class="td_dec"><input name="nvs_{{loop.index0}}" type="number" value="{{val}}"></td>
           {% endfor %}
-          {% else %}
-          {% for idx in range(4) %}
-          <td class="td_dec"><input name="nvs_{{idx}}" type="number"></td>
-          {% endfor %}
-          {% endif %}
           <td class="td_spc"></td>
           <td class="td_spc"></td>
           <td class="td_spc"></td>
@@ -403,15 +354,9 @@
         </tr>
         <tr>
           <td class="td_lbl">Turn card value:</td>
-          {% if strgy %}
           {% for val in strgy.turn_card_value %}
           <td class="td_num"><input name="tcv_{{loop.index0}}" type="number" value="{{val}}"></td>
           {% endfor %}
-          {% else %}
-          {% for idx in range(8) %}
-          <td class="td_num"><input name="tcv_{{idx}}" type="number"></td>
-          {% endfor %}
-          {% endif %}
         </tr>
       </table>
       <table class="tbl_params">
@@ -432,55 +377,46 @@
         </tr>
         <tr>
           <td class="td_lbl">Turn card coeff:</td>
-          {% if strgy %}
           {% for val in strgy.turn_card_coeff %}
           <td class="td_num"><input name="tcc_{{loop.index0}}" type="number" value="{{val}}"></td>
           {% endfor %}
-          {% else %}
-          {% for idx in range(4) %}
-          <td class="td_num"><input name="tcc_{{idx}}" type="number"></td>
-          {% endfor %}
-          {% endif %}
         </tr>
         <tr>
           <td class="td_lbl">Bid thresh:</td>
-          {% if strgy %}
           {% for val in strgy.bid_thresh %}
           <td class="td_num"><input name="bt_{{loop.index0}}" type="number" value="{{val}}"></td>
           {% endfor %}
-          {% else %}
-          {% for idx in range(8) %}
-          <td class="td_num"><input name="bt_{{idx}}" type="number"></td>
-          {% endfor %}
-          {% endif %}
         </tr>
         <tr>
           <td class="td_lbl">Alone margin:</td>
-          {% if strgy %}
           {% for val in strgy.alone_margin %}
           <td class="td_num"><input name="am_{{loop.index0}}" type="number" value="{{val}}"></td>
           {% endfor %}
-          {% else %}
-          {% for idx in range(8) %}
-          <td class="td_num"><input name="am_{{idx}}" type="number"></td>
-          {% endfor %}
-          {% endif %}
         </tr>
         <tr>
           <td class="td_lbl">Def alone thresh:</td>
-          {% if strgy %}
           {% for val in strgy.def_alone_thresh %}
           <td class="td_num"><input name="dat_{{loop.index0}}" type="number" value="{{val}}"></td>
           {% endfor %}
-          {% else %}
-          {% for idx in range(11) %}
-          <td class="td_num"><input name="dat_{{idx}}" type="number"></td>
-          {% endfor %}
-          {% endif %}
         </tr>
       </table>
     </div>
-    {% if strategy %}
+    <div class="section playing">
+      <span class="section_lbl">Playing Rulesets</span>
+      <div class="subsect">
+        {% for name, rules in strgy.ruleset.items() %}
+        <div class="ruleset">
+          <b>{{name}}</b>
+          <input type="hidden" name="{{name}}" value="">
+          <ul>
+            {% for rule in rules %}
+            <li tabindex="0" title="{{rule.__doc__}}">{{rule.__name__}}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
     <div class="section">
       <span class="section_lbl">Deal Info</span>
       <div class="subsect">
