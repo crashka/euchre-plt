@@ -99,15 +99,16 @@
      display: none;
      width: 1.5rem;
    }
-   .container {
+   .card_cntr {
      position: relative;
    }
    .spn_hand {
    }
    .spn_hand .spn_card {
-     margin-right: 0.5rem;
+     display: inline-block;
    }
    .spn_card {
+     margin: 0 0.2rem;
      word-spacing: -0.15rem;
    }
    .red {
@@ -144,7 +145,7 @@
      text-align: center;
      position: absolute;
      top: 0.05rem;
-     left: 0.40rem;
+     left: -0.10rem;
      height: 1.1rem;
      width: 2.0rem;
      display: none;
@@ -164,8 +165,8 @@
      background-color: #F0F0F0;
      width: 13rem;
    }
-   .ruleset span {
-     display: inline-block;
+   .ruleset li:focus {
+     background-color: yellow;
    }
    .bids {
      float: left;
@@ -246,12 +247,13 @@
         {% for name, rules in rulesets.items() %}
         <div class="ruleset">
           <b>{{name}}</b>
+          <input type="hidden" name="{{name}}" value="">
           <ul>
             {% for rule in rules %}
             {% if rule %}
-            <li title="{{rule.__doc__}}">{{rule.__name__}}</li>
+            <li tabindex="0" title="{{rule.__doc__}}">{{rule.__name__}}</li>
             {% else %}
-            <span>&nbsp;</span>
+            <span style="display: inline-block;">&nbsp;</span>
             {% endif %}
             {% endfor %}
           </ul>
@@ -532,7 +534,7 @@
                 {% if hand %}
                 <span class="spn_hand">
                   {% for mycard in hand %}
-                  <span class="container">
+                  <span class="card_cntr">
                     <input type="text" name="hand_{{loop.index0}}" class="inp_card" value="{{mycard.idx}}">
                     <span class="spn_card" title="Click to change...">{{mycard.disp}}</span>
                     <select name="hand_{{loop.index0}}" class="sel_card" title="Click to choose...">
@@ -550,7 +552,7 @@
               <td class="td_lbl">Turn card:</td>
               <td>
                 {% if turn %}
-                <span class="container">
+                <span class="card_cntr">
                   <input type="text" name="turn_card" class="inp_card" value="{{turn.idx}}">
                   <span class="spn_card" title="Click to change...">{{turn.disp}}</span>
                   <select name="turn_card" class="sel_card" title="Click to choose...">
@@ -567,12 +569,6 @@
               <col style="width: 4.5rem;">
               <col style="width: 14rem;">
             </colgroup>
-            <tr>
-              <td class="td_lbl">Position:</td>
-              <td>
-                {{players[player_pos].name}} (bid {{player_pos + 1}})
-              </td>
-            </tr>
             <tr>
               {% if show_discard %}
               <td class="td_lbl">Orig hand:</td>
@@ -601,7 +597,9 @@
               <td>
                 {% if turn %}
                 <span class="spn_card">{{turn.disp}}</span>
+                {% if turn_lbl %}
                 {{turn_lbl}} <span class="annot">({{rel[turn_act]}})</span>
+                {% endif %}
                 {% endif %}  {# turn #}
               </td>
             </tr>
@@ -645,7 +643,7 @@
               {% set alone = bid[2].alone %}
               {% set strength = bid[3] %}
               <tr>
-                <td>{{player.name}}{{you}}:</td>
+                <td>{{player.name}}<span class="annot">{{you}}</span>:</td>
                 <td>
                   {% if suit.idx == -1 %}
                   <span class="spn_pass">pass</span>
@@ -963,6 +961,38 @@
        window.location.href = curpage + stratStr + phaseStr;
      });
 
+     // ruleset section
+     $.fn.updateRuleset = function() {
+       //console.log(ruleset + " - updateRuleset");
+       var $rules = $(this).siblings("input");
+       var ruleset = $rules.attr('name');
+       $rules.val("|");
+       $(this).children("li").each(function(idx) {
+         $rules.val($rules.val() + $(this).html() + "|")
+       });
+     };
+     $(".ruleset ul").each(function() {
+       $(this).updateRuleset();
+     });
+     $(".ruleset li").on('keyup', function(e) {
+       if (event.which == 38) {
+         var $prev = $(this).prev();
+         if ($prev.length > 0) {
+           $(this).insertBefore($prev);
+           $(this).trigger('focus');
+           $(this).closest("ul").updateRuleset()
+         }
+       }
+       else if (event.which == 40) {
+         var $next = $(this).next();
+         if ($next.length > 0) {
+           $(this).insertAfter($next);
+           $(this).trigger('focus');
+           $(this).closest("ul").updateRuleset()
+         }
+       }
+     });
+
      // deal info section
      $(".pos_layout input").on('change', function() {
        $("button[value='evaluate']").click();
@@ -981,7 +1011,7 @@
        $(this).siblings(".spn_card").css('color', 'white');
        $(this).siblings(".inp_card").val(new_val).change();
      });
-     $deal_info.on('focusout', ".sel_card", function() {
+     $deal_info.on('blur', ".sel_card", function() {
        $(this).css('display', 'none');
      });
 
