@@ -148,7 +148,6 @@ class Context(NamedTuple):
     bidding:      list[BidInfo]
     base_bidding: list[BidInfo]
     # playing context
-    rulesets:     dict[str, list[Callable]]
     deck:         Deck
     players:      list[Player]
     rel:          list[str]
@@ -224,6 +223,8 @@ def leading_spaces(line: str) -> int:
     """
     return len(line) - len(line.lstrip(' '))
 
+PLAYER_NAMES = ["West", "North", "East", "South"]
+
 ################
 # Flask Routes #
 ################
@@ -253,8 +254,6 @@ def index():
         deck = get_deck()
         hand, turn = get_hand(deck)
         strgy, anly, coeff = get_strgy_comps(strategy, hand)
-        strat = Strategy.new(strategy)
-        rulesets = strat.ruleset
     phase = int(request.args.get('phase') or 0)
     phase_chk = ['', '']
     phase_chk[phase] = " checked"
@@ -274,7 +273,6 @@ def index():
         'turn_act':     None,
         'bidding':      None,
         'base_bidding': None,
-        'rulesets':     rulesets,
         'deck':         deck,
         'players':      None,
         'rel':          None,
@@ -478,7 +476,6 @@ def compute_bidding(form: dict, **kwargs) -> str:
         'turn_act':     None,
         'bidding':      bidding,
         'base_bidding': base_bidding,
-        'rulesets':     {},
         'deck':         deck,
         'players':      None,
         'rel':          None,
@@ -656,13 +653,18 @@ def compute_playing(form: dict, **kwargs) -> str:
     if not deck:
         deck = [get_card(form[f'deck_{n}']) for n in range(24)]
 
+    play_strgy = {}
+    for ruleset in StrategySmart.RULESETS:
+        assert ruleset in form
+        rules = form[ruleset]
+        play_strgy[ruleset] = rules.strip().split('\t')
+
     # I think we can use a single shared strategy here, since there is no state or
     # individual parameter overrides
-    strat = Strategy.new(strategy)
+    strgy = Strategy.new(strategy, **play_strgy)
 
     cards = None
-    player_names = ["West", "North", "East", "South"]
-    players = [Player(player_names[i], strat) for i in range(4)]
+    players = [Player(PLAYER_NAMES[i], strgy) for i in range(4)]
     while True:
         deal = Deal(players, deck)
         deal.deal_cards()
@@ -722,7 +724,7 @@ def compute_playing(form: dict, **kwargs) -> str:
         'player_pos':   player_pos,
         'pos_chk':      pos_chk,
         'anly':         None,
-        'strgy':        None,
+        'strgy':        strgy,
         'coeff':        NULL_COEFF,
         'hand':         hand,
         'orig_hand':    orig_hand,
@@ -731,7 +733,6 @@ def compute_playing(form: dict, **kwargs) -> str:
         'turn_act':     turn_act,
         'bidding':      None,
         'base_bidding': None,
-        'rulesets':     strat.ruleset,
         'deck':         deck,
         'players':      deal.players,
         'rel':          rotate(rel_base, player_pos),

@@ -7,7 +7,7 @@
 
   <style>
    .section {
-     margin-top: 0.7rem;
+     margin-top: 0.6rem;
      overflow: hidden;
    }
    .section_lbl {
@@ -15,7 +15,7 @@
      font-weight: bold;
    }
    .subsect {
-     margin-top: 0.3rem;
+     margin-top: 0.2rem;
      overflow: hidden;
    }
    .sel_strategy {
@@ -38,7 +38,7 @@
      margin: 0 2.0rem;
    }
    .tbl_params {
-     margin-top: 0.3rem;
+     margin-top: 0.1rem;
    }
    .tbl_results {
      margin-top: 0.25rem;
@@ -244,7 +244,7 @@
     <div class="section playing">
       <span class="section_lbl">Playing Rulesets</span>
       <div class="subsect">
-        {% for name, rules in rulesets.items() %}
+        {% for name, rules in strgy.ruleset.items() %}
         <div class="ruleset">
           <b>{{name}}</b>
           <input type="hidden" name="{{name}}" value="">
@@ -485,7 +485,6 @@
       <span class="section_lbl">Deal Info</span>
       <div class="subsect">
         <div class="tbl_div">
-          <span class="bids_lbl">Position</span>
           <table class="pos_layout">
             <tr>
               <td></td>
@@ -936,7 +935,7 @@
   <script src="/static/jquery-3.7.1.min.js"></script>
   <script>
    $(function() {
-     // add css and attributes
+     // ----- css and attributes ----- //
      $(".spn_card:contains('\u2665')").css('color', 'red');
      $(".spn_card:contains('\u2666')").css('color', 'red');
      $(".spn_suit:contains('\u2665')").css('color', 'red');
@@ -951,7 +950,7 @@
        name: "submit_func"
      });
 
-     // header section
+     // ----- header section ----- //
      $(".header").on('change', function() {
        var strat = $(".sel_strategy").val();
        var phase = $(".bid_play input:checked").val();
@@ -961,19 +960,23 @@
        window.location.href = curpage + stratStr + phaseStr;
      });
 
-     // ruleset section
+     // ----- ruleset section ----- //
+     // called on ruleset `ul`, set value of adjacent hidden input
+     // to delimited list of rules (in sequence order)
      $.fn.updateRuleset = function() {
-       //console.log(ruleset + " - updateRuleset");
        var $rules = $(this).siblings("input");
        var ruleset = $rules.attr('name');
-       $rules.val("|");
+       $rules.val("");
        $(this).children("li").each(function(idx) {
-         $rules.val($rules.val() + $(this).html() + "|")
+         $rules.val($rules.val() + $(this).html() + '\t')
        });
      };
+     // initialize ruleset input
      $(".ruleset ul").each(function() {
        $(this).updateRuleset();
      });
+     // move rule `li` up or down within the ruleset, using arrow
+     // keys (ruleset input is updated, as needed)
      $(".ruleset li").on('keyup', function(e) {
        if (event.which == 38) {
          var $prev = $(this).prev();
@@ -993,29 +996,29 @@
        }
      });
 
-     // deal info section
+     // ----- deal info section ----- //
+     // reevaluate on position or card changes
      $(".pos_layout input").on('change', function() {
        $("button[value='evaluate']").click();
      });
-
-     var $deal_info = $(".deal_info");
-     $deal_info.on('change', ".inp_card", function() {
+     $(".deal_info").on('change', ".inp_card", function() {
        $("button[value='evaluate']").click();
      });
-     $deal_info.on('click', ".spn_card", function() {
+     // card selection mechanism
+     $(".deal_info").on('click', ".spn_card", function() {
        $(this).siblings(".sel_card").css('display', 'inline').trigger('focus');
      });
-     $deal_info.on('change', ".sel_card", function() {
+     $(".deal_info").on('change', ".sel_card", function() {
        var new_val = $(this).val();
        $(this).css('display', 'none');
        $(this).siblings(".spn_card").css('color', 'white');
        $(this).siblings(".inp_card").val(new_val).change();
      });
-     $deal_info.on('blur', ".sel_card", function() {
+     $(".deal_info").on('blur', ".sel_card", function() {
        $(this).css('display', 'none');
      });
 
-     // buttons section
+     // ----- buttons section ----- //
      $("button[value!='export_params']").on('click', function() {
        $("form").attr({target: '_self', onsubmit: null});
      });
@@ -1025,7 +1028,7 @@
        $("form").attr({target: 'export_popup', onsubmit: exp_popup});
      });
 
-     // playing section
+     // ----- playing section ----- //
      $(".sel_trick input").on('change', function() {
        var val = $(this).val();
        var trick_selector = "#trick_" + val;
