@@ -699,8 +699,7 @@ def compute_playing(form: dict, **kwargs) -> str:
     for idx, trick in enumerate(deal.tricks):
         trick_plays = [(p.name, NULL_CARD, None, None, None) for p in deal.players]
         cards = deal.played_by_pos[player_pos].copy_cards()[idx:]
-        cards.sort(key=lambda c: c.sortkey)
-        seq_hands.append(Hand(cards))
+        seq_hands.append(Hand(sorted(cards, key=disp_key)))
         score_seq.append(tuple(cur_score))
         cur_score[trick.winning_pos % 2] += 1
 
