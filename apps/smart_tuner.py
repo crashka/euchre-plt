@@ -43,7 +43,8 @@ from flask import Flask, request, render_template, abort
 
 from .to_yaml import to_yaml
 from euchplt.core import cfg
-from euchplt.card import ALL_RANKS, Suit, Card, CARDS, Deck, get_card, get_deck
+from euchplt.card import (ALL_RANKS, Suit, diamonds, hearts, Card, CARDS, Deck,
+                          get_card, get_deck)
 from euchplt.euchre import Hand, Bid, NULL_BID, PASS_BID, DealState
 from euchplt.player import Player
 from euchplt.deal import NUM_PLAYERS, DEALER_POS, Deal
@@ -194,10 +195,26 @@ def disp_key(card: Card) -> int:
     # 10, say, which is what most normal people would do)
     return card.rank.idx + disp_suit_offset[card.suit.idx]
 
+RED_SUITS = (diamonds, hearts)
+RED_CLS   = " red"
+OTH_CLS   = ""
+
+def suit_cls(suit: Suit) -> str:
+    """Return CSSS class representing color for the suit
+    """
+    return RED_CLS if suit in RED_SUITS else OTH_CLS
+
+def card_cls(card: Card) -> str:
+    """Return CSSS class representing color for the card
+    """
+    return RED_CLS if card.suit in RED_SUITS else OTH_CLS
+
 # monkeypatch display properties for `Suit`, `Card`, and `Bid` to help keep things cleaner
 # in the template and/or to be CSS-friendly
 setattr(Suit, 'disp', property(Suit.__str__))
+setattr(Suit, 'cls', property(suit_cls))
 setattr(Card, 'disp', property(card_disp))
+setattr(Card, 'cls', property(card_cls))
 setattr(Bid, 'disp', property(Bid.__str__))
 
 CARDS_BY_SUIT = sorted(CARDS, key=disp_key)
