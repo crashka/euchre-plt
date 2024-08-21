@@ -174,13 +174,6 @@ FMT_FILETYPE = {
 STATS_MIMETYPE = FMT_MIMETYPE[STATS_FMT]
 STATS_FILETYPE = FMT_FILETYPE[STATS_FMT]
 
-stats_file_sfx = [
-    '_stats',
-    '_statsdet',
-    '_comps',
-    '_compsdet'
-]
-
 class StatsReport(NamedTuple):
     """Stats report definition
     """
@@ -189,6 +182,7 @@ class StatsReport(NamedTuple):
     file_sfx:    str   # tacked onto the end of basename (munged `name`)
     comp_stats:  bool  # computed stats included?
     pos_details: bool  # position details included?
+    team_stats:  bool  # team stats (pivoted format)?
 
     def filename(self, tourn_name: str) -> str:
         """Get file name for the report, based on the tournament name (after collapsing
@@ -198,10 +192,12 @@ class StatsReport(NamedTuple):
         return basename + self.file_sfx + STATS_FILETYPE
 
 STATS_REPORTS = [
-    StatsReport(0, "Base Stats",                      '_stats',    False, False),
-    StatsReport(1, "Base Stats (w/ pos details)",     '_statsdet', False, True),
-    StatsReport(2, "Computed Stats",                  '_comps',    True,  False),
-    StatsReport(3, "Computed Stats (w/ pos details)", '_compsdet', True,  True)
+    StatsReport(0, "Base Stats",                      '_stats',    False, False, False),
+    StatsReport(1, "Base Stats (pos details)",        '_statsdet', False, True,  False),
+    StatsReport(2, "Computed Stats",                  '_comps',    True,  False, False),
+    StatsReport(3, "Computed Stats (pos details)",    '_compsdet', True,  True,  False),
+    StatsReport(4, "Team Stats (pivot)",              '_teams',    True,  False, True),
+    StatsReport(5, "Team Stats (pivot, pos details)", '_teamsdet', True,  True,  True)
 ]
 
 ################
@@ -457,7 +453,10 @@ def download_stats(report_id):
     # for now, whether this throws an `IndexError` is our validation mechanism for
     # `report_id`
     report = STATS_REPORTS[report_id]
-    if report.comp_stats:
+    if report.team_stats:
+        stats_hdr  = tourn.team_stats_header
+        stats_iter = tourn.iter_team_stats
+    elif report.comp_stats:
         stats_hdr  = tourn.comp_stats_header
         stats_iter = tourn.iter_comp_stats
     else:
@@ -465,8 +464,8 @@ def download_stats(report_id):
         stats_iter = tourn.iter_stats
 
     buffer = StringIO()
-    writer = csv.DictWriter(buffer, fieldnames=stats_hdr(), dialect=STATS_FMT,
-                            lineterminator=os.linesep)
+    writer = csv.DictWriter(buffer, fieldnames=stats_hdr(report.pos_details),
+                            dialect=STATS_FMT, lineterminator=os.linesep)
     writer.writeheader()
     for row in stats_iter(report.pos_details):
         writer.writerow(row)
@@ -520,7 +519,9 @@ help_txt = {
     'dl_0': "directly tabulated counts (integer)",
     'dl_1': "directly tabulated counts (integer)",
     'dl_2': "format in Excel as 'Percent' (with decimal places = 1)",
-    'dl_3': "format in Excel as 'Percent' (with decimal places = 1)"
+    'dl_3': "format in Excel as 'Percent' (with decimal places = 1)",
+    'dl_4': "stats laid out horizontally (suitable for sorting)",
+    'dl_5': "stats laid out horizontally (suitable for sorting)"
 }
 
 euchplt_pfx = "https://crashka.github.io/euchre-plt/_build/html/euchplt.html#"

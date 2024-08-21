@@ -2,25 +2,25 @@
 default:
   players:
     Random Player 1a:
-      strategy:        Random 1
+      strategy:        Random
     Random Player 1b:
-      strategy:        Random 1
+      strategy:        Random
     Simple Player 1a:
-      strategy:        Simple 1
+      strategy:        Simple i
     Simple Player 1b:
-      strategy:        Simple 1
+      strategy:        Simple i
     Simple Player 2a:
-      strategy:        Simple 2
+      strategy:        Simple ii
     Simple Player 2b:
-      strategy:        Simple 2
+      strategy:        Simple ii
     Simple Player 3a:
-      strategy:        Simple 3
+      strategy:        Simple iii
     Simple Player 3b:
-      strategy:        Simple 3
+      strategy:        Simple iii
     Simple Player 4a:
-      strategy:        Simple 4
+      strategy:        Simple iv
     Simple Player 4b:
-      strategy:        Simple 4
+      strategy:        Simple iv
     Smart Player 1a:
       strategy:        Smart 1
     Smart Player 1b:
@@ -48,25 +48,25 @@ default:
 
   teams:
     Random Team 1:
-      strategy:        Random 1
+      strategy:        Random
     Random Team 1b:
-      strategy:        Random 1
+      strategy:        Random
     Simple Team 1:
-      strategy:        Simple 1
+      strategy:        Simple i
     Simple Team 1b:
-      strategy:        Simple 1
+      strategy:        Simple i
     Simple Team 2:
-      strategy:        Simple 2
+      strategy:        Simple ii
     Simple Team 2b:
-      strategy:        Simple 2
+      strategy:        Simple ii
     Simple Team 3:
-      strategy:        Simple 3
+      strategy:        Simple iii
     Simple Team 3b:
-      strategy:        Simple 3
+      strategy:        Simple iii
     Simple Team 4:
-      strategy:        Simple 4
+      strategy:        Simple iv
     Simple Team 4b:
-      strategy:        Simple 4
+      strategy:        Simple iv
     Smart Team 1:
       strategy:        Smart 1
     Smart Team 1b:

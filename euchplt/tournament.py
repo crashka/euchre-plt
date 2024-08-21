@@ -619,7 +619,7 @@ class Tournament:
             stats_str = '\t'.join(stat_vals)
             print(f"  {name:15}\t{stats_str}", file=file)
 
-    def stats_header(self) -> list[str]:
+    def stats_header(self, *args) -> list[str]:
         """Header fields used as the keys for the ``iter_stats()`` generator; the field
         name for stat name is ``'Statistic'``
         """
@@ -647,7 +647,7 @@ class Tournament:
                 for i in range(8):
                     yield pos_stat_recs[i]
 
-    def comp_stats_header(self) -> list[str]:
+    def comp_stats_header(self, *args) -> list[str]:
         """Header fields used as the keys for the ``iter_comp_stats()`` generator; the
         field name for stat name is ``'Computed Stat'``
         """

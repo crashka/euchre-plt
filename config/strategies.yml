@@ -111,65 +111,65 @@ default:
           - lead_low_from_long_suit
 
     Hybrid i-1:
-      comments:         Simple 1 (bid) + Smart 1 (play)
+      comments:         Simple i (bid) + Smart 1 (play)
       module_path:      euchplt.strategy
       base_class:       StrategyHybrid
       strategy_params:
-        bid_strategy:     Simple 1
+        bid_strategy:     Simple i
         play_strategy:    Smart 1
     Hybrid i-5:
-      comments:         Simple 1 (bid) + Smart 5 (play)
+      comments:         Simple i (bid) + Smart 5 (play)
       module_path:      euchplt.strategy
       base_class:       StrategyHybrid
       strategy_params:
-        bid_strategy:     Simple 1
+        bid_strategy:     Simple i
         play_strategy:    Smart 5
     Hybrid 1-i:
-      comments:         Smart 1 (bid) + Simple 1 (play)
+      comments:         Smart 1 (bid) + Simple i (play)
       module_path:      euchplt.strategy
       base_class:       StrategyHybrid
       strategy_params:
         bid_strategy:     Smart 1
-        play_strategy:    Simple 1
+        play_strategy:    Simple i
     Hybrid 2-i:
-      comments:         Smart 2 (bid) + Simple 1 (play)
+      comments:         Smart 2 (bid) + Simple i (play)
       module_path:      euchplt.strategy
       base_class:       StrategyHybrid
       strategy_params:
         bid_strategy:     Smart 2
-        play_strategy:    Simple 1
+        play_strategy:    Simple i
     Hybrid 3-i:
-      comments:         Smart 3 (bid) + Simple 1 (play)
+      comments:         Smart 3 (bid) + Simple i (play)
       module_path:      euchplt.strategy
       base_class:       StrategyHybrid
       strategy_params:
         bid_strategy:     Smart 3
-        play_strategy:    Simple 1
+        play_strategy:    Simple i
     Hybrid 3-ii:
-      comments:         Smart 3 (bid) + Simple 2 (play)
+      comments:         Smart 3 (bid) + Simple ii (play)
       module_path:      euchplt.strategy
       base_class:       StrategyHybrid
       strategy_params:
         bid_strategy:     Smart 3
-        play_strategy:    Simple 2
+        play_strategy:    Simple ii
     Hybrid 3-iii:
-      comments:         Smart 3 (bid) + Simple 3 (play)
+      comments:         Smart 3 (bid) + Simple iii (play)
       module_path:      euchplt.strategy
       base_class:       StrategyHybrid
       strategy_params:
         bid_strategy:     Smart 3
-        play_strategy:    Simple 3
+        play_strategy:    Simple iii
     Hybrid 3-iv:
-      comments:         Smart 3 (bid) + Simple 4 (play)
+      comments:         Smart 3 (bid) + Simple iv (play)
       module_path:      euchplt.strategy
       base_class:       StrategyHybrid
       strategy_params:
         bid_strategy:     Smart 3
-        play_strategy:    Simple 4
+        play_strategy:    Simple iv
     Hybrid 4-i:
-      comments:         Smart 4 (bid) + Simple 1 (play)
+      comments:         Smart 4 (bid) + Simple i (play)
       module_path:      euchplt.strategy
       base_class:       StrategyHybrid
       strategy_params:
         bid_strategy:     Smart 4
-        play_strategy:    Simple 1
+        play_strategy:    Simple i
