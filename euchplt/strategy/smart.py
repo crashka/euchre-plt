@@ -410,9 +410,8 @@ class StrategySmart(Strategy):
     ``DRAW_TRUMP`` or ``PRESERVE_TRUMP``) that can be dynamically managed and helps
     direct the execution within the tactics.
     """
-    hand_analysis:    dict
-    ruleset:          dict[str, list[Callable]]
     # bid parameters
+    hand_analysis:    dict
     turn_card_value:  list[int]  # by rank.idx
     turn_card_coeff:  list[int]  # by pos (0-3)
     bid_thresh:       list[int]  # by pos (0-7)
@@ -423,7 +422,9 @@ class StrategySmart(Strategy):
     subseq_lead:      list[str]
     part_winning:     list[str]
     opp_winning:      list[str]
-
+    # instance variables
+    ruleset:          dict[str, list[Callable]]
+    # class variables
     play_methods:     ClassVar[dict[str, Callable]] = get_methods(_PlayCard)
     RULESETS:         ClassVar[tuple[str, ...]] = ('init_lead', 'subseq_lead',
                                                    'part_winning', 'opp_winning')

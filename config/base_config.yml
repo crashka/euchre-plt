@@ -25,8 +25,10 @@ default:
   base_strategy_params:
     StrategyRandom:
       rand_seed:        null
+
     StrategySimple:
       aggressive:       0x0
+
     StrategySmart:
       hand_analysis:    # keep this empty here, but may be overridden by
                         # individual strategies
@@ -66,9 +68,15 @@ default:
         - throw_off_to_create_void
         - throw_off_low
         - play_random_card
+
     StrategyRemote:
       server_url:       http://localhost:8080
       http_headers:     {}
+
+    StrategyHybrid:
+      bid_strategy:     null
+      discard_strategy: null
+      play_strategy:    null
 
   base_tourn_params:
     RoundRobin:
@@ -107,6 +115,7 @@ default:
         - nl_make_pct
         - nl_all_5_pct
         - nl_euch_pct
+
     ChallengeLadder:
       passes:          1
       round_matches:   1

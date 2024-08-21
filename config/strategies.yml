@@ -5,6 +5,7 @@ default:
       comments:         "base StrategyRandom configuration"
       module_path:      euchplt.strategy
       base_class:       StrategyRandom
+
     Simple 1:
       comments:         "base StrategySimple configuration"
       module_path:      euchplt.strategy
@@ -27,6 +28,7 @@ default:
       base_class:       StrategySimple
       strategy_params:
         aggressive:       0x03
+
     Smart 0:
       comments:         "original defaults for HandAnalysisSmart"
       module_path:      euchplt.strategy
@@ -107,3 +109,46 @@ default:
           - lead_to_create_void
           - lead_low_non_trump
           - lead_low_from_long_suit
+
+    Hybrid i-1:
+      comments:         Simple 1 (bid) + Smart 1 (play)
+      module_path:      euchplt.strategy
+      base_class:       StrategyHybrid
+      strategy_params:
+        bid_strategy:     Simple 1
+        play_strategy:    Smart 1
+    Hybrid i-5:
+      comments:         Simple 1 (bid) + Smart 5 (play)
+      module_path:      euchplt.strategy
+      base_class:       StrategyHybrid
+      strategy_params:
+        bid_strategy:     Simple 1
+        play_strategy:    Smart 5
+    Hybrid 1-i:
+      comments:         Smart 1 (bid) + Simple 1 (play)
+      module_path:      euchplt.strategy
+      base_class:       StrategyHybrid
+      strategy_params:
+        bid_strategy:     Smart 1
+        play_strategy:    Simple 1
+    Hybrid 2-i:
+      comments:         Smart 2 (bid) + Simple 1 (play)
+      module_path:      euchplt.strategy
+      base_class:       StrategyHybrid
+      strategy_params:
+        bid_strategy:     Smart 2
+        play_strategy:    Simple 1
+    Hybrid 3-i:
+      comments:         Smart 3 (bid) + Simple 1 (play)
+      module_path:      euchplt.strategy
+      base_class:       StrategyHybrid
+      strategy_params:
+        bid_strategy:     Smart 3
+        play_strategy:    Simple 1
+    Hybrid 4-i:
+      comments:         Smart 4 (bid) + Simple 1 (play)
+      module_path:      euchplt.strategy
+      base_class:       StrategyHybrid
+      strategy_params:
+        bid_strategy:     Smart 4
+        play_strategy:    Simple 1

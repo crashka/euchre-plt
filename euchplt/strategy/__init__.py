@@ -10,6 +10,7 @@ from .random import StrategyRandom
 from .simple import StrategySimple
 from .smart import StrategySmart, _PlayCard
 from .remote import StrategyRemote
+from .hybrid import StrategyHybrid
 from .ml import StrategyML
 # for sphinx
 from .__main__ import tune_strategy_smart, main
