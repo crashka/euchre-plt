@@ -4,8 +4,8 @@ from setuptools import setup, find_packages
 
 setup(
     name='euchre-plt',
-    version='',
-    packages=find_packages(include=['euchplt']),
+    version='0.1',
+    packages=find_packages(include=['euchplt', 'ml']),
     url='',
     license='',
     author='crash',
