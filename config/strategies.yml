@@ -1,28 +1,28 @@
 ---
 default:
   strategies:
-    Random 1:
+    Random:
       comments:         "base StrategyRandom configuration"
       module_path:      euchplt.strategy
       base_class:       StrategyRandom
 
-    Simple 1:
+    Simple i:
       comments:         "base StrategySimple configuration"
       module_path:      euchplt.strategy
       base_class:       StrategySimple
-    Simple 2:
+    Simple ii:
       comments:         "aggressive play for StrategySimple"
       module_path:      euchplt.strategy
       base_class:       StrategySimple
       strategy_params:
         aggressive:       0x01
-    Simple 3:
+    Simple iii:
       comments:         "aggressive play for StrategySimple"
       module_path:      euchplt.strategy
       base_class:       StrategySimple
       strategy_params:
         aggressive:       0x02
-    Simple 4:
+    Simple iv:
       comments:         "aggressive play for StrategySimple"
       module_path:      euchplt.strategy
       base_class:       StrategySimple
@@ -145,6 +145,27 @@ default:
       strategy_params:
         bid_strategy:     Smart 3
         play_strategy:    Simple 1
+    Hybrid 3-ii:
+      comments:         Smart 3 (bid) + Simple 2 (play)
+      module_path:      euchplt.strategy
+      base_class:       StrategyHybrid
+      strategy_params:
+        bid_strategy:     Smart 3
+        play_strategy:    Simple 2
+    Hybrid 3-iii:
+      comments:         Smart 3 (bid) + Simple 3 (play)
+      module_path:      euchplt.strategy
+      base_class:       StrategyHybrid
+      strategy_params:
+        bid_strategy:     Smart 3
+        play_strategy:    Simple 3
+    Hybrid 3-iv:
+      comments:         Smart 3 (bid) + Simple 4 (play)
+      module_path:      euchplt.strategy
+      base_class:       StrategyHybrid
+      strategy_params:
+        bid_strategy:     Smart 3
+        play_strategy:    Simple 4
     Hybrid 4-i:
       comments:         Smart 4 (bid) + Simple 1 (play)
       module_path:      euchplt.strategy
