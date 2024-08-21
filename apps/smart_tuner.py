@@ -187,14 +187,6 @@ def card_disp(card: Card) -> str:
         return card.tag
     return "%s %s" % (card.rank.tag, card.suit.tag)
 
-def disp_key(card: Card) -> int:
-    """Return sort key to use for displaying hands (alternate suit colors)
-    """
-    # Note: it's kind of wrong to use ``rank.idx`` here, but our cheeky way of justifying
-    # is to use ``len(ALL_RANKS)`` as the offset multiplier (rather than just hardwiring
-    # 10, say, which is what most normal people would do)
-    return card.rank.idx + disp_suit_offset[card.suit.idx]
-
 RED_SUITS = (diamonds, hearts)
 RED_CLS   = " red"
 OTH_CLS   = ""
@@ -212,10 +204,18 @@ def card_cls(card: Card) -> str:
 # monkeypatch display properties for `Suit`, `Card`, and `Bid` to help keep things cleaner
 # in the template and/or to be CSS-friendly
 setattr(Suit, 'disp', property(Suit.__str__))
-setattr(Suit, 'cls', property(suit_cls))
+setattr(Suit, 'cls',  property(suit_cls))
 setattr(Card, 'disp', property(card_disp))
-setattr(Card, 'cls', property(card_cls))
-setattr(Bid, 'disp', property(Bid.__str__))
+setattr(Card, 'cls',  property(card_cls))
+setattr(Bid,  'disp', property(Bid.__str__))
+
+def disp_key(card: Card) -> int:
+    """Return sort key to use for displaying hands (alternate suit colors)
+    """
+    # Note: it's kind of wrong to use ``rank.idx`` here, but our cheeky justification is
+    # the use of ``len(ALL_RANKS)`` as the offset multiplier (rather than just hardwiring
+    # 10, say, which is what most normal people would do)
+    return card.rank.idx + disp_suit_offset[card.suit.idx]
 
 CARDS_BY_SUIT = sorted(CARDS, key=disp_key)
 RANKS = [r.tag for r in ALL_RANKS]

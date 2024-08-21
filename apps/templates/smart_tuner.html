@@ -2,7 +2,6 @@
 <html>
 
 <head>
-  {% set show_discard = discard and player_pos == 3 %}
   <title>{{title}}</title>
 
   <style>
@@ -461,8 +460,8 @@
         </div>
         <div class="tbl_div">
           <span class="bids_lbl">Deal</span>
+          {% if phase_chk[0] %}
           <table class="deal_info">
-            {% if phase_chk[0] %}
             <tr>
               <td class="td_lbl">Hand:</td>
               <td>
@@ -501,7 +500,10 @@
                 {% endif %}  {# turn #}
               </td>
             </tr>
-            {% else %}  {# phase_chk[0] #}
+          </table>
+          {% else %}  {# phase_chk[0] #}
+          {% set show_discard = discard and player_pos == 3 %}
+          <table class="deal_info">
             <colgroup>
               <col style="width: 4.5rem;">
               <col style="width: 14rem;">
@@ -540,7 +542,6 @@
                 {% endif %}  {# turn #}
               </td>
             </tr>
-            {% endif %}  {# phase_chk[0] #}
             {% if show_discard %}
             <tr>
               <td class="td_lbl">Discard:</td>
@@ -560,6 +561,7 @@
             </tr>
             {% endif %}  {# show_discard #}
           </table>
+          {% endif %}  {# phase_chk[0] #}
         </div>
         {% if bid_seq %}
         <div class="tbl_div">
