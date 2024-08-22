@@ -4,7 +4,6 @@
 import sys
 from enum import Enum
 from typing import TextIO
-from collections.abc import Iterator
 
 from .utils import parse_argv
 from .core import DEBUG, LogicError, ImplementationError
@@ -416,54 +415,75 @@ class Deal(GameCtxMixin):
 # main #
 ########
 
-from .strategy import *
+from .strategy import Strategy
+
+DFLT_DEALS = 1
+ITER_MULT = 100
+DFLT_STRATEGY = 'Simple i'
 
 def main() -> int:
-    """Built-in driver to run through a simple/sample deal
+    """Built-in driver to run through a simple/sample deal.
 
-    Usage: deal.py [<ndeals>] [print_result=<res_tags>] [num_print=<nprint>]
+    Usage::
+
+      python -m euchplt.deal [ndeals=<ndeals>] [result=<tags>] [strategy=<strategy>]
+
+    If `result` is present, only deals with the indicated result tags(s) will be printed,
+    specified as a comma-separated list of any number or combination of the following:
+    `make`, `all_5`, `go_alone`, `euchre`, or `def_alone`.
     """
-    ndeals       = 1     # max number of deals
-    print_result = None  # meaning, only print this result
-    num_print    = 1     # only used if `print_result` specified
+    # kwargs
+    ndeals:      int = None  # deals to run (or print, if `result` is specified)
+    result:      str = None  # comma-separated list of tags
+    strategy:    str = None  # strategy name (or comma-separated list of two or four names)
+    # local settings
+    max_iters:   int = None
+    result_tags: set[DealAttr, ...] = None
+    strategies:  list[Strategy] = None
+    players:     list[Player] = None
 
     args, kwargs = parse_argv(sys.argv[1:])
     if len(args) > 0:
-        ndeals = args.pop(0)
-        if args:
-            args_str = ' '.join(str(a) for a in args)
-            raise RuntimeError(f"Unexpected argument(s): {args_str}")
-    #ndeals = kwargs.pop('deals', None) or ndeals
-    print_tags = kwargs.pop('print_result', None)
-    if print_tags:
-        result_tags  = print_tags.upper().split(',')
-        print_result = set([DealAttr[t] for t in result_tags])
-        num_print    = kwargs.pop('num_print', None) or num_print
+        args_str = ' '.join(str(arg) for arg in args)
+        raise RuntimeError("Unexpected argument(s): " + args_str)
+    ndeals = kwargs.pop('ndeals', DFLT_DEALS)
+    if ndeals <= 0:
+        raise RuntimeError("Bad value for `ndeals` specified")
+    max_iters = ndeals * ITER_MULT  # set an upper bound on total iterations
+    if result := kwargs.pop('result', None):
+        attr_keys = result.upper().split(',')
+        result_tags = set([DealAttr[x] for x in attr_keys])
+    if strategy := kwargs.pop('strategy', None):
+        strat_names = strategy.split(',')
+        if len(strat_names) not in (1, 2, 4):
+            raise RuntimeError("Only one, two, or four strategies can be specified")
+        strategies = [Strategy.new(x) for x in strat_names]
+    else:
+        strategies = [Strategy.new(DFLT_STRATEGY)]
+    if kwargs:
+        kwargs_str = ' '.join(str(kw) for kw in kwargs)
+        raise RuntimeError("Unexpected argument(s): " + kwargs_str)
 
-    players = [Player("Player 0", StrategySimple()),
-               Player("Player 1", StrategySmart()),
-               Player("Player 2", StrategySimple()),
-               Player("Player 3", StrategySmart())]
+    nstrat = len(strategies)
+    players = [Player(f"Player {i}", strategies[i % nstrat]) for i in range(4)]
 
-    for _ in range(ndeals):
+    for _ in range(max_iters):
         deck = get_deck()
         deal = Deal(players, deck)
 
         deal.deal_cards()
         deal.do_bidding()
         if deal.is_passed():
-            if not print_result:
+            if not result_tags:
                 deal.print()
             continue
         deal.play_cards()
-        if not print_result or print_result <= deal.result:
-            if ndeals > 1:
-                print("\n--- New Deal ---")
+        if not result_tags or result_tags <= deal.result:
+            print("\n--- New Deal ---")
             deal.print(verbose=1)
-            if print_result:
-                num_print -= 1
-                if not num_print:
-                    break
+            ndeals -= 1
+            if ndeals <= 0:
+                break
 
     return 0
 
