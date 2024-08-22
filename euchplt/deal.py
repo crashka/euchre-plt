@@ -82,7 +82,10 @@ class Deal(GameCtxMixin):
         self.tricks_won       = []
         self.result           = set()
         self.points           = []
-        self.player_state     = [{} for _ in range(NUM_PLAYERS)]
+        self.player_state     = []
+        for player in self.players:
+            # shhh...
+            self.player_state.append({'_deal': self} if player.priv() else {})
 
     def deal_state(self, pos: int) -> DealState:
         """REVISIT: this is a clunky way of narrowing the full state of the deal for the
@@ -231,6 +234,7 @@ class Deal(GameCtxMixin):
         self.buries = self.deck[self.player_cards+1:]
         in_play = [c for h in self.hands for c in h] + [self.turn_card] + self.buries
         assert set(in_play) == set(self.deck)
+        self.notify_players(PlayerNotice.CARDS_DEALT)
 
     def do_bidding(self) -> Bid:
         """Returns contract bid, or PASS_BID if the deal is passed
@@ -307,7 +311,7 @@ class Deal(GameCtxMixin):
                     break
                 # otherwise keep looping...
 
-        self.notify_players(PlayerNotice.BID_COMPLETE)
+        self.notify_players(PlayerNotice.BIDDING_OVER)
         return self.contract
 
     def play_cards(self) -> None:
@@ -438,7 +442,7 @@ def main() -> int:
     strategy:    str = None  # strategy name (or comma-separated list of two or four names)
     # local settings
     max_iters:   int = None
-    result_tags: set[DealAttr, ...] = None
+    result_tags: set[DealAttr] = None
     strategies:  list[Strategy] = None
     players:     list[Player] = None
 

@@ -13,12 +13,7 @@ from .strategy import Strategy, StrategyNotice
 # Notifications #
 #################
 
-class PlayerNotice(Enum):
-    BID_COMPLETE   = "Bid Complete"
-    TRICK_COMPLETE = "Trick Complete"
-    DEAL_COMPLETE  = "Deal Complete"
-    GAME_COMPLETE  = "Game Complete"
-    MATCH_COMPLETE = "Match Complete"
+PlayerNotice = StrategyNotice
 
 ##########
 # Player #
@@ -66,6 +61,13 @@ class Player:
 
     def __str__(self):
         return self.name
+
+    def priv(self) -> bool:
+        """Return `True` if player is privileged (based on its strategy)
+        """
+        if not getattr(Strategy, '_priv', None):
+            return False
+        return self.strategy._priv()
 
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """Relevant context information can be found in `deal.hand`, `deal.pos`, etc.

@@ -45,11 +45,12 @@ class StrategyRemote(Strategy):
 
     .. _EuchreEndpoint: https://github.com/crashka/EuchreEndpoint
     """
+    # config parameters
     server_url:   str
     http_headers: dict[str, str]
 
     # `requests` stuff
-    session:      Session
+    req_session:  Session
 
     # `EuchreEndpoint` stuff
     token:        str
@@ -59,34 +60,27 @@ class StrategyRemote(Strategy):
     deal_num:     int
     trick_num:    int
 
+    # other instance vars
+    _deal:        'Deal'  # this is the real deal (haha)
+
     def __init__(self, **kwargs):
         """See base class
         """
         super().__init__(**kwargs)
+        # we consider the `requests` stuff to be part of the framework here (the word
+        # "session" in method names refers to the session for the EuchreEndpoint
+        # interface)
+        req_session = Session()
+        req_session.headers.update(self.http_headers)
+        self.req_session = req_session
+
         self.token     = self.get_token()
         self.card_map  = None
-        self.card_map  = None
+        self.suit_map  = None
         self.game_num  = -1
         self.deal_num  = -1
         self.trick_num = -1
-
-        # we consider the `requests` stuff to be part of the framework here
-        # (the word "session" in method names refers to the session for the
-        # EuchreEndpoint interface)
-        session = Session()
-        session.headers.update(self.http_headers)
-        self.session = session
-
-        # TEMP: end-to-end testing of call sequence!!!
-        self.new_session()
-        self.new_game()
-        self.new_deal()
-        self.new_trick()
-
-        self.trick_complete()
-        self.deal_complete()
-        self.game_complete()
-        self.session_complete()
+        self._deal     = None
 
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """See base class
@@ -106,9 +100,20 @@ class StrategyRemote(Strategy):
     def notify(self, deal: DealState, notice_type: StrategyNotice) -> None:
         """See base class
         """
-        # TEMP: do nothing for now (LATER, this will be needed to trigger external
-        # notifications)!!!
-        pass
+        match notice_type:
+            case StrategyNotice.CARDS_DEALT:
+                self._deal = deal.player_state['_deal']
+                self.new_session()
+                self.new_game()
+                self.new_deal()
+            case StrategyNotice.BIDDING_OVER:
+                self.new_trick()
+            case StrategyNotice.TRICK_COMPLETE:
+                self.trick_complete()
+            case StrategyNotice.DEAL_COMPLETE:
+                self.deal_complete()
+                self.game_complete()
+                self.session_complete()
 
     def get_token(self) -> str:
         """Return unique session token tied to this ``Strategy`` instance (currently
@@ -147,7 +152,7 @@ class StrategyRemote(Strategy):
             data['status'] = status[0].value
 
         try:
-            r = self.session.request(req.value, url, json=data)
+            r = self.req_session.request(req.value, url, json=data)
             r.raise_for_status()
         except HTTPError as e:
             raise SystemExit(e)

@@ -14,7 +14,12 @@ from ..euchre import Bid, Trick, DealState
 class StrategyNotice(Enum):
     """Notification type for the ``notify()`` call
     """
-    DEAL_COMPLETE = "Deal Complete"
+    CARDS_DEALT    = "Cards Dealt"
+    BIDDING_OVER   = "Bidding Over"
+    TRICK_COMPLETE = "Trick Complete"
+    DEAL_COMPLETE  = "Deal Complete"
+    GAME_COMPLETE  = "Game Complete"
+    MATCH_COMPLETE = "Match Complete"
 
 ############
 # Strategy #

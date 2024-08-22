@@ -12,5 +12,6 @@ from .smart import StrategySmart, _PlayCard
 from .remote import StrategyRemote
 from .hybrid import StrategyHybrid
 from .ml import StrategyML
+from . import priv
 # for sphinx
 from .__main__ import tune_strategy_smart, main
