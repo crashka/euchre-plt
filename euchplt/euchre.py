@@ -4,7 +4,6 @@
 blocks (e.g. cards), and can be imported by either the player or game-playing modules
 """
 
-from enum import Enum
 from typing import NamedTuple
 
 from .core import LogicError

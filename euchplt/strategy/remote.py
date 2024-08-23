@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from enum import Enum
+from enum import Enum, StrEnum
 
 from requests import Session, HTTPError
 
-from ..card import Card
+from ..card import Card, Deck
 from ..euchre import Bid, PASS_BID, Trick, DealState
 from .base import Strategy, StrategyNotice
 
@@ -12,7 +12,10 @@ from .base import Strategy, StrategyNotice
 # Enums #
 #########
 
-class EpReq(Enum):
+# direction of "travel" relative to us (e.g. for card mapping)
+Dir = Enum('Dir', 'TO FROM')
+
+class EpReq(StrEnum):
     """Note: the value for each member must correpond to a valid request type
     the the `requests` module
     """
@@ -20,13 +23,17 @@ class EpReq(Enum):
     POST     = "post"
     PATCH    = "patch"
 
-class EpPath(Enum):
+class EpPath(StrEnum):
     SESSION  = "/session"
     GAME     = "/game"
     DEAL     = "/deal"
+    BID      = "/bid"
+    SWAP     = "/swap"
+    DEFNESE  = "/defense"
     TRICK    = "/trick"
+    PLAY     = "/play"
 
-class EpStatus(Enum):
+class EpStatus(StrEnum):
     NEW      = "new"
     ACTIVE   = "active"
     UPDATE   = "update"
@@ -53,9 +60,11 @@ class StrategyRemote(Strategy):
     req_session:  Session
 
     # `EuchreEndpoint` stuff
-    token:        str
+    token:        str  # non-empty value indicates we have a session
     card_map:     list[int]
     suit_map:     list[int]
+    card_rvmap:   list[int]
+    suit_rvmap:   list[int]
     game_num:     int
     deal_num:     int
     trick_num:    int
@@ -74,13 +83,15 @@ class StrategyRemote(Strategy):
         req_session.headers.update(self.http_headers)
         self.req_session = req_session
 
-        self.token     = self.get_token()
-        self.card_map  = None
-        self.suit_map  = None
-        self.game_num  = -1
-        self.deal_num  = -1
-        self.trick_num = -1
-        self._deal     = None
+        self.token      = None
+        self.card_map   = None
+        self.suit_map   = None
+        self.card_rvmap = None
+        self.suit_rvmap = None
+        self.game_num   = -1
+        self.deal_num   = -1
+        self.trick_num  = -1
+        self._deal      = None
 
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """See base class
@@ -103,9 +114,10 @@ class StrategyRemote(Strategy):
         match notice_type:
             case StrategyNotice.CARDS_DEALT:
                 self._deal = deal.player_state['_deal']
-                self.new_session()
-                self.new_game()
-                self.new_deal()
+                if not self.token:
+                    self.new_session()
+                    self.new_game()
+                    self.new_deal()
             case StrategyNotice.BIDDING_OVER:
                 self.new_trick()
             case StrategyNotice.TRICK_COMPLETE:
@@ -143,16 +155,16 @@ class StrategyRemote(Strategy):
         if status and type(status) is EpStatus:
             status = (status, status)
 
-        url = self.server_url + path.value
+        url = self.server_url + path
         data = {'token': self.token}
         validate_args.append('token')
         if addl_args:
             data.update(addl_args)
         if status:
-            data['status'] = status[0].value
+            data['status'] = status[0]
 
         try:
-            r = self.req_session.request(req.value, url, json=data)
+            r = self.req_session.request(req, url, json=data)
             r.raise_for_status()
         except HTTPError as e:
             raise SystemExit(e)
@@ -164,17 +176,64 @@ class StrategyRemote(Strategy):
             assert arg in result
             assert result[arg] == data[arg]
         if status:
-            assert result['status'] == status[1].value
+            assert result['status'] == status[1]
 
         return result
+
+    def map_deck(self, deck: Deck, dir: Dir = Dir.FROM) -> list[int]:
+        """Return remapped deck in the specified "direction of travel".  We actually only
+        need to do this in the outbound (`FROM`) direction.  In contrast to `map_card()`
+        and `map_suit()`, we take an actual `Deck` instance as input, though the output
+        uses card indexes rather than objects.
+
+        The output format is (for card positions 0-23):
+
+        - 0-4:   hand 0
+        - 5-9:   hand 1
+        - 10-14: hand 2
+        - 15-29: hand 3
+        - 20:    turn card
+        - 21-23: buries
+
+        The rationale is that this is more universal/canonical.  If the actual remote
+        engine uses a different representation, that remapping should be done in the
+        connector.
+        """
+        assert dir is Dir.FROM
+        remapped = deck[0:20:4] + deck[1:20:4] + deck[2:20:4] + deck[3:20:4] + deck[20:]
+        assert len(remapped) == len(deck)
+        return [card.idx for card in remapped]
+
+    def map_card(self, card: int, dir: Dir = Dir.FROM) -> int:
+        """Return remapped card in the specified "direction of travel"; note that we use
+        the card index (position within ``card.CARDS``) as the representation to keep
+        things simple
+        """
+        return self.card_map[card] if dir is Dir.FROM else self.card_rvmap[card]
+
+    def map_suit(self, suit: int, dir: Dir = Dir.FROM) -> int:
+        """Return remapped suit in the specified "direction of travel"; note that we use
+        the suit index (position within ``card.SUITS``) as the representation to keep
+        things simple
+        """
+        return self.suit_map[suit] if dir is Dir.FROM else self.suit_rvmap[suit]
 
     def new_session(self) -> None:
         """Start new session on remote server
         """
+        self.token = self.get_token()
         result = self.request(EpReq.POST, EpPath.SESSION, EpActivate, None, None)
 
         self.card_map = result['cards']
         self.suit_map = result['suits']
+
+        self.card_rvmap = [None] * len(self.card_map)
+        for i, card_idx in enumerate(self.card_map):
+            self.card_rvmap[card_idx] = i
+
+        self.suit_rvmap = [None] * len(self.suit_map)
+        for i, suit_idx in enumerate(self.suit_map):
+            self.suit_rvmap[suit_idx] = i
 
     def session_complete(self) -> None:
         """Notify remote server that session is complete
@@ -185,6 +244,7 @@ class StrategyRemote(Strategy):
         assert self.trick_num == -1
         assert self.deal_num == -1
         self.game_num = -1
+        self.token = None
 
     def new_game(self) -> None:
         """Start new game on remote server
@@ -209,7 +269,9 @@ class StrategyRemote(Strategy):
         """
         self.deal_num += 1
 
-        cards = self.card_map  # TEMP: dummy value for now!!!
+        # we just pass the deck in the order we utilize; it is up to the remote side to
+        # consume the order of the cards appropriately
+        cards = [self.map_card(x) for x in self.map_deck(self._deal.deck)]
         addl_args = {'gameNum': self.game_num, 'dealNum': self.deal_num, 'cards': cards}
         validate = [x for x in addl_args.keys() if x != 'cards']
         result = self.request(EpReq.POST, EpPath.DEAL, EpActivate, addl_args, validate)

@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from typing import ClassVar
-from enum import Enum
 
 from .core import ConfigError, cfg
 from .card import Card

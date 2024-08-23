@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
-from enum import Enum
+from enum import StrEnum
 from collections.abc import Iterable
 from typing import TextIO
 import random
@@ -17,7 +17,7 @@ from .team import Team
 # GameStat #
 ############
 
-class GameStat(Enum):
+class GameStat(StrEnum):
     DEALS_TOTAL       = "Total Deals"
     DEALS_PLAYED      = "Deals Played"
     DEALS_PASSED      = "Deals Passed"
@@ -48,9 +48,6 @@ class GameStat(Enum):
     DEF_ALONE_LOSSES  = "Defend Alone Losses"
     DEF_ALONE_STOPS   = "Defend Alone Stops"
     DEF_ALONE_EUCHRES = "Defend Alone Euchres"
-
-    def __str__(self):
-        return self.value
 
 NON_POS_STATS = {GameStat.DEALS_TOTAL,
                  GameStat.DEALS_PLAYED,
@@ -282,7 +279,7 @@ class Game(object):
             mystats = self.stats[i]
             print(f"  {team.name}:", file=file)
             for stat in GameStat:
-                print(f"    {stat.value + ':':24} {mystats[stat]:8}", file=file)
+                print(f"    {stat + ':':24} {mystats[stat]:8}", file=file)
 
 ########
 # main #

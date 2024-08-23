@@ -31,7 +31,7 @@ To Do:
 """
 
 import sys
-from enum import Enum
+from enum import Enum, StrEnum
 from itertools import chain
 from collections.abc import Mapping, Iterator, Iterable, Callable
 from typing import TypeVar, TextIO
@@ -53,12 +53,9 @@ from .elo_rating import EloRating
 
 # do the same as for `MatchStat` (see match.py)
 
-class TournStatXtra(Enum):
+class TournStatXtra(StrEnum):
     MATCHES_PLAYED = "Matches Played"
     MATCHES_WON    = "Matches Won"
-
-    def __str__(self):
-        return self.value
 
 TournStat = TournStatXtra | MatchStatXtra | GameStat
 def TournStatIter() -> Iterator: return chain(TournStatXtra, MatchStatXtra, GameStat)
@@ -66,7 +63,7 @@ def TournStatIter() -> Iterator: return chain(TournStatXtra, MatchStatXtra, Game
 # the following represents mapping for *base* stats (computed stats NOT included)
 StatsMap = Mapping[TournStat, int]
 
-class CompStat(Enum):
+class CompStat(StrEnum):
     MATCH_WIN_PCT      = "Match Win Pct"
     GAME_WIN_PCT       = "Game Win Pct"
     DEAL_PASS_PCT      = "Deal Pass Pct"
@@ -93,9 +90,6 @@ class CompStat(Enum):
     DEF_ALONE_EUCH_PCT = "Defend Alone Euchre Pct"
     DEF_ALONE_STOP_PCT = "Defend Alone Stop Pct"
     DEF_ALONE_LOSE_PCT = "Defend Alone Lose Pct"
-
-    def __str__(self):
-        return self.value
 
 AllStat = TournStatXtra | MatchStatXtra | GameStat | CompStat
 def AllStatIter() -> Iterator: return chain(TournStatXtra, MatchStatXtra, GameStat, CompStat)
@@ -146,7 +140,7 @@ POS_COMP_STATS = set(stat for stat, opnds in CompStatFormulas.items() if POS_STA
 # Leaderboard stuff #
 #####################
 
-class LBStat(Enum):
+class LBStat(StrEnum):
     MATCHES      = "Matches"
     WINS         = "Wins"
     LOSSES       = "Losses"
@@ -163,9 +157,6 @@ class LBStat(Enum):
     WIN_PCT_RANK = "Win % Rank"
     ELO_PTS_RANK = "Elo Points Rank"
     CUR_ELO_RANK = "Elo Rating Rank"
-
-    def __str__(self) -> str:
-        return self.value
 
 LB_PRINT_STATS = {LBStat.WINS,
                   LBStat.LOSSES,
@@ -575,7 +566,7 @@ class Tournament:
             base_stats = self.team_stats[name]
             print(f"  {name}:", file=file)
             for stat in TournStatIter():
-                print(f"    {stat.value + ':':24} {base_stats[stat]:8}", file=file)
+                print(f"    {stat + ':':24} {base_stats[stat]:8}", file=file)
                 if pos_details and stat in self.pos_stats:
                     pos_stat = self.team_pos_stats[name][stat]
                     stat_tot = sum(pos_stat)
@@ -587,9 +578,9 @@ class Tournament:
                 num = base_stats[CSF[stat][0]]
                 den = base_stats[CSF[stat][1]]
                 if not den:
-                    print(f"    {stat.value + ':':24}   ", NOT_APPLICABLE, file=file)
+                    print(f"    {stat + ':':24}   ", NOT_APPLICABLE, file=file)
                     continue
-                print(f"    {stat.value + ':':24} {num / den * 100.0:7.2f}%", file=file)
+                print(f"    {stat + ':':24} {num / den * 100.0:7.2f}%", file=file)
                 if pos_details and stat in self.pos_comp_stats:
                     nums = self.team_pos_stats[name][CSF[stat][0]]
                     dens = self.team_pos_stats[name][CSF[stat][1]]
@@ -604,7 +595,8 @@ class Tournament:
         """
         label_str = f"{label} " if label else ""
         print(f"{label_str}Leaderboard:")
-        stats_header = '\t'.join([f"{s.value:10}" for s in LBStat if s in LB_PRINT_STATS])
+        stats_header = '\t'.join([f"{stat:10}" for stat in LBStat
+                                  if stat in LB_PRINT_STATS])
         print(f"  {'Team':15}\t{stats_header}")
 
         for name, lb_stats in self.leaderboards[-1].items():

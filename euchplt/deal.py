@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
-from enum import Enum
+from enum import IntEnum, StrEnum
 from typing import TextIO
 
 from .utils import parse_argv
@@ -21,9 +21,9 @@ NUM_PLAYERS = 4
 BIDDER_POS  = 0   # meaning, initial bidder
 DEALER_POS  = -1
 
-DealPhase = Enum('DealPhase', 'NEW DEALT BIDDING PASSED CONTRACT PLAYING COMPLETE SCORED')
+DealPhase = IntEnum('DealPhase', 'NEW DEALT BIDDING PASSED CONTRACT PLAYING COMPLETE SCORED')
 
-class DealAttr(Enum):
+class DealAttr(StrEnum):
     MAKE      = "Make"
     ALL_5     = "All_5"
     GO_ALONE  = "Go_Alone"
@@ -350,7 +350,7 @@ class Deal(GameCtxMixin):
         """Setting the `verbose` flag (or DEBUG mode) will print out details
         for individual tricks
         """
-        if self.deal_phase.value < DealPhase.DEALT.value:
+        if self.deal_phase < DealPhase.DEALT:
             return
         verbose = max(verbose, DEBUG)
 
@@ -363,7 +363,7 @@ class Deal(GameCtxMixin):
         print(f"Turn card:\n  {self.turn_card}", file=file)
         print(f"Buries:\n  {Hand(self.buries)}", file=file)
 
-        if self.deal_phase.value < DealPhase.BIDDING.value:
+        if self.deal_phase < DealPhase.BIDDING:
             return
 
         print("Bids:", file=file)
@@ -396,7 +396,7 @@ class Deal(GameCtxMixin):
     def print_score(self, file: TextIO = sys.stdout) -> None:
         """
         """
-        if self.deal_phase.value < DealPhase.PLAYING.value:
+        if self.deal_phase < DealPhase.PLAYING:
             return
 
         print("Tricks Won:", file=file)
@@ -405,10 +405,10 @@ class Deal(GameCtxMixin):
             print(f"  {self.players[i].name}/{self.players[i+2].name}: "
                   f"{self.tricks_won[i]}{caller}", file=file)
 
-        if self.deal_phase.value < DealPhase.SCORED.value:
+        if self.deal_phase < DealPhase.SCORED:
             return
 
-        print(f"Deal Result:  \n  {' '.join([res.value for res in self.result])}", file=file)
+        print(f"Deal Result:  \n  {' '.join([res for res in self.result])}", file=file)
         print("Deal Points:", file=file)
         for i in range(2):
             caller = " (caller)" if self.caller_pos % 2 == i else ""

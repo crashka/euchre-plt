@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
-from enum import Enum
+from enum import StrEnum
 from itertools import chain
 from collections.abc import Iterator, Iterable
 from typing import TextIO
@@ -18,12 +18,9 @@ from .game import GameStat, POS_STATS, Game, NUM_TEAMS
 # this is a workaround for the fact that Enums are not extendable; note that we create
 # our own iterator, since `for stat in MatchStat` will not work
 
-class MatchStatXtra(Enum):
+class MatchStatXtra(StrEnum):
     GAMES_PLAYED = "Games Played"
     GAMES_WON    = "Games Won"
-
-    def __str__(self):
-        return self.value
 
 MatchStat = MatchStatXtra | GameStat
 def MatchStatIter() -> Iterator: return chain(MatchStatXtra, GameStat)
@@ -152,7 +149,7 @@ class Match(object):
             mystats = self.stats[i]
             print(f"  {team.name}:", file=file)
             for stat in MatchStatIter():
-                print(f"    {stat.value + ':':24} {mystats[stat]:8}", file=file)
+                print(f"    {stat + ':':24} {mystats[stat]:8}", file=file)
 
 ########
 # main #
