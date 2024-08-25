@@ -4,7 +4,7 @@ from enum import Enum, StrEnum
 
 from requests import Session, HTTPError
 
-from ..card import Card, Deck
+from ..card import SUITS, Card, CARDS, Deck
 from ..euchre import Bid, PASS_BID, Trick, DealState
 from .base import Strategy, StrategyNotice
 
@@ -17,7 +17,7 @@ Dir = Enum('Dir', 'TO FROM')
 
 class EpReq(StrEnum):
     """Note: the value for each member must correpond to a valid request type
-    the the `requests` module
+    the the `requests` module.
     """
     GET      = "get"
     POST     = "post"
@@ -48,7 +48,7 @@ EpStatusT = EpStatus | tuple[EpStatus, EpStatus]
 ##################
 
 class StrategyRemote(Strategy):
-    """Invocation of remote strategies through the `EuchreEndpoint`_ interface
+    """Invocation of remote strategies through the `EuchreEndpoint`_ interface.
 
     .. _EuchreEndpoint: https://github.com/crashka/EuchreEndpoint
     """
@@ -69,16 +69,20 @@ class StrategyRemote(Strategy):
     deal_num:     int
     trick_num:    int
 
-    # other instance vars
+    # other instance vars, for context (and whatever)
+    match:        'Match'
+    game:         'Game'
     _deal:        'Deal'  # this is the real deal (haha)
+    trick:        Trick
+    last_bid:     int  # positon of last bid synced with remote
 
     def __init__(self, **kwargs):
-        """See base class
+        """See base class.
         """
         super().__init__(**kwargs)
         # we consider the `requests` stuff to be part of the framework here (the word
-        # "session" in method names refers to the session for the EuchreEndpoint
-        # interface)
+        # "session" used elsewhere in this module refers to the session component of the
+        # EuchreEndpoint interface)
         req_session = Session()
         req_session.headers.update(self.http_headers)
         self.req_session = req_session
@@ -91,45 +95,107 @@ class StrategyRemote(Strategy):
         self.game_num   = -1
         self.deal_num   = -1
         self.trick_num  = -1
+        self.match      = None
+        self.game       = None
         self._deal      = None
+        self.trick      = None
+        self.last_bid   = None
 
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
-        """See base class
+        """See base class.
         """
-        return PASS_BID
+        assert isinstance(self.last_bid, int)
+        while self.last_bid < len(deal.bids) - 1:
+            self.last_bid += 1
+            self.notify_bid(deal, deal.bids[self.last_bid])
+        self.last_bid += 1
+        return self.request_bid(deal)
+
+    def notify_bid(self, deal: DealState, bid: Bid) -> None:
+        """Notify remote server of a bid.
+        """
+        addl_args = {
+            'gameNum':  self.game_num,
+            'dealNum':  self.deal_num,
+            'round':    deal.bid_round,
+            'turnCard': self.map_card(deal.turn_card.idx),
+            'pos':      deal.pos,
+            'suit':     self.map_suit(bid.suit.idx),
+            'alone':    bid.alone
+        }
+        validate = [x for x in addl_args.keys() if x not in ('suit', 'alone')]
+        result = self.request(EpReq.POST, EpPath.BID, None, addl_args, validate)
+
+    def request_bid(self, deal: DealState) -> Bid:
+        """Request bid from remote server.
+        """
+        addl_args = {
+            'gameNum':  self.game_num,
+            'dealNum':  self.deal_num,
+            'round':    deal.bid_round,
+            'turnCard': self.map_card(deal.turn_card.idx),
+            'pos':      deal.pos
+        }
+        result = self.request(EpReq.GET, EpPath.BID, None, addl_args, None)
+
+        if result['suit'] < 0:
+            return PASS_BID
+        suit = SUITS[self.map_suit(result['suit'], Dir.TO)]
+        return Bid(suit, result['alone'])
 
     def discard(self, deal: DealState) -> Card:
-        """See base class
+        """See base class.
         """
         return deal.hand.cards[0]
 
     def play_card(self, deal: DealState, trick: Trick, valid_plays: list[Card]) -> Card:
-        """See base class
+        """See base class.
         """
+        if not self.trick:
+            self.new_trick(deal)
         return valid_plays[0]
 
     def notify(self, deal: DealState, notice_type: StrategyNotice) -> None:
-        """See base class
+        """See base class.
+
+        Note that this strategy may represent both players on a team, so we need to make
+        sure that we are handling each logical notification only once.
         """
         match notice_type:
             case StrategyNotice.CARDS_DEALT:
-                self._deal = deal.player_state['_deal']
-                if not self.token:
-                    self.new_session()
+                if not self.match:
+                    self.new_match()
+                if not self.game:
                     self.new_game()
-                    self.new_deal()
+                if not self._deal:
+                    self.new_deal(deal)
             case StrategyNotice.BIDDING_OVER:
-                self.new_trick()
+                while self.last_bid < len(deal.bids) - 1:
+                    self.last_bid += 1
+                    self.notify_bid(deal, deal.bids[self.last_bid])
+                # NOTE: `new_trick()` can't be called here, since the trick hasn't been
+                # added to the deal yet (done in `play_card()`)
+                pass
             case StrategyNotice.TRICK_COMPLETE:
-                self.trick_complete()
+                if self.trick:
+                    self.trick_complete(deal)
             case StrategyNotice.DEAL_COMPLETE:
-                self.deal_complete()
-                self.game_complete()
-                self.session_complete()
+                if self._deal:
+                    self.deal_complete(deal)
+                # TEMP (until we add notifications for game and match)!!!
+                self.notify(deal, StrategyNotice.GAME_COMPLETE)
+                self.notify(deal, StrategyNotice.MATCH_COMPLETE)
+                # /TEMP
+            case StrategyNotice.GAME_COMPLETE:
+                if self.game:
+                    self.game_complete()
+            case StrategyNotice.MATCH_COMPLETE:
+                if self.match:
+                    self.match_complete()
 
     def get_token(self) -> str:
         """Return unique session token tied to this ``Strategy`` instance (currently
-        computed as hex digit representation of `id(self)`)
+        computed as hex digit representation of `id(self)`).
         """
         return hex(id(self))[2:]
 
@@ -145,7 +211,7 @@ class StrategyRemote(Strategy):
           ``addl_args`` entries are validated
 
         Note that "validating" args means ensuring that the value in the response matches
-        that in the request (as specified by the API)
+        that in the request (as specified by the API).
         """
         addl_args = addl_args or {}
         if addl_args and validate_args is None:
@@ -164,7 +230,10 @@ class StrategyRemote(Strategy):
             data['status'] = status[0]
 
         try:
-            r = self.req_session.request(req, url, json=data)
+            if req is EpReq.GET:
+                r = self.req_session.request(req, url, params=data)
+            else:
+                r = self.req_session.request(req, url, json=data)
             r.raise_for_status()
         except HTTPError as e:
             raise SystemExit(e)
@@ -182,9 +251,9 @@ class StrategyRemote(Strategy):
 
     def map_deck(self, deck: Deck, dir: Dir = Dir.FROM) -> list[int]:
         """Return remapped deck in the specified "direction of travel".  We actually only
-        need to do this in the outbound (`FROM`) direction.  In contrast to `map_card()`
-        and `map_suit()`, we take an actual `Deck` instance as input, though the output
-        uses card indexes rather than objects.
+        need to do this in the outbound (i.e. ``FROM``) direction.  In contrast to
+        ``map_card()`` and ``map_suit()``, we take an actual `Deck` instance as input,
+        though the output uses card indexes rather than objects.
 
         The output format is (for card positions 0-23):
 
@@ -207,22 +276,26 @@ class StrategyRemote(Strategy):
     def map_card(self, card: int, dir: Dir = Dir.FROM) -> int:
         """Return remapped card in the specified "direction of travel"; note that we use
         the card index (position within ``card.CARDS``) as the representation to keep
-        things simple
+        things simple.
         """
         return self.card_map[card] if dir is Dir.FROM else self.card_rvmap[card]
 
     def map_suit(self, suit: int, dir: Dir = Dir.FROM) -> int:
         """Return remapped suit in the specified "direction of travel"; note that we use
         the suit index (position within ``card.SUITS``) as the representation to keep
-        things simple
+        things simple.
         """
+        if suit < 0:
+            return suit
         return self.suit_map[suit] if dir is Dir.FROM else self.suit_rvmap[suit]
 
-    def new_session(self) -> None:
-        """Start new session on remote server
+    def new_match(self) -> None:
+        """Start new match on remote server.  Note that we are currently creating a new
+        request session for each match.
         """
         self.token = self.get_token()
         result = self.request(EpReq.POST, EpPath.SESSION, EpActivate, None, None)
+        self.match = object()  # TEMP: dummy match!!!
 
         self.card_map = result['cards']
         self.suit_map = result['suits']
@@ -235,62 +308,85 @@ class StrategyRemote(Strategy):
         for i, suit_idx in enumerate(self.suit_map):
             self.suit_rvmap[suit_idx] = i
 
-    def session_complete(self) -> None:
-        """Notify remote server that session is complete
+    def match_complete(self) -> None:
+        """Notify remote server that match is complete.  Also tear down the remote session
+        (since we are correlating them to the match).
         """
         result = self.request(EpReq.PATCH, EpPath.SESSION, EpStatus.COMPLETE, None, None)
 
         # reset and/or assert relative counters
         assert self.trick_num == -1
         assert self.deal_num == -1
+        assert self.trick is None
+        assert self._deal is None
+        self.game = None
         self.game_num = -1
+        self.match = None
         self.token = None
 
     def new_game(self) -> None:
-        """Start new game on remote server
+        """Start new game on remote server.
         """
         self.game_num += 1
+        self.game = object()  # TEMP: dummy game!!!
 
-        addl_args = {'gameNum': self.game_num}
+        addl_args = {
+            'gameNum': self.game_num
+        }
         result = self.request(EpReq.POST, EpPath.GAME, EpActivate, addl_args, None)
 
     def game_complete(self) -> None:
-        """Notify remote server that game is complete
+        """Notify remote server that game is complete.
         """
-        addl_args = {'gameNum': self.game_num}
+        addl_args = {
+            'gameNum': self.game_num
+        }
         result = self.request(EpReq.PATCH, EpPath.GAME, EpStatus.COMPLETE, addl_args, None)
 
         # reset and/or assert relative counters
         assert self.trick_num == -1
+        assert self._deal is None
         self.deal_num = -1
 
-    def new_deal(self) -> None:
-        """Start new deal on remote server
+    def new_deal(self, deal: DealState) -> None:
+        """Start new deal on remote server.
         """
+        assert self._deal is None
+        self._deal = deal.player_state['_deal']
         self.deal_num += 1
+        self.last_bid = -1
 
-        # we just pass the deck in the order we utilize; it is up to the remote side to
-        # consume the order of the cards appropriately
+        # convert card representation to canonical form
         cards = [self.map_card(x) for x in self.map_deck(self._deal.deck)]
-        addl_args = {'gameNum': self.game_num, 'dealNum': self.deal_num, 'cards': cards}
+        addl_args = {
+            'gameNum': self.game_num,
+            'dealNum': self.deal_num,
+            'cards':   cards
+        }
         validate = [x for x in addl_args.keys() if x != 'cards']
         result = self.request(EpReq.POST, EpPath.DEAL, EpActivate, addl_args, validate)
 
-    def deal_complete(self) -> None:
-        """Notify remote server that deal is complete
+    def deal_complete(self, deal: DealState) -> None:
+        """Notify remote server that deal is complete.
         """
-        addl_args = {'gameNum': self.game_num, 'dealNum': self.deal_num}
+        addl_args = {
+            'gameNum': self.game_num,
+            'dealNum': self.deal_num
+        }
         result = self.request(EpReq.PATCH, EpPath.DEAL, EpStatus.COMPLETE, addl_args, None)
 
         # reset and/or assert relative counters
+        self._deal = None
         self.trick_num = -1
+        self.last_bid = None
 
-    def new_trick(self) -> None:
-        """Notify remote server that trick is complete
+    def new_trick(self, deal: DealState) -> None:
+        """Start new trick on remote server.
         """
-        pass
+        assert self.trick is None
+        self.trick = self._deal.tricks[-1]
 
-    def trick_complete(self) -> None:
-        """Notify remote server that trick is complete
+    def trick_complete(self, deal: DealState) -> None:
+        """Notify remote server that trick is complete.
         """
-        pass
+        self.trick = None
