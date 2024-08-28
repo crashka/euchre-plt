@@ -4,9 +4,13 @@ from enum import Enum, StrEnum
 
 from requests import Session, HTTPError
 
+from ..core import log
 from ..card import SUITS, Card, CARDS, Deck
-from ..euchre import Bid, PASS_BID, Trick, DealState
+from ..euchre import null_suit, defend_suit, Bid, PASS_BID, Trick, DealState
 from .base import Strategy, StrategyNotice
+
+# can't import this from `deal`, so we just hardwire it here
+DEALER_POS = 3
 
 #########
 # Enums #
@@ -50,6 +54,9 @@ EpStatusT = EpStatus | tuple[EpStatus, EpStatus]
 class StrategyRemote(Strategy):
     """Invocation of remote strategies through the `EuchreEndpoint`_ interface.
 
+    NOTE: this subclass keeps state about the remote connection and session, so instances
+    must be shared across partners.
+
     .. _EuchreEndpoint: https://github.com/crashka/EuchreEndpoint
     """
     # config parameters
@@ -74,7 +81,11 @@ class StrategyRemote(Strategy):
     game:         'Game'
     _deal:        'Deal'  # this is the real deal (haha)
     trick:        Trick
-    last_bid:     int  # positon of last bid synced with remote
+    discard:      Card    # discard returned from remote
+    last_bid:     int     # positon of last bid synced with remote
+    sync_swap:    bool    # whether swap was synced with remote
+    last_play:    int     # sequence of last play synced with remote
+    lead_pos:     int     # for current trick
 
     def __init__(self, **kwargs):
         """See base class.
@@ -99,61 +110,42 @@ class StrategyRemote(Strategy):
         self.game       = None
         self._deal      = None
         self.trick      = None
+        self.discard    = None
         self.last_bid   = None
+        self.sync_swap  = None
+        self.last_play  = None
+        self.lead_pos   = None
 
     def bid(self, deal: DealState, def_bid: bool = False) -> Bid:
         """See base class.
         """
+        if def_bid:
+            assert not deal.is_partner_caller
+            # remote engine currently doesn't support defending alone, so we just forgo
+            # the `DEFENSE` endpoint completely
+            return PASS_BID
+
         assert isinstance(self.last_bid, int)
-        while self.last_bid < len(deal.bids) - 1:
-            self.last_bid += 1
-            self.notify_bid(deal, deal.bids[self.last_bid])
+        self.catchup_bids(deal)
         self.last_bid += 1
         return self.request_bid(deal)
-
-    def notify_bid(self, deal: DealState, bid: Bid) -> None:
-        """Notify remote server of a bid.
-        """
-        addl_args = {
-            'gameNum':  self.game_num,
-            'dealNum':  self.deal_num,
-            'round':    deal.bid_round,
-            'turnCard': self.map_card(deal.turn_card.idx),
-            'pos':      deal.pos,
-            'suit':     self.map_suit(bid.suit.idx),
-            'alone':    bid.alone
-        }
-        validate = [x for x in addl_args.keys() if x not in ('suit', 'alone')]
-        result = self.request(EpReq.POST, EpPath.BID, None, addl_args, validate)
-
-    def request_bid(self, deal: DealState) -> Bid:
-        """Request bid from remote server.
-        """
-        addl_args = {
-            'gameNum':  self.game_num,
-            'dealNum':  self.deal_num,
-            'round':    deal.bid_round,
-            'turnCard': self.map_card(deal.turn_card.idx),
-            'pos':      deal.pos
-        }
-        result = self.request(EpReq.GET, EpPath.BID, None, addl_args, None)
-
-        if result['suit'] < 0:
-            return PASS_BID
-        suit = SUITS[self.map_suit(result['suit'], Dir.TO)]
-        return Bid(suit, result['alone'])
 
     def discard(self, deal: DealState) -> Card:
         """See base class.
         """
-        return deal.hand.cards[0]
+        assert self.sync_swap is False
+        self.sync_swap = True
+        return self.request_swap(deal)
 
     def play_card(self, deal: DealState, trick: Trick, valid_plays: list[Card]) -> Card:
         """See base class.
         """
         if not self.trick:
-            self.new_trick(deal)
-        return valid_plays[0]
+            self.new_trick(deal, trick)
+        assert isinstance(self.last_play, int)
+        self.catchup_plays(deal, trick)
+        self.last_play += 1
+        return self.request_play(deal, trick, valid_plays)
 
     def notify(self, deal: DealState, notice_type: StrategyNotice) -> None:
         """See base class.
@@ -170,14 +162,14 @@ class StrategyRemote(Strategy):
                 if not self._deal:
                     self.new_deal(deal)
             case StrategyNotice.BIDDING_OVER:
-                while self.last_bid < len(deal.bids) - 1:
-                    self.last_bid += 1
-                    self.notify_bid(deal, deal.bids[self.last_bid])
+                # TODO: we shouldn't call these catchup calls twice!!!
+                self.catchup_bids(deal)
+                self.catchup_swap(deal)
                 # NOTE: `new_trick()` can't be called here, since the trick hasn't been
-                # added to the deal yet (done in `play_card()`)
-                pass
+                # added to the deal yet (so this has to be done in `play_card()`)
             case StrategyNotice.TRICK_COMPLETE:
                 if self.trick:
+                    self.catchup_plays(deal, self.trick)
                     self.trick_complete(deal)
             case StrategyNotice.DEAL_COMPLETE:
                 if self._deal:
@@ -230,6 +222,7 @@ class StrategyRemote(Strategy):
             data['status'] = status[0]
 
         try:
+            log.debug(f"Request: {req} {path} {data}")
             if req is EpReq.GET:
                 r = self.req_session.request(req, url, params=data)
             else:
@@ -239,6 +232,7 @@ class StrategyRemote(Strategy):
             raise SystemExit(e)
 
         result = r.json()
+        log.debug(f"Response: {result}")
         # TEMP: brittle integrity checks for now!!!
         for arg in validate_args:
             assert arg in data
@@ -307,6 +301,9 @@ class StrategyRemote(Strategy):
         self.suit_rvmap = [None] * len(self.suit_map)
         for i, suit_idx in enumerate(self.suit_map):
             self.suit_rvmap[suit_idx] = i
+        # HACK in a special reverse mapping to cover "no suit" (LATER, should be handled
+        # in the remote endpoint code!)
+        self.suit_rvmap.append(-1)
 
     def match_complete(self) -> None:
         """Notify remote server that match is complete.  Also tear down the remote session
@@ -355,6 +352,9 @@ class StrategyRemote(Strategy):
         self._deal = deal.player_state['_deal']
         self.deal_num += 1
         self.last_bid = -1
+        self.sync_swap = False
+        self.last_play = -1
+        self.lead_pos = 0
 
         # convert card representation to canonical form
         cards = [self.map_card(x) for x in self.map_deck(self._deal.deck)]
@@ -379,14 +379,157 @@ class StrategyRemote(Strategy):
         self._deal = None
         self.trick_num = -1
         self.last_bid = None
+        self.sync_swap = None
+        self.last_play = None
+        self.lead_pos = None
 
-    def new_trick(self, deal: DealState) -> None:
+    def new_trick(self, deal: DealState, trick: Trick) -> None:
         """Start new trick on remote server.
         """
         assert self.trick is None
-        self.trick = self._deal.tricks[-1]
+        self.trick = trick
+        self.trick_num += 1
+
+        addl_args = {
+            'gameNum':  self.game_num,
+            'dealNum':  self.deal_num,
+            'trickNum': self.trick_num,
+            'leadPos':  self.lead_pos
+        }
+        validate = [x for x in addl_args.keys() if x != 'leadPos']
+        result = self.request(EpReq.POST, EpPath.TRICK, EpActivate, addl_args, validate)
 
     def trick_complete(self, deal: DealState) -> None:
         """Notify remote server that trick is complete.
         """
+        addl_args = {
+            'gameNum': self.game_num,
+            'dealNum': self.deal_num,
+            'trickNum': self.trick_num
+        }
+        result = self.request(EpReq.PATCH, EpPath.TRICK, EpStatus.COMPLETE, addl_args, None)
+
+        # reset and/or assert relative counters
+        self.lead_pos = self.trick.winning_pos
         self.trick = None
+
+    def request_bid(self, deal: DealState) -> Bid:
+        """Request bid from remote server.
+        """
+        addl_args = {
+            'gameNum':  self.game_num,
+            'dealNum':  self.deal_num,
+            'round':    deal.bid_round,
+            'turnCard': self.map_card(deal.turn_card.idx),
+            'pos':      deal.pos
+        }
+        result = self.request(EpReq.GET, EpPath.BID, None, addl_args, None)
+        suit_idx = self.map_suit(result['suit'], Dir.TO)
+        if suit_idx < 0:
+            return PASS_BID
+        return Bid(SUITS[suit_idx], result['alone'])
+
+    def notify_bid(self, deal: DealState, bid: Bid) -> None:
+        """Notify remote server of a bid.
+        """
+        # `null_suit` is not used/understood by the remote interface, and `defend_suit` is
+        # not yet implemented, so we skip both for now!
+        if bid.suit in (null_suit, defend_suit):
+            return
+
+        addl_args = {
+            'gameNum':  self.game_num,
+            'dealNum':  self.deal_num,
+            'round':    deal.bid_round,
+            'turnCard': self.map_card(deal.turn_card.idx),
+            'pos':      deal.pos,
+            'suit':     self.map_suit(bid.suit.idx),
+            'alone':    bid.alone
+        }
+        validate = [x for x in addl_args.keys() if x not in ('suit', 'alone')]
+        result = self.request(EpReq.POST, EpPath.BID, None, addl_args, validate)
+
+    def request_swap(self, deal: DealState) -> Card:
+        """Request swap (discard) from remote server.
+        """
+        assert self.discard is None
+        addl_args = {
+            'gameNum':     self.game_num,
+            'dealNum':     self.deal_num,
+            'declarerPos': deal.caller_pos,
+            'turnCard':    self.map_card(deal.turn_card.idx),
+            'pos':         deal.pos
+        }
+        result = self.request(EpReq.GET, EpPath.SWAP, None, addl_args, None)
+        self.discard = CARDS[self.map_card(result['card'], Dir.TO)]
+        return self.discard
+
+    def notify_swap(self, deal: DealState, card: Card) -> None:
+        """Notify remote server of a swap.
+        """
+        addl_args = {
+            'gameNum':     self.game_num,
+            'dealNum':     self.deal_num,
+            'declarerPos': deal.caller_pos,
+            'turnCard':    self.map_card(deal.turn_card.idx),
+            'pos':         deal.pos,
+            'card':        self.map_card(card.idx)
+        }
+        validate = [x for x in addl_args.keys() if x != 'card']
+        result = self.request(EpReq.POST, EpPath.SWAP, None, addl_args, validate)
+
+    def request_play(self, deal: DealState, trick: Trick, valid_plays: list[Card]) -> Card:
+        """Request swap from remote server.
+        """
+        addl_args = {
+            'gameNum':       self.game_num,
+            'dealNum':       self.deal_num,
+            'trickNum':      self.trick_num,
+            'trickSeq':      len(trick.plays),
+            'pos':           deal.pos,
+            'playableCards': [self.map_card(card.idx) for card in valid_plays]
+        }
+        validate = [x for x in addl_args.keys() if x != 'playableCards']
+        result = self.request(EpReq.GET, EpPath.PLAY, None, addl_args, validate)
+        card = CARDS[self.map_card(result['card'], Dir.TO)]
+        return card
+
+    def notify_play(self, deal: DealState, trick: Trick, card: Card) -> None:
+        """Notify remote server of a card play.
+        """
+        addl_args = {
+            'gameNum':  self.game_num,
+            'dealNum':  self.deal_num,
+            'trickNum': self.trick_num,
+            'trickSeq': len(trick.plays),
+            'pos':      deal.pos,
+            'card':     self.map_card(card.idx)
+        }
+        validate = [x for x in addl_args.keys() if x != 'card']
+        result = self.request(EpReq.POST, EpPath.PLAY, None, addl_args, validate)
+
+    def catchup_bids(self, deal: DealState) -> None:
+        """Catchup on bid notifications.
+        """
+        while self.last_bid < len(deal.bids) - 1:
+            self.last_bid += 1
+            self.notify_bid(deal, deal.bids[self.last_bid])
+
+    def catchup_swap(self, deal: DealState) -> None:
+        """Catchup on swap notification.
+        """
+        if self.sync_swap:
+            return
+
+        if self.discard:
+            assert self.discard is self._deal.discard
+        elif self._deal.discard:
+            self.sync_swap = True
+            self.notify_swap(deal, self._deal.discard)
+
+    def catchup_plays(self, deal: DealState, trick: Trick) -> None:
+        """Catchup on play notifications.
+        """
+        while self.last_play < len(trick.plays) - 1:
+            self.last_play += 1
+            self.notify_play(deal, trick, trick.plays[self.last_play][1])
