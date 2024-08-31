@@ -152,6 +152,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#apps.tournament_runner.StatsReport.file_sfx"><code class="docutils literal notranslate"><span class="pre">StatsReport.file_sfx</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apps.tournament_runner.StatsReport.comp_stats"><code class="docutils literal notranslate"><span class="pre">StatsReport.comp_stats</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apps.tournament_runner.StatsReport.pos_details"><code class="docutils literal notranslate"><span class="pre">StatsReport.pos_details</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apps.tournament_runner.StatsReport.team_stats"><code class="docutils literal notranslate"><span class="pre">StatsReport.team_stats</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apps.tournament_runner.StatsReport.filename"><code class="docutils literal notranslate"><span class="pre">StatsReport.filename()</span></code></a></li>
 </ul>
 </li>
@@ -805,7 +806,7 @@ not change the number type); passthrough for non-numeric types (e.g. bool or str
 
 <dl class="py class">
 <dt class="sig sig-object py" id="apps.tournament_runner.StatsReport">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.tournament_runner.</span></span><span class="sig-name descname"><span class="pre">StatsReport</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_sfx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comp_stats</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos_details</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apps.tournament_runner.StatsReport" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apps.tournament_runner.</span></span><span class="sig-name descname"><span class="pre">StatsReport</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_sfx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comp_stats</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos_details</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">team_stats</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apps.tournament_runner.StatsReport" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">NamedTuple</span></code></p>
 <p>Stats report definition</p>
 <dl class="py attribute">
@@ -831,6 +832,11 @@ not change the number type); passthrough for non-numeric types (e.g. bool or str
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apps.tournament_runner.StatsReport.pos_details">
 <span class="sig-name descname"><span class="pre">pos_details</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#apps.tournament_runner.StatsReport.pos_details" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apps.tournament_runner.StatsReport.team_stats">
+<span class="sig-name descname"><span class="pre">team_stats</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#apps.tournament_runner.StatsReport.team_stats" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">

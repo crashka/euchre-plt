@@ -47,9 +47,9 @@
               <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">euchplt</span></code> – Platform</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#module-euchplt.player"><code class="xref py py-mod docutils literal notranslate"><span class="pre">euchplt.player</span></code> – Player</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#euchplt.player.PlayerNotice"><code class="docutils literal notranslate"><span class="pre">PlayerNotice</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#euchplt.player.Player"><code class="docutils literal notranslate"><span class="pre">Player</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.player.Player.__init__"><code class="docutils literal notranslate"><span class="pre">Player.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.player.Player.priv"><code class="docutils literal notranslate"><span class="pre">Player.priv()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.player.Player.bid"><code class="docutils literal notranslate"><span class="pre">Player.bid()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.player.Player.discard"><code class="docutils literal notranslate"><span class="pre">Player.discard()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.player.Player.play_card"><code class="docutils literal notranslate"><span class="pre">Player.play_card()</span></code></a></li>
@@ -270,6 +270,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.euchre.DealState.hand"><code class="docutils literal notranslate"><span class="pre">DealState.hand</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.euchre.DealState.turn_card"><code class="docutils literal notranslate"><span class="pre">DealState.turn_card</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.euchre.DealState.bids"><code class="docutils literal notranslate"><span class="pre">DealState.bids</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.euchre.DealState.def_bids"><code class="docutils literal notranslate"><span class="pre">DealState.def_bids</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.euchre.DealState.tricks"><code class="docutils literal notranslate"><span class="pre">DealState.tricks</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.euchre.DealState.contract"><code class="docutils literal notranslate"><span class="pre">DealState.contract</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.euchre.DealState.caller_pos"><code class="docutils literal notranslate"><span class="pre">DealState.caller_pos</span></code></a></li>
@@ -281,11 +282,11 @@
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.euchre.DealState.tricks_won"><code class="docutils literal notranslate"><span class="pre">DealState.tricks_won</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.euchre.DealState.points"><code class="docutils literal notranslate"><span class="pre">DealState.points</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.euchre.DealState.player_state"><code class="docutils literal notranslate"><span class="pre">DealState.player_state</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.euchre.DealState.off_bids"><code class="docutils literal notranslate"><span class="pre">DealState.off_bids</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.euchre.DealState.bid_round"><code class="docutils literal notranslate"><span class="pre">DealState.bid_round</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.euchre.DealState.bid_pos"><code class="docutils literal notranslate"><span class="pre">DealState.bid_pos</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.euchre.DealState.trick_num"><code class="docutils literal notranslate"><span class="pre">DealState.trick_num</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.euchre.DealState.play_seq"><code class="docutils literal notranslate"><span class="pre">DealState.play_seq</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#euchplt.euchre.DealState.lead_pos"><code class="docutils literal notranslate"><span class="pre">DealState.lead_pos</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.euchre.DealState.partner_winning"><code class="docutils literal notranslate"><span class="pre">DealState.partner_winning</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.euchre.DealState.lead_trumped"><code class="docutils literal notranslate"><span class="pre">DealState.lead_trumped</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.euchre.DealState.my_tricks_won"><code class="docutils literal notranslate"><span class="pre">DealState.my_tricks_won</span></code></a></li>
@@ -347,6 +348,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.strategy.Strategy.discard"><code class="docutils literal notranslate"><span class="pre">Strategy.discard()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.strategy.Strategy.play_card"><code class="docutils literal notranslate"><span class="pre">Strategy.play_card()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.strategy.Strategy.notify"><code class="docutils literal notranslate"><span class="pre">Strategy.notify()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.strategy.Strategy._priv"><code class="docutils literal notranslate"><span class="pre">Strategy._priv()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#euchplt.strategy.StrategyNotice"><code class="docutils literal notranslate"><span class="pre">StrategyNotice</span></code></a></li>
@@ -402,14 +404,26 @@
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.strategy.StrategyRemote.notify"><code class="docutils literal notranslate"><span class="pre">StrategyRemote.notify()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.strategy.StrategyRemote.get_token"><code class="docutils literal notranslate"><span class="pre">StrategyRemote.get_token()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.strategy.StrategyRemote.request"><code class="docutils literal notranslate"><span class="pre">StrategyRemote.request()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#euchplt.strategy.StrategyRemote.new_session"><code class="docutils literal notranslate"><span class="pre">StrategyRemote.new_session()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#euchplt.strategy.StrategyRemote.session_complete"><code class="docutils literal notranslate"><span class="pre">StrategyRemote.session_complete()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.strategy.StrategyRemote.map_deck"><code class="docutils literal notranslate"><span class="pre">StrategyRemote.map_deck()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.strategy.StrategyRemote.map_card"><code class="docutils literal notranslate"><span class="pre">StrategyRemote.map_card()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.strategy.StrategyRemote.map_suit"><code class="docutils literal notranslate"><span class="pre">StrategyRemote.map_suit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.strategy.StrategyRemote.new_match"><code class="docutils literal notranslate"><span class="pre">StrategyRemote.new_match()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.strategy.StrategyRemote.match_complete"><code class="docutils literal notranslate"><span class="pre">StrategyRemote.match_complete()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.strategy.StrategyRemote.new_game"><code class="docutils literal notranslate"><span class="pre">StrategyRemote.new_game()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.strategy.StrategyRemote.game_complete"><code class="docutils literal notranslate"><span class="pre">StrategyRemote.game_complete()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.strategy.StrategyRemote.new_deal"><code class="docutils literal notranslate"><span class="pre">StrategyRemote.new_deal()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.strategy.StrategyRemote.deal_complete"><code class="docutils literal notranslate"><span class="pre">StrategyRemote.deal_complete()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.strategy.StrategyRemote.new_trick"><code class="docutils literal notranslate"><span class="pre">StrategyRemote.new_trick()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#euchplt.strategy.StrategyRemote.trick_complete"><code class="docutils literal notranslate"><span class="pre">StrategyRemote.trick_complete()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.strategy.StrategyRemote.request_bid"><code class="docutils literal notranslate"><span class="pre">StrategyRemote.request_bid()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.strategy.StrategyRemote.notify_bid"><code class="docutils literal notranslate"><span class="pre">StrategyRemote.notify_bid()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.strategy.StrategyRemote.request_swap"><code class="docutils literal notranslate"><span class="pre">StrategyRemote.request_swap()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.strategy.StrategyRemote.notify_swap"><code class="docutils literal notranslate"><span class="pre">StrategyRemote.notify_swap()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.strategy.StrategyRemote.request_play"><code class="docutils literal notranslate"><span class="pre">StrategyRemote.request_play()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.strategy.StrategyRemote.notify_play"><code class="docutils literal notranslate"><span class="pre">StrategyRemote.notify_play()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.strategy.StrategyRemote.catchup_bids"><code class="docutils literal notranslate"><span class="pre">StrategyRemote.catchup_bids()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.strategy.StrategyRemote.catchup_swap"><code class="docutils literal notranslate"><span class="pre">StrategyRemote.catchup_swap()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#euchplt.strategy.StrategyRemote.catchup_plays"><code class="docutils literal notranslate"><span class="pre">StrategyRemote.catchup_plays()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#euchplt.strategy.StrategyHybrid"><code class="docutils literal notranslate"><span class="pre">StrategyHybrid</span></code></a><ul>
@@ -503,12 +517,6 @@
 <section id="module-euchplt.player">
 <span id="euchplt-player-player"></span><h2><a class="reference internal" href="#module-euchplt.player" title="euchplt.player"><code class="xref py py-mod docutils literal notranslate"><span class="pre">euchplt.player</span></code></a> – Player<a class="headerlink" href="#module-euchplt.player" title="Link to this heading"></a></h2>
 <dl class="py class">
-<dt class="sig sig-object py" id="euchplt.player.PlayerNotice">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.player.</span></span><span class="sig-name descname"><span class="pre">PlayerNotice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names=&lt;not</span> <span class="pre">given&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.player.PlayerNotice" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
-</dd></dl>
-
-<dl class="py class">
 <dt class="sig sig-object py" id="euchplt.player.Player">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.player.</span></span><span class="sig-name descname"><span class="pre">Player</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.strategy.Strategy" title="euchplt.strategy.base.Strategy"><span class="pre">Strategy</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.player.Player" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
@@ -523,6 +531,12 @@ players)!!!</p>
 <dt class="sig sig-object py" id="euchplt.player.Player.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.strategy.Strategy" title="euchplt.strategy.base.Strategy"><span class="pre">Strategy</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.player.Player.__init__" title="Link to this definition"></a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.player.Player.priv">
+<span class="sig-name descname"><span class="pre">priv</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#euchplt.player.Player.priv" title="Link to this definition"></a></dt>
+<dd><p>Return <cite>True</cite> if player is privileged (based on its strategy)</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.player.Player.bid">
@@ -554,7 +568,7 @@ bowers are used as part of the analysis)</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.player.Player.notify">
-<span class="sig-name descname"><span class="pre">notify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">notice</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.player.PlayerNotice" title="euchplt.player.PlayerNotice"><span class="pre">PlayerNotice</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.player.Player.notify" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">notify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">notice</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.strategy.StrategyNotice" title="euchplt.strategy.base.StrategyNotice"><span class="pre">StrategyNotice</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.player.Player.notify" title="Link to this definition"></a></dt>
 <dd><p>Pass notifications on to underlying strategies</p>
 </dd></dl>
 
@@ -800,13 +814,13 @@ but perhaps a bit silly).</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="euchplt.deal.DealPhase">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.deal.</span></span><span class="sig-name descname"><span class="pre">DealPhase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names=&lt;not</span> <span class="pre">given&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.deal.DealPhase" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">IntEnum</span></code></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="euchplt.deal.DealAttr">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.deal.</span></span><span class="sig-name descname"><span class="pre">DealAttr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names=&lt;not</span> <span class="pre">given&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.deal.DealAttr" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">StrEnum</span></code></p>
 </dd></dl>
 
 <dl class="py class">
@@ -913,8 +927,15 @@ for individual tricks</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="euchplt.deal.main">
 <span class="sig-prename descclassname"><span class="pre">euchplt.deal.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#euchplt.deal.main" title="Link to this definition"></a></dt>
-<dd><p>Built-in driver to run through a simple/sample deal</p>
-<p>Usage: deal.py [&lt;ndeals&gt;] [print_result=&lt;res_tags&gt;] [num_print=&lt;nprint&gt;]</p>
+<dd><p>Built-in driver to run through a simple/sample deal.</p>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">euchplt</span><span class="o">.</span><span class="n">deal</span> <span class="p">[</span><span class="n">ndeals</span><span class="o">=&lt;</span><span class="n">ndeals</span><span class="o">&gt;</span><span class="p">]</span> <span class="p">[</span><span class="n">result</span><span class="o">=&lt;</span><span class="n">tags</span><span class="o">&gt;</span><span class="p">]</span> <span class="p">[</span><span class="n">strategy</span><span class="o">=&lt;</span><span class="n">strategy</span><span class="o">&gt;</span><span class="p">]</span>
+                       <span class="p">[</span><span class="n">rnd_seed</span><span class="o">=&lt;</span><span class="n">seed</span><span class="o">&gt;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>If <cite>result</cite> is present, only deals with the indicated result tags(s) will be printed,
+specified as a comma-separated list of any number or combination of the following:
+<cite>make</cite>, <cite>all_5</cite>, <cite>go_alone</cite>, <cite>euchre</cite>, or <cite>def_alone</cite>.</p>
 </dd></dl>
 
 </section>
@@ -923,7 +944,7 @@ for individual tricks</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="euchplt.game.GameStat">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.game.</span></span><span class="sig-name descname"><span class="pre">GameStat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names=&lt;not</span> <span class="pre">given&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.game.GameStat" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">StrEnum</span></code></p>
 </dd></dl>
 
 <dl class="py class">
@@ -991,7 +1012,7 @@ for individual deals, as well as printing game stats</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="euchplt.match.MatchStatXtra">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.match.</span></span><span class="sig-name descname"><span class="pre">MatchStatXtra</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names=&lt;not</span> <span class="pre">given&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.match.MatchStatXtra" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">StrEnum</span></code></p>
 </dd></dl>
 
 <dl class="py class">
@@ -1083,13 +1104,13 @@ to indicate determination of results</p></li>
 <dl class="py class">
 <dt class="sig sig-object py" id="euchplt.tournament.TournStatXtra">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.tournament.</span></span><span class="sig-name descname"><span class="pre">TournStatXtra</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names=&lt;not</span> <span class="pre">given&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.tournament.TournStatXtra" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">StrEnum</span></code></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="euchplt.tournament.CompStat">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.tournament.</span></span><span class="sig-name descname"><span class="pre">CompStat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names=&lt;not</span> <span class="pre">given&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.tournament.CompStat" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">StrEnum</span></code></p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1107,7 +1128,7 @@ to indicate determination of results</p></li>
 <dl class="py class">
 <dt class="sig sig-object py" id="euchplt.tournament.LBStat">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.tournament.</span></span><span class="sig-name descname"><span class="pre">LBStat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names=&lt;not</span> <span class="pre">given&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.tournament.LBStat" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">StrEnum</span></code></p>
 </dd></dl>
 
 <dl class="py class">
@@ -1252,7 +1273,7 @@ this parent function should be invoked (either at the top or the bottom)</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.tournament.Tournament.stats_header">
-<span class="sig-name descname"><span class="pre">stats_header</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.tournament.Tournament.stats_header" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">stats_header</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.tournament.Tournament.stats_header" title="Link to this definition"></a></dt>
 <dd><p>Header fields used as the keys for the <code class="docutils literal notranslate"><span class="pre">iter_stats()</span></code> generator; the field
 name for stat name is <code class="docutils literal notranslate"><span class="pre">'Statistic'</span></code></p>
 </dd></dl>
@@ -1266,7 +1287,7 @@ the key for stat name is <code class="docutils literal notranslate"><span class=
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.tournament.Tournament.comp_stats_header">
-<span class="sig-name descname"><span class="pre">comp_stats_header</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.tournament.Tournament.comp_stats_header" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">comp_stats_header</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.tournament.Tournament.comp_stats_header" title="Link to this definition"></a></dt>
 <dd><p>Header fields used as the keys for the <code class="docutils literal notranslate"><span class="pre">iter_comp_stats()</span></code> generator; the
 field name for stat name is <code class="docutils literal notranslate"><span class="pre">'Computed</span> <span class="pre">Stat'</span></code></p>
 </dd></dl>
@@ -1588,8 +1609,11 @@ not playing, since not recognized by the <code class="docutils literal notransla
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.euchre.Trick.play_card">
-<span class="sig-name descname"><span class="pre">play_card</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">card</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#euchplt.euchre.Trick.play_card" title="Link to this definition"></a></dt>
-<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if new winning card</p>
+<span class="sig-name descname"><span class="pre">play_card</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">card</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#euchplt.euchre.Trick.play_card" title="Link to this definition"></a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if new winning card.  If <cite>card</cite> is <cite>None</cite>, then this indicates
+a “non-play” for the partner of either a lone declarer or lone defender (though we
+don’t current distinguish this from the initialized value in <cite>cards[pos]</cite>, which
+is not great–should we actually create a <cite>NULL_CARD</cite> value instead???).</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1627,7 +1651,7 @@ not playing, since not recognized by the <code class="docutils literal notransla
 
 <dl class="py class">
 <dt class="sig sig-object py" id="euchplt.euchre.DealState">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.euchre.</span></span><span class="sig-name descname"><span class="pre">DealState</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hand</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.Hand" title="euchplt.euchre.Hand"><span class="pre">Hand</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">turn_card</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.euchre.Bid" title="euchplt.euchre.Bid"><span class="pre">Bid</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tricks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.euchre.Trick" title="euchplt.euchre.Trick"><span class="pre">Trick</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.Bid" title="euchplt.euchre.Bid"><span class="pre">Bid</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">caller_pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">go_alone</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">def_alone</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">def_pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">played_by_suit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#euchplt.euchre.Hand" title="euchplt.euchre.Hand"><span class="pre">Hand</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unplayed_by_suit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tricks_won</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">player_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.euchre.DealState" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.euchre.</span></span><span class="sig-name descname"><span class="pre">DealState</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hand</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.Hand" title="euchplt.euchre.Hand"><span class="pre">Hand</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">turn_card</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.euchre.Bid" title="euchplt.euchre.Bid"><span class="pre">Bid</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">def_bids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.euchre.Bid" title="euchplt.euchre.Bid"><span class="pre">Bid</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tricks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.euchre.Trick" title="euchplt.euchre.Trick"><span class="pre">Trick</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.Bid" title="euchplt.euchre.Bid"><span class="pre">Bid</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">caller_pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">go_alone</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">def_alone</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">def_pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">played_by_suit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#euchplt.euchre.Hand" title="euchplt.euchre.Hand"><span class="pre">Hand</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unplayed_by_suit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Suit" title="euchplt.card.Suit"><span class="pre">Suit</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tricks_won</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">player_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.euchre.DealState" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">NamedTuple</span></code></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="euchplt.euchre.DealState.pos">
@@ -1647,6 +1671,11 @@ not playing, since not recognized by the <code class="docutils literal notransla
 <dl class="py attribute">
 <dt class="sig sig-object py" id="euchplt.euchre.DealState.bids">
 <span class="sig-name descname"><span class="pre">bids</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.euchre.Bid" title="euchplt.euchre.Bid"><span class="pre">Bid</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#euchplt.euchre.DealState.bids" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="euchplt.euchre.DealState.def_bids">
+<span class="sig-name descname"><span class="pre">def_bids</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.euchre.Bid" title="euchplt.euchre.Bid"><span class="pre">Bid</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#euchplt.euchre.DealState.def_bids" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -1705,18 +1734,29 @@ not playing, since not recognized by the <code class="docutils literal notransla
 <dd></dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="euchplt.euchre.DealState.off_bids">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">off_bids</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.euchre.Bid" title="euchplt.euchre.Bid"><span class="pre">Bid</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#euchplt.euchre.DealState.off_bids" title="Link to this definition"></a></dt>
+<dd><p>List of offensive (i.e. contract-oriented) bids.  For now, this is the leading
+slice of <cite>bids</cite> (omitting defensive bids), but perhaps LATER <cite>bids</cite> should really
+represent offensive bids (this list), and <cite>all_bids</cite> (or something) would be the
+concatenation of <cite>bids</cite> and <cite>def_bids</cite>.</p>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="euchplt.euchre.DealState.bid_round">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bid_round</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#euchplt.euchre.DealState.bid_round" title="Link to this definition"></a></dt>
-<dd><p>Note, this should only be used during actual bidding (may be
-inaccurate during defensive bidding or playing rounds, if loner
-was called)</p>
+<dd><p>Note, this should only be used during actual bidding (i.e. before the current
+bid is actually added to the list).</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="euchplt.euchre.DealState.bid_pos">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bid_pos</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#euchplt.euchre.DealState.bid_pos" title="Link to this definition"></a></dt>
-<dd><p>Return value 0-7, where 0-3 is first round bidding, and 4-7
-is second round (3 and 7 are the dealer bid positions)</p>
+<dd><p>Return value 0-7, where 0-3 is first round bidding, and 4-7 is second round (3
+and 7 are the dealer bid positions).</p>
+<p>REVISIT: I’m not at all sure this is really correct–it needs to work for both
+defensive bidding (specifically for <cite>StrategySmart</cite>) as well as for ML strategy
+bid traversal–have to take another look at this and make sure it works right!!!</p>
 </dd></dl>
 
 <dl class="py property">
@@ -1729,12 +1769,6 @@ is second round (3 and 7 are the dealer bid positions)</p>
 <dt class="sig sig-object py" id="euchplt.euchre.DealState.play_seq">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">play_seq</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#euchplt.euchre.DealState.play_seq" title="Link to this definition"></a></dt>
 <dd><p>Current play sequence within trick (lead = 0)</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="euchplt.euchre.DealState.lead_pos">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lead_pos</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#euchplt.euchre.DealState.lead_pos" title="Link to this definition"></a></dt>
-<dd><p>Position of the lead player/hand</p>
 </dd></dl>
 
 <dl class="py property">
@@ -2133,6 +2167,12 @@ if bowers are utilized as part of the analysis and/or strategy)</p>
 specialty strategies need to know when intermediary milestones are hit (e.g. to
 notify servers representing <code class="docutils literal notranslate"><span class="pre">StrategyRemote</span></code> players, or to support “traversal”
 strategies for ML data generation).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy.Strategy._priv">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_priv</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#euchplt.strategy.Strategy._priv" title="Link to this definition"></a></dt>
+<dd><p>Shhh…</p>
 </dd></dl>
 
 </dd></dl>
@@ -2543,42 +2583,46 @@ and see if there is a better rule to insert before it</p>
 <dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">euchplt.strategy.</span></span><span class="sig-name descname"><span class="pre">StrategyRemote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.strategy.StrategyRemote" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#euchplt.strategy.Strategy" title="euchplt.strategy.base.Strategy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Strategy</span></code></a></p>
-<p>Invocation of remote strategies through the <a class="reference external" href="https://github.com/crashka/EuchreEndpoint">EuchreEndpoint</a> interface</p>
+<p>Invocation of remote strategies through the <a class="reference external" href="https://github.com/crashka/EuchreEndpoint">EuchreEndpoint</a> interface.</p>
+<p>NOTE: this subclass keeps state about the remote connection and session, so instances
+must be shared across partners.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.__init__" title="Link to this definition"></a></dt>
-<dd><p>See base class</p>
+<dd><p>See base class.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.bid">
 <span class="sig-name descname"><span class="pre">bid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">def_bid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.euchre.Bid" title="euchplt.euchre.Bid"><span class="pre">Bid</span></a></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.bid" title="Link to this definition"></a></dt>
-<dd><p>See base class</p>
+<dd><p>See base class.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.discard">
 <span class="sig-name descname"><span class="pre">discard</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.discard" title="Link to this definition"></a></dt>
-<dd><p>See base class</p>
+<dd><p>See base class.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.play_card">
 <span class="sig-name descname"><span class="pre">play_card</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">trick</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.Trick" title="euchplt.euchre.Trick"><span class="pre">Trick</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_plays</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.play_card" title="Link to this definition"></a></dt>
-<dd><p>See base class</p>
+<dd><p>See base class.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.notify">
 <span class="sig-name descname"><span class="pre">notify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">notice_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.strategy.StrategyNotice" title="euchplt.strategy.base.StrategyNotice"><span class="pre">StrategyNotice</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.notify" title="Link to this definition"></a></dt>
-<dd><p>See base class</p>
+<dd><p>See base class.</p>
+<p>Note that this strategy may represent both players on a team, so we need to make
+sure that we are handling each logical notification only once.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.get_token">
 <span class="sig-name descname"><span class="pre">get_token</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.get_token" title="Link to this definition"></a></dt>
 <dd><p>Return unique session token tied to this <code class="docutils literal notranslate"><span class="pre">Strategy</span></code> instance (currently
-computed as hex digit representation of <cite>id(self)</cite>)</p>
+computed as hex digit representation of <cite>id(self)</cite>).</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2594,55 +2638,148 @@ individually used in the request and validated in the response, respectively</p>
 <code class="docutils literal notranslate"><span class="pre">addl_args</span></code> entries are validated</p></li>
 </ul>
 <p>Note that “validating” args means ensuring that the value in the response matches
-that in the request (as specified by the API)</p>
+that in the request (as specified by the API).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.new_session">
-<span class="sig-name descname"><span class="pre">new_session</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.new_session" title="Link to this definition"></a></dt>
-<dd><p>Start new session on remote server</p>
+<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.map_deck">
+<span class="sig-name descname"><span class="pre">map_deck</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deck</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dir</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Dir.FROM</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.map_deck" title="Link to this definition"></a></dt>
+<dd><p>Return remapped deck in the specified “direction of travel”.  We actually only
+need to do this in the outbound (i.e. <code class="docutils literal notranslate"><span class="pre">FROM</span></code>) direction.  In contrast to
+<code class="docutils literal notranslate"><span class="pre">map_card()</span></code> and <code class="docutils literal notranslate"><span class="pre">map_suit()</span></code>, we take an actual <cite>Deck</cite> instance as input,
+though the output uses card indexes rather than objects.</p>
+<p>The output format is (for card positions 0-23):</p>
+<ul class="simple">
+<li><p>0-4:   hand 0</p></li>
+<li><p>5-9:   hand 1</p></li>
+<li><p>10-14: hand 2</p></li>
+<li><p>15-29: hand 3</p></li>
+<li><p>20:    turn card</p></li>
+<li><p>21-23: buries</p></li>
+</ul>
+<p>The rationale is that this is more universal/canonical.  If the actual remote
+engine uses a different representation, that remapping should be done in the
+connector.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.session_complete">
-<span class="sig-name descname"><span class="pre">session_complete</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.session_complete" title="Link to this definition"></a></dt>
-<dd><p>Notify remote server that session is complete</p>
+<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.map_card">
+<span class="sig-name descname"><span class="pre">map_card</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">card</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dir</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Dir.FROM</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.map_card" title="Link to this definition"></a></dt>
+<dd><p>Return remapped card in the specified “direction of travel”; note that we use
+the card index (position within <code class="docutils literal notranslate"><span class="pre">card.CARDS</span></code>) as the representation to keep
+things simple.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.map_suit">
+<span class="sig-name descname"><span class="pre">map_suit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">suit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dir</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Dir.FROM</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.map_suit" title="Link to this definition"></a></dt>
+<dd><p>Return remapped suit in the specified “direction of travel”; note that we use
+the suit index (position within <code class="docutils literal notranslate"><span class="pre">card.SUITS</span></code>) as the representation to keep
+things simple.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.new_match">
+<span class="sig-name descname"><span class="pre">new_match</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.new_match" title="Link to this definition"></a></dt>
+<dd><p>Start new match on remote server.  Note that we are currently creating a new
+request session for each match.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.match_complete">
+<span class="sig-name descname"><span class="pre">match_complete</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.match_complete" title="Link to this definition"></a></dt>
+<dd><p>Notify remote server that match is complete.  Also tear down the remote session
+(since we are correlating them to the match).</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.new_game">
 <span class="sig-name descname"><span class="pre">new_game</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.new_game" title="Link to this definition"></a></dt>
-<dd><p>Start new game on remote server</p>
+<dd><p>Start new game on remote server.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.game_complete">
 <span class="sig-name descname"><span class="pre">game_complete</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.game_complete" title="Link to this definition"></a></dt>
-<dd><p>Notify remote server that game is complete</p>
+<dd><p>Notify remote server that game is complete.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.new_deal">
-<span class="sig-name descname"><span class="pre">new_deal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.new_deal" title="Link to this definition"></a></dt>
-<dd><p>Start new deal on remote server</p>
+<span class="sig-name descname"><span class="pre">new_deal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.new_deal" title="Link to this definition"></a></dt>
+<dd><p>Start new deal on remote server.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.deal_complete">
-<span class="sig-name descname"><span class="pre">deal_complete</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.deal_complete" title="Link to this definition"></a></dt>
-<dd><p>Notify remote server that deal is complete</p>
+<span class="sig-name descname"><span class="pre">deal_complete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.deal_complete" title="Link to this definition"></a></dt>
+<dd><p>Notify remote server that deal is complete.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.new_trick">
-<span class="sig-name descname"><span class="pre">new_trick</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.new_trick" title="Link to this definition"></a></dt>
-<dd><p>Notify remote server that trick is complete</p>
+<span class="sig-name descname"><span class="pre">new_trick</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">trick</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.Trick" title="euchplt.euchre.Trick"><span class="pre">Trick</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.new_trick" title="Link to this definition"></a></dt>
+<dd><p>Start new trick on remote server.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.trick_complete">
-<span class="sig-name descname"><span class="pre">trick_complete</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.trick_complete" title="Link to this definition"></a></dt>
-<dd><p>Notify remote server that trick is complete</p>
+<span class="sig-name descname"><span class="pre">trick_complete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.trick_complete" title="Link to this definition"></a></dt>
+<dd><p>Notify remote server that trick is complete.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.request_bid">
+<span class="sig-name descname"><span class="pre">request_bid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.euchre.Bid" title="euchplt.euchre.Bid"><span class="pre">Bid</span></a></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.request_bid" title="Link to this definition"></a></dt>
+<dd><p>Request bid from remote server.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.notify_bid">
+<span class="sig-name descname"><span class="pre">notify_bid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bid_pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.Bid" title="euchplt.euchre.Bid"><span class="pre">Bid</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.notify_bid" title="Link to this definition"></a></dt>
+<dd><p>Notify remote server of a bid.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.request_swap">
+<span class="sig-name descname"><span class="pre">request_swap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.request_swap" title="Link to this definition"></a></dt>
+<dd><p>Request swap (discard) from remote server.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.notify_swap">
+<span class="sig-name descname"><span class="pre">notify_swap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">swap_pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">card</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.notify_swap" title="Link to this definition"></a></dt>
+<dd><p>Notify remote server of a swap.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.request_play">
+<span class="sig-name descname"><span class="pre">request_play</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">trick</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.Trick" title="euchplt.euchre.Trick"><span class="pre">Trick</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_plays</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.request_play" title="Link to this definition"></a></dt>
+<dd><p>Request swap from remote server.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.notify_play">
+<span class="sig-name descname"><span class="pre">notify_play</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">trick</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.Trick" title="euchplt.euchre.Trick"><span class="pre">Trick</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">play_pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">card</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.card.Card" title="euchplt.card.Card"><span class="pre">Card</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.notify_play" title="Link to this definition"></a></dt>
+<dd><p>Notify remote server of a card play.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.catchup_bids">
+<span class="sig-name descname"><span class="pre">catchup_bids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.catchup_bids" title="Link to this definition"></a></dt>
+<dd><p>Catchup on bid notifications.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.catchup_swap">
+<span class="sig-name descname"><span class="pre">catchup_swap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.catchup_swap" title="Link to this definition"></a></dt>
+<dd><p>Catchup on swap notification.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="euchplt.strategy.StrategyRemote.catchup_plays">
+<span class="sig-name descname"><span class="pre">catchup_plays</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.DealState" title="euchplt.euchre.DealState"><span class="pre">DealState</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">trick</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#euchplt.euchre.Trick" title="euchplt.euchre.Trick"><span class="pre">Trick</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#euchplt.strategy.StrategyRemote.catchup_plays" title="Link to this definition"></a></dt>
+<dd><p>Catchup on play notifications.</p>
 </dd></dl>
 
 </dd></dl>
