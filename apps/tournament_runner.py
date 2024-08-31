@@ -250,10 +250,9 @@ DUMMY_TEAMS = [
 def create_team(strat_name: str) -> Team:
     """Create an ad hoc team based on a configured strategy (specified by name)
     """
-    strat1 = Strategy.new(strat_name)
-    strat2 = Strategy.new(strat_name)
-    player1 = Player(strat_name + '_a', strat1)
-    player2 = Player(strat_name + '_b', strat2)
+    strat = Strategy.new(strat_name)
+    player1 = Player(strat_name + '_a', strat)
+    player2 = Player(strat_name + '_b', strat)
     return Team(strat_name, [player1, player2])
 
 @app.get("/")

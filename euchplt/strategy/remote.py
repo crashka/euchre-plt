@@ -81,7 +81,7 @@ class StrategyRemote(Strategy):
     game:         'Game'
     _deal:        'Deal'  # this is the real deal (haha)
     trick:        Trick
-    discard:      Card    # discard returned from remote
+    discarded:    Card    # discard returned from remote
     last_bid:     int     # positon of last bid synced with remote
     sync_swap:    bool    # whether swap was synced with remote
     last_play:    int     # sequence of last play synced with remote
@@ -110,7 +110,7 @@ class StrategyRemote(Strategy):
         self.game       = None
         self._deal      = None
         self.trick      = None
-        self.discard    = None
+        self.discarded  = None
         self.last_bid   = None
         self.sync_swap  = None
         self.last_play  = None
@@ -175,8 +175,8 @@ class StrategyRemote(Strategy):
                 if self._deal:
                     self.deal_complete(deal)
                 # TEMP (until we add notifications for game and match)!!!
-                self.notify(deal, StrategyNotice.GAME_COMPLETE)
-                self.notify(deal, StrategyNotice.MATCH_COMPLETE)
+                #self.notify(deal, StrategyNotice.GAME_COMPLETE)
+                #self.notify(deal, StrategyNotice.MATCH_COMPLETE)
                 # /TEMP
             case StrategyNotice.GAME_COMPLETE:
                 if self.game:
@@ -351,6 +351,7 @@ class StrategyRemote(Strategy):
         assert self._deal is None
         self._deal = deal.player_state['_deal']
         self.deal_num += 1
+        self.discarded = None
         self.last_bid = -1
         self.sync_swap = False
         self.lead_pos = 0
@@ -377,6 +378,7 @@ class StrategyRemote(Strategy):
         # reset and/or assert relative counters
         self._deal = None
         self.trick_num = -1
+        self.discarded = None
         self.last_bid = None
         self.sync_swap = None
         self.last_play = None
@@ -452,17 +454,19 @@ class StrategyRemote(Strategy):
     def request_swap(self, deal: DealState) -> Card:
         """Request swap (discard) from remote server.
         """
-        assert self.discard is None
+        assert self.discarded is None
         addl_args = {
-            'gameNum':     self.game_num,
-            'dealNum':     self.deal_num,
-            'declarerPos': deal.caller_pos,
-            'turnCard':    self.map_card(deal.turn_card.idx),
-            'pos':         deal.pos
+            'gameNum':        self.game_num,
+            'dealNum':        self.deal_num,
+            'declarerPos':    deal.caller_pos,
+            'turnCard':       self.map_card(deal.turn_card.idx),
+            'pos':            deal.pos,
+            'swappableCards': [self.map_card(card.idx) for card in deal.hand]
         }
-        result = self.request(EpReq.GET, EpPath.SWAP, None, addl_args, None)
-        self.discard = CARDS[self.map_card(result['card'], Dir.TO)]
-        return self.discard
+        validate = [x for x in addl_args.keys() if x != 'swappableCards']
+        result = self.request(EpReq.GET, EpPath.SWAP, None, addl_args, validate)
+        self.discarded = CARDS[self.map_card(result['card'], Dir.TO)]
+        return self.discarded
 
     def notify_swap(self, deal: DealState, swap_pos: int, card: Card) -> None:
         """Notify remote server of a swap.
@@ -526,8 +530,8 @@ class StrategyRemote(Strategy):
         if self.sync_swap:
             return
 
-        if self.discard:
-            assert self.discard is self._deal.discard
+        if self.discarded:
+            assert self.discarded is self._deal.discard
         elif self._deal.discard:
             self.sync_swap = True
             self.notify_swap(deal, DEALER_POS, self._deal.discard)

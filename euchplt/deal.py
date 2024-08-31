@@ -285,6 +285,8 @@ class Deal(GameCtxMixin):
 
         # check if deal is passed
         if not self.contract:
+            self.notify_players(PlayerNotice.BIDDING_OVER)
+            self.notify_players(PlayerNotice.DEAL_COMPLETE)
             self.contract = PASS_BID
             return self.contract
         assert isinstance(self.caller_pos, int)
