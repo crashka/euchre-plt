@@ -7,7 +7,7 @@ from typing import TextIO
 
 from .utils import parse_argv
 from .core import DEBUG, LogicError, ImplementationError
-from .card import Suit, SUITS, Card, Deck, get_deck
+from .card import Suit, SUITS, Card, Deck, set_seed, get_deck
 from .euchre import GameCtxMixin, Hand, Trick, Bid, PASS_BID, NULL_BID
 from .euchre import DealState
 from .player import Player, PlayerNotice
@@ -41,6 +41,7 @@ class Deal(GameCtxMixin):
     turn_card:        Card | None
     buries:           list[Card]
     bids:             list[Bid]
+    def_bids:         list[Bid]
     discard:          Card | None
     tricks:           list[Trick]
     contract:         Bid | None
@@ -68,6 +69,7 @@ class Deal(GameCtxMixin):
         self.turn_card        = None
         self.buries           = []
         self.bids             = []
+        self.def_bids         = []
         self.discard          = None
         self.tricks           = []
         self.contract         = None
@@ -93,10 +95,11 @@ class Deal(GameCtxMixin):
         """
         # do fixup on `pos`, to account for DEALER_POS and possibly bidding rounds
         pos %= NUM_PLAYERS
-        return DealState(pos, self.hands[pos], self.turn_card, self.bids, self.tricks,
-                         self.contract, self.caller_pos, self.go_alone, self.def_alone,
-                         self.def_pos, self.played_by_suit, self.unplayed_by_suit,
-                         self.tricks_won, self.points, self.player_state[pos])
+        return DealState(pos, self.hands[pos], self.turn_card, self.bids, self.def_bids,
+                         self.tricks, self.contract, self.caller_pos, self.go_alone,
+                         self.def_alone, self.def_pos, self.played_by_suit,
+                         self.unplayed_by_suit, self.tricks_won, self.points,
+                         self.player_state[pos])
 
     @property
     def total_tricks(self) -> int:
@@ -159,7 +162,7 @@ class Deal(GameCtxMixin):
     def valid_plays(self, pos: int, trick: Trick) -> list[Card]:
         """
         """
-        if not trick.plays:
+        if not trick.lead_card:
             # make a copy here just in case `self.hands` is modified before the return
             # list is fully utilized (note that the other case returns a standalone list
             # as well)
@@ -301,6 +304,7 @@ class Deal(GameCtxMixin):
                     bid = NULL_BID
                 # we record this for traceability, even if not technically a real bid
                 self.bids.append(bid)
+                self.def_bids.append(bid)
                 if bid.is_pass(include_null=True):
                     continue
                 if not bid.is_defend():
@@ -327,8 +331,10 @@ class Deal(GameCtxMixin):
             for i in range(NUM_PLAYERS):
                 pos = (lead_pos + i) % NUM_PLAYERS
                 if self.go_alone and pos == self.caller_pos ^ 0x02:  # TODO: fix magic!!!
+                    trick.play_card(pos, None)
                     continue
                 if self.def_alone and pos == self.def_pos ^ 0x02:  # TODO: fix magic!!!
+                    trick.play_card(pos, None)
                     continue
                 valid_plays = self.valid_plays(pos, trick)
                 card = self.players[pos].play_card(self.deal_state(pos), trick, valid_plays)
@@ -431,6 +437,7 @@ def main() -> int:
     Usage::
 
       python -m euchplt.deal [ndeals=<ndeals>] [result=<tags>] [strategy=<strategy>]
+                             [rnd_seed=<seed>]
 
     If `result` is present, only deals with the indicated result tags(s) will be printed,
     specified as a comma-separated list of any number or combination of the following:
@@ -464,6 +471,8 @@ def main() -> int:
         strategies = [Strategy.new(x) for x in strat_names]
     else:
         strategies = [Strategy.new(DFLT_STRATEGY)]
+    if seed := kwargs.pop('rnd_seed', None):
+        set_seed(seed)
     if kwargs:
         kwargs_str = ' '.join(str(kw) for kw in kwargs)
         raise RuntimeError("Unexpected argument(s): " + kwargs_str)

@@ -123,7 +123,7 @@ class StrategyRemote(Strategy):
             assert not deal.is_partner_caller
             # remote engine currently doesn't support defending alone, so we just forgo
             # the `DEFENSE` endpoint completely
-            return PASS_BID
+            return Bid(defend_suit, False)
 
         assert isinstance(self.last_bid, int)
         self.catchup_bids(deal)
@@ -353,7 +353,6 @@ class StrategyRemote(Strategy):
         self.deal_num += 1
         self.last_bid = -1
         self.sync_swap = False
-        self.last_play = -1
         self.lead_pos = 0
 
         # convert card representation to canonical form
@@ -389,6 +388,7 @@ class StrategyRemote(Strategy):
         assert self.trick is None
         self.trick = trick
         self.trick_num += 1
+        self.last_play = -1
 
         addl_args = {
             'gameNum':  self.game_num,
@@ -429,7 +429,7 @@ class StrategyRemote(Strategy):
             return PASS_BID
         return Bid(SUITS[suit_idx], result['alone'])
 
-    def notify_bid(self, deal: DealState, bid: Bid) -> None:
+    def notify_bid(self, deal: DealState, bid_pos: int, bid: Bid) -> None:
         """Notify remote server of a bid.
         """
         # `null_suit` is not used/understood by the remote interface, and `defend_suit` is
@@ -442,7 +442,7 @@ class StrategyRemote(Strategy):
             'dealNum':  self.deal_num,
             'round':    deal.bid_round,
             'turnCard': self.map_card(deal.turn_card.idx),
-            'pos':      deal.pos,
+            'pos':      bid_pos,
             'suit':     self.map_suit(bid.suit.idx),
             'alone':    bid.alone
         }
@@ -464,7 +464,7 @@ class StrategyRemote(Strategy):
         self.discard = CARDS[self.map_card(result['card'], Dir.TO)]
         return self.discard
 
-    def notify_swap(self, deal: DealState, card: Card) -> None:
+    def notify_swap(self, deal: DealState, swap_pos: int, card: Card) -> None:
         """Notify remote server of a swap.
         """
         addl_args = {
@@ -472,7 +472,7 @@ class StrategyRemote(Strategy):
             'dealNum':     self.deal_num,
             'declarerPos': deal.caller_pos,
             'turnCard':    self.map_card(deal.turn_card.idx),
-            'pos':         deal.pos,
+            'pos':         swap_pos,
             'card':        self.map_card(card.idx)
         }
         validate = [x for x in addl_args.keys() if x != 'card']
@@ -485,7 +485,7 @@ class StrategyRemote(Strategy):
             'gameNum':       self.game_num,
             'dealNum':       self.deal_num,
             'trickNum':      self.trick_num,
-            'trickSeq':      len(trick.plays),
+            'trickSeq':      (deal.pos - self.lead_pos) % 4,
             'pos':           deal.pos,
             'playableCards': [self.map_card(card.idx) for card in valid_plays]
         }
@@ -494,15 +494,20 @@ class StrategyRemote(Strategy):
         card = CARDS[self.map_card(result['card'], Dir.TO)]
         return card
 
-    def notify_play(self, deal: DealState, trick: Trick, card: Card) -> None:
+    def notify_play(self, deal: DealState, trick: Trick, play_pos: int, card: Card) -> None:
         """Notify remote server of a card play.
         """
+        # REVISIT: for now, don't send non-play notifications (since the server side is
+        # handling skipped bids), but we may want to add this back to keep state synced
+        # more explicitly!!!
+        if card is None:
+            return
         addl_args = {
             'gameNum':  self.game_num,
             'dealNum':  self.deal_num,
             'trickNum': self.trick_num,
-            'trickSeq': len(trick.plays),
-            'pos':      deal.pos,
+            'trickSeq': (play_pos - self.lead_pos) % 4,
+            'pos':      play_pos,
             'card':     self.map_card(card.idx)
         }
         validate = [x for x in addl_args.keys() if x != 'card']
@@ -513,7 +518,7 @@ class StrategyRemote(Strategy):
         """
         while self.last_bid < len(deal.bids) - 1:
             self.last_bid += 1
-            self.notify_bid(deal, deal.bids[self.last_bid])
+            self.notify_bid(deal, self.last_bid, deal.bids[self.last_bid])
 
     def catchup_swap(self, deal: DealState) -> None:
         """Catchup on swap notification.
@@ -525,11 +530,11 @@ class StrategyRemote(Strategy):
             assert self.discard is self._deal.discard
         elif self._deal.discard:
             self.sync_swap = True
-            self.notify_swap(deal, self._deal.discard)
+            self.notify_swap(deal, DEALER_POS, self._deal.discard)
 
     def catchup_plays(self, deal: DealState, trick: Trick) -> None:
         """Catchup on play notifications.
         """
         while self.last_play < len(trick.plays) - 1:
             self.last_play += 1
-            self.notify_play(deal, trick, trick.plays[self.last_play][1])
+            self.notify_play(deal, trick, *trick.plays[self.last_play])

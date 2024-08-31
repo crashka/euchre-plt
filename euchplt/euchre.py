@@ -143,8 +143,8 @@ def beats(self, other: Card, ctx: GameCtxMixin) -> bool:
     """Whether the current card effectively beats ``other`` (i.e. with possible bower
     translations), given a specified context
     """
-    if ctx.lead_card is None:
-        raise LogicError("Lead card not set")
+    if ctx.lead_suit is None:
+        raise LogicError("Lead suit not set")
 
     ret = None
     # REVISIT: this is not very efficient or pretty, can probably do better by handling bower
@@ -259,8 +259,8 @@ class Hand:
         """
         if ctx.trump_suit is None:
             raise LogicError("Trump suit not set")
-        if ctx.lead_card is None:
-            raise LogicError("Lead card not set")
+        if ctx.lead_suit is None:
+            raise LogicError("Lead suit not set")
         by_suit = self.cards_by_suit(ctx)
         can_follow = bool(by_suit[ctx.lead_suit])
         if can_follow and card.effsuit(ctx) != ctx.lead_suit:
@@ -301,13 +301,18 @@ class Trick(GameCtxMixin):
     def __str__(self):
         return ' '.join(str(p[1]) for p in self.plays)
 
-    def play_card(self, pos: int, card: Card) -> bool:
-        """Returns ``True`` if new winning card
+    def play_card(self, pos: int, card: Card | None) -> bool:
+        """Returns ``True`` if new winning card.  If `card` is `None`, then this indicates
+        a "non-play" for the partner of either a lone declarer or lone defender (though we
+        don't current distinguish this from the initialized value in `cards[pos]`, which
+        is not great--should we actually create a `NULL_CARD` value instead???).
         """
         if self.cards[pos]:
             raise LogicError(f"Position {pos} played twice")
         self.cards[pos] = card
         self.plays.append((pos, card))
+        if card is None:
+            return False
         if self.winning_card is None:
             self.set_lead_card(card)
             self.winning_card = card
@@ -375,6 +380,7 @@ class DealState(NamedTuple):
     hand:             Hand
     turn_card:        Card | None
     bids:             list[Bid]
+    def_bids:         list[Bid]
     tricks:           list[Trick]
     contract:         Bid | None
     caller_pos:       int | None
@@ -392,17 +398,30 @@ class DealState(NamedTuple):
         return self.tricks[-1]
 
     @property
-    def bid_round(self) -> int:
-        """Note, this should only be used during actual bidding (may be
-        inaccurate during defensive bidding or playing rounds, if loner
-        was called)
+    def off_bids(self) -> list[Bid]:
+        """List of offensive (i.e. contract-oriented) bids.  For now, this is the leading
+        slice of `bids` (omitting defensive bids), but perhaps LATER `bids` should really
+        represent offensive bids (this list), and `all_bids` (or something) would be the
+        concatenation of `bids` and `def_bids`.
         """
-        return len(self.bids) // 4 + 1
+        omit_tail = len(self.def_bids)
+        return self.bids[:-omit_tail] if omit_tail else self.bids
+
+    @property
+    def bid_round(self) -> int:
+        """Note, this should only be used during actual bidding (i.e. before the current
+        bid is actually added to the list).
+        """
+        return len(self.off_bids) // 4 + 1
 
     @property
     def bid_pos(self) -> int:
-        """Return value 0-7, where 0-3 is first round bidding, and 4-7
-        is second round (3 and 7 are the dealer bid positions)
+        """Return value 0-7, where 0-3 is first round bidding, and 4-7 is second round (3
+        and 7 are the dealer bid positions).
+
+        REVISIT: I'm not at all sure this is really correct--it needs to work for both
+        defensive bidding (specifically for `StrategySmart`) as well as for ML strategy
+        bid traversal--have to take another look at this and make sure it works right!!!
         """
         return self.pos + len(self.bids) // 4 * 4
 
@@ -449,12 +468,6 @@ class DealState(NamedTuple):
         """Current play sequence within trick (lead = 0)
         """
         return len(self.cur_trick.plays)  # zero-based
-
-    @property
-    def lead_pos(self) -> int:
-        """Position of the lead player/hand
-        """
-        return (self.pos - self.play_seq) % 4
 
     @property
     def winning_pos(self) -> int:

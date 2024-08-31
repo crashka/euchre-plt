@@ -661,7 +661,7 @@ class StrategySmart(Strategy):
         either in dynamic adjustment of rule traversal, or specifying new rulesets!!!
         """
         # pick the appropriate ruleset based on deal context
-        if deal.play_seq == 0:
+        if not trick.lead_card:
             rs_name = 'init_lead' if deal.trick_num == 1 else 'subseq_lead'
         else:
             rs_name = 'part_winning' if deal.partner_winning else 'opp_winning'

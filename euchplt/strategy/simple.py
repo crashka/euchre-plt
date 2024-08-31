@@ -99,14 +99,13 @@ class StrategySimple(Strategy):
         by_level = analysis.cards_by_level(offset_trump=True)
 
         # lead highest card
-        if deal.play_seq == 0:
+        if not trick.lead_card:
             for card in by_level:
                 if card in valid_plays:
                     return card
             raise LogicError("No valid card to play")
 
-        lead_card = trick.plays[0][1]
-        follow_cards = analysis.follow_cards(lead_card)
+        follow_cards = analysis.follow_cards(trick.lead_card)
 
         # partner is winning, try and duck (unless `aggressive & 0x01` third hand)
         if trick.winning_pos == deal.pos ^ 0x02:
