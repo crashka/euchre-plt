@@ -1,6 +1,11 @@
 ---
 default:
   strategies:
+    EuchreBeta:
+      comments:         Ray's EuchreBeta engine
+      module_path:      euchplt.strategy
+      base_class:       StrategyRemote
+
     Random:
       comments:         "base StrategyRandom configuration"
       module_path:      euchplt.strategy
@@ -173,8 +178,3 @@ default:
       strategy_params:
         bid_strategy:     Smart 4
         play_strategy:    Simple i
-
-    Remote:
-      comments:         "base StrategyRemote configuration"
-      module_path:      euchplt.strategy
-      base_class:       StrategyRemote
