@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import re
 from os import environ, rename
 import os.path
 from datetime import datetime
@@ -33,12 +34,13 @@ DATA_DIR    = 'data'
 DATA_TS_FMT = '%Y%m%d_%H%M%S'
 
 def DataFile(file_name: str, dir: str = DATA_DIR, add_ts: bool = False) -> str:
-    """Given name of file, return full path name (in DATA_DIR, or specified
-    directory)
+    """Given name of file, return full path name (in DATA_DIR, or specified directory).
+    If add_ts is specified, the current timestamp will be inserted at the end of the
+    filename (before the filetype suffix).
     """
     if add_ts:
         now_ts = datetime.now().strftime(DATA_TS_FMT)
-        file_name += '-' + now_ts
+        file_name = re.sub(r'(\.[a-z]+)$', f'-{now_ts}\\1', file_name)
     return os.path.join(BASE_DIR, dir, file_name)
 
 def ArchiveDataFile(file_name: str) -> None:
