@@ -199,7 +199,7 @@ class PlayDataAnalysis(PlayAnalysis):
         turn_suit   = turn_card.effsuit(self.ctx)
         next_suit   = turn_suit.next_suit()
         off_aces    = [p[1] for t in deal.tricks
-                       for p in t.plays if p[1].rank == ace and p[1].suit != trump_suit]
+                       for p in t.plays if p[1] and p[1].rank == ace and p[1].suit != trump_suit]
 
         # current hand stuff
         trump_cards = self.trump_cards()
@@ -219,9 +219,9 @@ class PlayDataAnalysis(PlayAnalysis):
         card_is_trump  = card_suit == trump_suit
         my_suit_cards  = self.get_suit_cards()[card_suit]
         low_level      = self.cards_by_level()[-1].level
-        leading        = deal.play_seq == 0
+        leading        = deal.cur_trick.lead_card is None
         if not leading:
-            lead_card     = deal.cur_trick.plays[0][1]
+            lead_card     = deal.cur_trick.lead_card
             lead_suit     = lead_card.effsuit(deal.cur_trick)
             winning_card  = deal.cur_trick.winning_card
             beats_winning = card.beats(winning_card, deal.cur_trick),

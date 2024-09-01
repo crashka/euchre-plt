@@ -102,7 +102,8 @@ def main() -> int:
 
             if i % UPD_INTERVAL == 0:
                 print(f"\rIterations: {i:2d}", end='')
-    except:
+    except Exception as e:
+        print(f"\nException ({tmp_file=}): {e=}, {type(e)=}")
         keep_tmp = True  # so we can debug
     print(f"\rIterations: {i:2d}")
 
@@ -171,6 +172,9 @@ def main() -> int:
         for tmp_file in tmp_files:
             with open(tmp_file, 'r') as filein:
                 line = filein.readline()
+                if not line:
+                    # this can happen for short runs
+                    continue
                 decoded = json.loads(line.rstrip())
                 # if the first line was encoded as a list (as opposed to a dict),
                 # it is assumed to a be header record, which we will either write

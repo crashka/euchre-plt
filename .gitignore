@@ -1,6 +1,7 @@
 *.txt
 *.xlsx
 *.tsv
+*.tsv-*
 *.csv
 *.db
 appenv.sh
