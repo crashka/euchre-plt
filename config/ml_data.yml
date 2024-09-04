@@ -6,21 +6,21 @@ default:
       discard_strat:
       bid_prune_strat:
       hand_analysis:
-        trump_values:    [0, 0, 0, 1, 2, 4, 7, 10]
+        trump_values:    [0, 0, 0, 0, 1, 3, 7, 10]
     StrategyPlayTraverse:
       bid_strat:
       discard_strat:
       base_play_strat:
       hand_analysis:
       play_analysis:
-        trump_values:    [0, 0, 0, 1, 2, 4, 7, 10]
+        trump_values:    [0, 0, 0, 0, 1, 3, 7, 10]
 
   strategies:
     Bid Model 1:
       module_path:       ml.strategy.bid_traverse
       base_class:        StrategyBidTraverse
       strategy_params:
-        play_strat:      Smart 1
+        play_strat:      Simple i
         discard_strat:
         bid_prune_strat:
         hand_analysis:
@@ -28,7 +28,7 @@ default:
       module_path:       ml.strategy.bid_traverse
       base_class:        StrategyBidTraverse
       strategy_params:
-        play_strat:      Smart 1
+        play_strat:      Simple i
         discard_strat:
         bid_prune_strat: Bid Prune 2
         hand_analysis:
@@ -42,17 +42,17 @@ default:
       module_path:       ml.strategy.play_traverse
       base_class:        StrategyPlayTraverse
       strategy_params:
-        bid_strat:       Smart 1
+        bid_strat:       Smart 3
         discard_strat:
-        base_play_strat: Smart 1
+        base_play_strat: Simple i
         hand_analysis:
     Play Model 2:
       module_path:       ml.strategy.play_traverse
       base_class:        StrategyPlayTraverse
       strategy_params:
-        bid_strat:       Smart 6
+        bid_strat:       Smart 3
         discard_strat:
-        base_play_strat: Smart 6
+        base_play_strat: Smart 3
         hand_analysis:
 
   players:
