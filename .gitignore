@@ -4,4 +4,10 @@
 *.tsv-*
 *.csv
 *.db
+*.html
+venv-*/
+.idea-*/
+AutogluonModels/
+bid_data/
+play_data/
 appenv.sh
