@@ -5,7 +5,7 @@ from ..euchre import Bid, Trick, DealState
 from .base import Strategy, StrategyNotice
 
 ##################
-# StrategyRandom #
+# StrategyHybrid #
 ##################
 
 class StrategyHybrid(Strategy):

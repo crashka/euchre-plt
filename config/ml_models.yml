@@ -1,0 +1,58 @@
+---
+default:
+  ml_models:
+    bid_model_2:
+      model_dir:  ag-20240904_044315
+      deals:      25000
+      prob_type:  regression
+      label:      points
+      quality:    medium
+
+    bid_model_2-best:
+      model_dir:  ag-20240904_174105
+      deals:      25000
+      prob_type:  regression
+      label:      points
+      quality:    best
+
+    bid_model_2-best-qr:
+      model_dir:  ag-20240906_030638
+      deals:      25000
+      prob_type:  quantile
+      label:      points
+      quality:    best
+
+    bid_model_2-best-mc:
+      model_dir:  ag-20240906_002609
+      deals:      25000
+      prob_type:  multiclass
+      label:      points
+      quality:    best
+
+    play_model_1:
+      model_dir:  ag-20240904_055417
+      deals:      1500
+      prob_type:  regression
+      label:      points_avg
+      quality:    medium
+
+    play_model_1-best:
+      model_dir:  ag-20240904_191812
+      deals:      1500
+      prob_type:  regression
+      label:      points_avg
+      quality:    best
+
+    play_model_1-best-mxp:
+      model_dir:  ag-20240904_215517
+      deals:      1500
+      prob_type:  regression
+      label:      points_max
+      quality:    best
+
+    play_model_1-best-mxp-qr:
+      model_dir:  ag-20240906_044219
+      deals:      1500
+      prob_type:  quantile
+      label:      points_max
+      quality:    best

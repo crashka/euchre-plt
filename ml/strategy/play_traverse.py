@@ -27,8 +27,7 @@ class PlayFeatures(NamedTuple):
     # context features
     run_id:           str
     key:              str
-    trick_num:        int
-    play_seq:         int
+    play_pos:         int
     pos:              int  # 0 = first bid, 3 = dealer
     partner_winning:  int
     lead_trumped:     int
@@ -242,8 +241,7 @@ class PlayDataAnalysis(PlayAnalysis):
             # context features
             'run_id'          : self.run_id,
             'key'             : ' '.join(str(c) for c in key),
-            'trick_num'       : deal.trick_num,
-            'play_seq'        : deal.play_seq,
+            'play_pos'        : deal.trick_num * 4 + deal.play_seq,
             'pos'             : deal.pos,
             'partner_winning' : int(deal.partner_winning),
             'lead_trumped'    : int(not leading and deal.lead_trumped),
