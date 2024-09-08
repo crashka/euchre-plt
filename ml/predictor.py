@@ -61,7 +61,7 @@ class Predictor:
         t1 = time.perf_counter()
         pred = self.ag_pred.predict(features_in, as_pandas=False)
         t2 = time.perf_counter()
-        values = len(features_in.index)
-        values_str = f"({values} value{'s' if values > 1 else ''})"
-        log.debug(f"Model \"{self.name}\" predict time {values_str}: {t2-t1:.2f} secs")
+        nvalues = len(features_in.index)
+        nvalues_str = f"({nvalues} value{'s' if nvalues > 1 else ''})"
+        log.debug(f"Model \"{self.name}\" predict time {nvalues_str}: {t2-t1:.3f} secs")
         return [float(x) for x in pred]
