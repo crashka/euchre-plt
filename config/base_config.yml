@@ -78,6 +78,17 @@ default:
       discard_strategy: null
       play_strategy:    null
 
+    StrategyML:
+      bid_model:        null
+      call_thresh:      null
+      alone_thresh:     null
+      def_thresh:       null
+      bid_aggression:   null
+      discard_strategy: null
+      play_model:       null
+      hand_analysis:
+      play_analysis:
+
   base_tourn_params:
     RoundRobin:
       passes:          1

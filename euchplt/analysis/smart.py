@@ -92,7 +92,7 @@ class HandAnalysisSmart(HandAnalysis):
         if class_name not in base_params:
             raise ConfigError(f"Analysis class '{class_name}' does not exist")
         for key, base_value in base_params[class_name].items():
-            setattr(self, key, kwargs.get(key) or base_value)
+            setattr(self, key, kwargs.get(key) if key in kwargs else base_value)
         pass  # TEMP: for debugging!!!
 
     def suit_strength(self, suit: Suit, trump_suit: Suit) -> float:

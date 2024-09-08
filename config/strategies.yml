@@ -178,3 +178,45 @@ default:
       strategy_params:
         bid_strategy:     Smart 4
         play_strategy:    Simple i
+
+    ML-alpha:
+      comments:         Bid Data 2 + (no play)
+      module_path:      euchplt.strategy
+      base_class:       StrategyML
+      strategy_params:
+        bid_model:        bid_model_2-best
+        call_thresh:      0.0
+        alone_thresh:     1.0
+        def_thresh:       0.0
+        bid_aggression:   0x01
+        discard_strategy: Smart 3
+        play_model:       null
+        hand_analysis:
+          trump_values:    [0, 0, 0, 0, 1, 3, 7, 10]
+
+    ML-beta:
+      comments:         (no bid) + Play Data 1
+      module_path:      euchplt.strategy
+      base_class:       StrategyML
+      strategy_params:
+        play_model:       play_model_1-best-2-pmx
+        hand_analysis:
+          trump_values:    [0, 0, 0, 0, 1, 3, 7, 10]
+        play_analysis:
+          trump_values:    [0, 0, 0, 0, 1, 3, 7, 10]
+
+    Hybrid alpha-i:
+      comments:         ML-alpha (bid) + Simple i (play)
+      module_path:      euchplt.strategy
+      base_class:       StrategyHybrid
+      strategy_params:
+        bid_strategy:     ML-alpha
+        play_strategy:    Simple i
+
+    Hybrid 3-beta:
+      comments:         Smart 3 (bid) + ML-alpha (play)
+      module_path:      euchplt.strategy
+      base_class:       StrategyHybrid
+      strategy_params:
+        bid_strategy:     Smart 3
+        play_strategy:    ML-beta
