@@ -65,7 +65,7 @@ class BidDataAnalysis(HandAnalysis):
         self.trump_values = kwargs.get('trump_values')
         self.deal = deal
 
-    def get_features(self, bid: Bid) -> BidFeatures:
+    def get_features(self, bid: Bid, as_dict: bool = False) -> BidFeatures | dict:
         """Comments from `ml-euchre` (need to be rethought and adapted!!!):
 
         Input features:
@@ -143,7 +143,7 @@ class BidDataAnalysis(HandAnalysis):
             'num_singletons'  : len(self.singleton_cards(trump_suit)),
             'num_off_aces'    : len(self.off_aces(trump_suit))
         }
-        return BidFeatures._make(features.values())
+        return features if as_dict else BidFeatures._make(features.values())
 
 #######################
 # StrategyBidTraverse #

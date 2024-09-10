@@ -80,14 +80,16 @@ default:
 
     StrategyML:
       bid_model:        null
+      bid_pred_params:  {}
       call_thresh:      null
       alone_thresh:     null
       def_thresh:       null
       bid_aggression:   null
       discard_strategy: null
       play_model:       null
-      hand_analysis:
-      play_analysis:
+      play_pred_params: {}
+      hand_analysis:    {}
+      play_analysis:    {}
 
   base_tourn_params:
     RoundRobin:

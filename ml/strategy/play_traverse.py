@@ -186,7 +186,7 @@ class PlayDataAnalysis(PlayAnalysis):
         self.valid_plays  = kwargs.get('valid_plays')
         self.bid_features = kwargs.get('bid_features')
 
-    def get_features(self, card: Card, key: TraverseKey) -> PlayFeatures:
+    def get_features(self, card: Card, key: TraverseKey, as_dict: bool = False) -> PlayFeatures | dict:
         """
         """
         deal = self.deal
@@ -293,7 +293,7 @@ class PlayDataAnalysis(PlayAnalysis):
             'throw_off_low'   : int(throwing_off and card.level == low_level),
             'throw_off_next'  : int(throwing_off and card_suit == next_suit)
         }
-        return PlayFeatures._make(features.values())
+        return features if as_dict else PlayFeatures._make(features.values())
 
 ########################
 # StrategyPlayTraverse #

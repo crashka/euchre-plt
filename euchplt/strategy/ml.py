@@ -29,12 +29,14 @@ class StrategyML(Strategy):
     """
     # config parameters
     bid_model:        str
+    bid_pred_params:  dict
     call_thresh:      float
     alone_thresh:     float
     def_thresh:       float
     bid_aggression:   int
     discard_strategy: str
     play_model:       str
+    play_pred_params: dict
     hand_analysis:    dict
     play_analysis:    dict
     # instance variables
@@ -47,11 +49,11 @@ class StrategyML(Strategy):
         """
         super().__init__(**kwargs)
         if self.bid_model:
-            self.bid_pred = Predictor(self.bid_model)
+            self.bid_pred = Predictor(self.bid_model, **self.bid_pred_params)
         else:
             self.bid_pred = None
         if self.play_model:
-            self.play_pred = Predictor(self.play_model)
+            self.play_pred = Predictor(self.play_model, **self.play_pred_params)
         else:
             self.play_pred = None
         if self.discard_strategy:
@@ -71,7 +73,7 @@ class StrategyML(Strategy):
 
         analysis = BidDataAnalysis(deal, **self.hand_analysis)
         if def_bid:
-            def_feat = analysis.get_features(DEFEND_ALONE)
+            def_feat = analysis.get_features(DEFEND_ALONE, as_dict=True)
             feat_df  = pd.DataFrame([def_feat])
             values   = self.bid_pred.get_values(feat_df)
             alone    = values[0] > self.alone_thresh
@@ -80,8 +82,8 @@ class StrategyML(Strategy):
         if deal.bid_round == 1:
             call_bid     = Bid(deal.turn_card.suit, False)
             alone_bid    = Bid(deal.turn_card.suit, True)
-            call_feat    = analysis.get_features(call_bid)
-            alone_feat   = analysis.get_features(alone_bid)
+            call_feat    = analysis.get_features(call_bid, as_dict=True)
+            alone_feat   = analysis.get_features(alone_bid, as_dict=True)
             feat_df      = pd.DataFrame([call_feat, alone_feat])
             values       = self.bid_pred.get_values(feat_df)
             call_margin  = values[0] - self.call_thresh
@@ -94,7 +96,7 @@ class StrategyML(Strategy):
                     return alone_bid
             elif alone_margin <= 0.0:
                 return call_bid
-            
+
             assert call_margin > 0 and alone_margin > 0
             if not (self.bid_aggression ^ 0x01):
                 return call_bid
@@ -112,8 +114,8 @@ class StrategyML(Strategy):
                 alone_bid = Bid(suit, True)
                 call_bids.append(call_bid)
                 alone_bids.append(alone_bid)
-                call_feats.append(analysis.get_features(call_bid))
-                alone_feats.append(analysis.get_features(alone_bid))
+                call_feats.append(analysis.get_features(call_bid, as_dict=True))
+                alone_feats.append(analysis.get_features(alone_bid, as_dict=True))
             call_feat_df = pd.DataFrame(call_feats)
             alone_feat_df = pd.DataFrame(alone_feats)
             call_values = self.bid_pred.get_values(call_feat_df)
@@ -154,15 +156,18 @@ class StrategyML(Strategy):
         if not self.play_pred:
             raise RuntimeError("Model not configured for playing")
 
+        if len(valid_plays) == 1:
+            return valid_plays[0]
+
         bid_analysis = BidDataAnalysis(deal, **self.hand_analysis)
-        bid_features = bid_analysis.get_features(deal.contract)
+        bid_features = bid_analysis.get_features(deal.contract, as_dict=True)
         analysis = PlayDataAnalysis(deal, **self.play_analysis,
                                     run_id=DUMMY_RUN_ID,
                                     valid_plays=valid_plays,
                                     bid_features=bid_features)
         feats = []
         for card in valid_plays:
-            feats.append(analysis.get_features(card, DUMMY_KEY))
+            feats.append(analysis.get_features(card, DUMMY_KEY, as_dict=True))
         feat_df = pd.DataFrame(feats)
         values = self.play_pred.get_values(feat_df)
         # tuple: (card, high_value)

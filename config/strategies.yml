@@ -179,12 +179,48 @@ default:
         bid_strategy:     Smart 4
         play_strategy:    Simple i
 
-    ML-alpha:
+    ML-alpha0:
       comments:         Bid Data 2 + (no play)
       module_path:      euchplt.strategy
       base_class:       StrategyML
       strategy_params:
-        bid_model:        bid_model_2-best
+        bid_model:        bid_model_2-best-qr
+        bid_pred_params:
+          quantile_level:   0.25
+        call_thresh:      0.0
+        alone_thresh:     1.0
+        def_thresh:       0.0
+        bid_aggression:   0x01
+        discard_strategy: Smart 3
+        play_model:       null
+        hand_analysis:
+          trump_values:    [0, 0, 0, 0, 1, 3, 7, 10]
+
+    ML-alpha1:
+      comments:         Bid Data 2 + (no play)
+      module_path:      euchplt.strategy
+      base_class:       StrategyML
+      strategy_params:
+        bid_model:        bid_model_2-best-qr
+        bid_pred_params:
+          quantile_level:   0.5
+        call_thresh:      0.0
+        alone_thresh:     1.0
+        def_thresh:       0.0
+        bid_aggression:   0x01
+        discard_strategy: Smart 3
+        play_model:       null
+        hand_analysis:
+          trump_values:    [0, 0, 0, 0, 1, 3, 7, 10]
+
+    ML-alpha2:
+      comments:         Bid Data 2 + (no play)
+      module_path:      euchplt.strategy
+      base_class:       StrategyML
+      strategy_params:
+        bid_model:        bid_model_2-best-qr
+        bid_pred_params:
+          quantile_level:   0.75
         call_thresh:      0.0
         alone_thresh:     1.0
         def_thresh:       0.0
@@ -199,18 +235,34 @@ default:
       module_path:      euchplt.strategy
       base_class:       StrategyML
       strategy_params:
-        play_model:       play_model_1-best-2-pmx
+        play_model:       play_model_1-best-3
         hand_analysis:
           trump_values:    [0, 0, 0, 0, 1, 3, 7, 10]
         play_analysis:
           trump_values:    [0, 0, 0, 0, 1, 3, 7, 10]
 
-    Hybrid alpha-i:
+    Hybrid alpha0-i:
       comments:         ML-alpha (bid) + Simple i (play)
       module_path:      euchplt.strategy
       base_class:       StrategyHybrid
       strategy_params:
-        bid_strategy:     ML-alpha
+        bid_strategy:     ML-alpha0
+        play_strategy:    Simple i
+
+    Hybrid alpha1-i:
+      comments:         ML-alpha (bid) + Simple i (play)
+      module_path:      euchplt.strategy
+      base_class:       StrategyHybrid
+      strategy_params:
+        bid_strategy:     ML-alpha1
+        play_strategy:    Simple i
+
+    Hybrid alpha2-i:
+      comments:         ML-alpha (bid) + Simple i (play)
+      module_path:      euchplt.strategy
+      base_class:       StrategyHybrid
+      strategy_params:
+        bid_strategy:     ML-alpha2
         play_strategy:    Simple i
 
     Hybrid 3-beta:

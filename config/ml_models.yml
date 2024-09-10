@@ -12,6 +12,7 @@ default:
       model_dir:  bid_model_2-best-qr
       deals:      25000
       prob_type:  quantile
+      quantile_levels: [0.25, 0.5, 0.75]
       label:      points
       quality:    best
 
