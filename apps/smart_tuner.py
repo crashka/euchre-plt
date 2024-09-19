@@ -568,13 +568,14 @@ def get_bidding(strgy: Strategy, pos: int, hand: Hand, turn: Card) -> list[BidIn
     for rnd in range(2):
         bid_pos  = rnd * NUM_PLAYERS + pos
         bids     = PASSES[:bid_pos]
+        def_bids = []
         persist  = {}  # addl output values from `bid()` call
         new_hand = None
         details  = None
 
         # construct minimum functional faux deal state (only bidding fields, and
         # `persist`, needed)
-        deal = DealState(pos, hand, turn, bids, *NONES, persist)
+        deal = DealState(pos, hand, turn, bids, def_bids, *NONES, persist)
         bid = strgy.bid(deal)  # this call updates `persist`!
 
         if strength := persist.get('strength'):
