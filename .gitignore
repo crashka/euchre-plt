@@ -4,8 +4,11 @@
 *.csv
 *.db
 *.html
+*.dat
+*.dir
 venv-*/
 .idea-*/
+log/
 bid_data/
 play_data/
 models/

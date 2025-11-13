@@ -100,7 +100,7 @@
           {% else %}
           <option value="" disabled selected></option>
           {% for tourn_name in tourn_list %}
-          <option value="{{tourn_name}}"{{" disabled" if tourn == sel_sep else ""}}>{{tourn_name}}</option>
+          <option value="{{tourn_name}}"{{" disabled" if tourn_name == sel_sep else ""}}>{{tourn_name}}</option>
           {% endfor %}
           {% endif %}
         </select>
